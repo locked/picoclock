@@ -15,13 +15,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PICO_SRCS
+    ${CMAKE_CURRENT_LIST_DIR}/wifi.c
     ${CMAKE_CURRENT_LIST_DIR}/pico_hal_wrapper.c
-    #${CMAKE_CURRENT_LIST_DIR}/pico_lcd_spi.c
     ${CMAKE_CURRENT_LIST_DIR}/pico_i2s.c
     #${CMAKE_CURRENT_LIST_DIR}/pico_sdcard_spi.c
 )
-    #${CMAKE_CURRENT_LIST_DIR}/msc_disk.c
-    #${CMAKE_CURRENT_LIST_DIR}/usb_descriptors.c
 
 include_directories(../../src ../../hal ../../library .)
 
@@ -33,7 +31,7 @@ add_library(
 pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/pico_i2s.pio)
 #pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/pio_rotary_encoder.pio)
 
-target_link_libraries(${PROJECT_NAME} INTERFACE pico_stdlib hardware_exception cmsis_core) # tinyusb_device tinyusb_board
+target_link_libraries(${PROJECT_NAME} INTERFACE pico_stdlib hardware_exception cmsis_core pico_cyw43_arch_lwip_poll)
 target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_LIST_DIR})
 
 target_sources(${PROJECT_NAME} INTERFACE

@@ -30,6 +30,8 @@
 #include "pico_i2s.h"
 // #include "pio_rotary_encoder.pio.h"
 
+#include "wifi.h"
+
 // ===========================================================================================================
 // CONSTANTS / DEFINES
 // ===========================================================================================================
@@ -203,28 +205,62 @@ void ost_system_initialize()
   //uart_default_tx_wait_blocking();
   //stdio_init_all();
 
+  //------------------- Init Wifi and get time
+  debug_printf("Connecting to wifi...\r\n");
+  wifi_connect(WIFI_SSID, WIFI_PASSWORD);
+  char response[200] = "";
+  send_tcp(SERVER_IP, SERVER_PORT, "\n", 1, response);
+  debug_printf("GOT DATE FROM SERVER:[%s]\n", response);
+  wifi_disconnect();
+  debug_printf("Disconnected from wifi\n");
+
   //------------------- Init LCD
-    debug_printf("Init e-Paper module...\r\n");
-    if(DEV_Module_Init()!=0){
-        return -1;
-    }
+  debug_printf("Init e-Paper module...\r\n");
+  if(DEV_Module_Init()!=0){
+    return -1;
+  }
 
-    debug_printf("e-Paper Init and Clear...\r\n");
-	EPD_2in13_V4_Init();
-    EPD_2in13_V4_Clear();
+  debug_printf("e-Paper Init and Clear...\r\n");
+  EPD_2in13_V4_Init();
+  EPD_2in13_V4_Clear();
 
-    // Create a new image cache
-    UBYTE *BlackImage;
-    UWORD Imagesize = ((EPD_2in13_V4_WIDTH % 8 == 0)? (EPD_2in13_V4_WIDTH / 8 ): (EPD_2in13_V4_WIDTH / 8 + 1)) * EPD_2in13_V4_HEIGHT;
-    if((BlackImage = (UBYTE *)malloc(Imagesize)) == NULL) {
-		debug_printf("Failed to apply for black memory...\r\n");
-        return -1;
-    }
+  // Create a new image cache
+  UBYTE *BlackImage;
+  UWORD Imagesize = ((EPD_2in13_V4_WIDTH % 8 == 0)? (EPD_2in13_V4_WIDTH / 8 ): (EPD_2in13_V4_WIDTH / 8 + 1)) * EPD_2in13_V4_HEIGHT;
+  if((BlackImage = (UBYTE *)malloc(Imagesize)) == NULL) {
+    debug_printf("Failed to apply for black memory...\r\n");
+    return -1;
+  }
 
-    debug_printf("Paint_NewImage\r\n");
-    Paint_NewImage(BlackImage, EPD_2in13_V4_WIDTH, EPD_2in13_V4_HEIGHT, 90, WHITE);
-	Paint_Clear(WHITE);
-    EPD_2in13_V4_Display_Base(BlackImage);
+  debug_printf("Paint_NewImage\r\n");
+  Paint_NewImage(BlackImage, EPD_2in13_V4_WIDTH, EPD_2in13_V4_HEIGHT, 90, WHITE);
+  Paint_Clear(WHITE);
+  EPD_2in13_V4_Display_Base(BlackImage);
+
+  Paint_NewImage(BlackImage, EPD_2in13_V4_WIDTH, EPD_2in13_V4_HEIGHT, 90, WHITE);
+  debug_printf("Partial refresh\r\n");
+  Paint_SelectImage(BlackImage);
+  Paint_SetRotate(270);
+
+  Paint_DrawString_EN(70, 15, response, &Font20, WHITE, BLACK);
+  //Paint_ClearWindows(10, 10, 150 + Font20.Width * 7, 80 + Font20.Height, WHITE);
+  //Paint_DrawTime(10, 10, &sPaint_time, &Font20, WHITE, BLACK);
+
+  EPD_2in13_V4_Display_Partial(BlackImage);
+  DEV_Delay_ms(500);//Analog clock 1s
+
+  debug_printf("Clear...\r\n");
+  EPD_2in13_V4_Init();
+  EPD_2in13_V4_Clear();
+
+  debug_printf("Goto Sleep...\r\n");
+  EPD_2in13_V4_Sleep();
+  free(BlackImage);
+  BlackImage = NULL;
+  DEV_Delay_ms(2000);//important, at least 2s
+  // close 5V
+  debug_printf("close 5V, Module enters 0 power consumption ...\r\n");
+  DEV_Module_Exit();
 
   //------------------- Rotary encoder init
 /*

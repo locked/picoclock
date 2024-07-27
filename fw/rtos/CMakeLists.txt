@@ -39,7 +39,6 @@ set(OST_SRCS
     system/qor_armv6m.s
     system/audio_player.c
     system/ui_task.c
-    #system/fs_task.c
     system/ff/ff.c
     system/ff/ffsystem.c
     system/ff/ff_stubs.c
@@ -83,9 +82,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/GUI)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/platform/raspberry-pico-w)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/platform/raspberry-pico-w)
 
-# ------ MIDDLEWARE
-#set(MIDDLEWARE_SRCS library/st7789.c)
-
 add_executable(${PROJECT_NAME} ${OST_SRCS} ${MIDDLEWARE_SRCS})
 
 # ------ Link
@@ -95,6 +91,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
 
 pico_add_extra_outputs(${PROJECT_NAME})
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    WIFI_SSID=\"${WIFI_SSID}\"
+    WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
+    SERVER_IP=\"${SERVER_IP}\"
+    SERVER_PORT=\"${SERVER_PORT}\"
+)
 
 # ==================================================================================================
 # CUSTOM TARGETS
