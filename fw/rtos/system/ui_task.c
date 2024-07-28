@@ -25,6 +25,8 @@
 #include "ImageData.h"
 #include "EPD_2in13_V4.h"
 
+#include "hardware/rtc.h"
+
 
 // ===========================================================================================================
 // DEFINITIONS
@@ -33,13 +35,14 @@
 typedef struct
 {
     uint8_t ev;
+    uint32_t button_mask;
 } ost_ui_event_t;
 
 typedef enum
 {
-    OST_SYS_WAIT_INDEX,
-    OST_SYS_PLAY_STORY_TITLE,
-    OST_SYS_WAIT_USER_EVENT
+    OST_SYS_NO_EVENT,
+    OST_SYS_BUTTON1,
+    OST_SYS_BUTTON2
 } ost_system_state_t;
 
 // ===========================================================================================================
@@ -55,7 +58,7 @@ static ost_ui_event_t UiEvent;
 
 static ost_ui_event_t *UiQueue[10];
 
-static ost_system_state_t OstState = OST_SYS_WAIT_INDEX;
+static ost_system_state_t OstState = OST_SYS_NO_EVENT;
 
 static ost_context_t OstContext;
 
@@ -65,32 +68,131 @@ static ost_context_t OstContext;
 void UiTask(void *args)
 {
     ost_ui_event_t *message = NULL;
+    uint32_t res = 0;
 
     // init screen
     //ui_init();
 
-    while (1)
-    {
-        // res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
+    datetime_t dt;
+    rtc_get_datetime(&dt);
+    debug_printf("Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.hour, dt.min, dt.sec);
 
-        // if (res == QOR_MBOX_OK)
-        // {
-        //     if (message->ev == UI_EV_CONNECTED)
-        //     {
+    PAINT_TIME sPaint_time;
 
-        //         ConnectedState = true;
-        //     }
-        // }
+    // Create a new image cache
+    UBYTE *BlackImage;
+    UWORD Imagesize = ((EPD_2in13_V4_WIDTH % 8 == 0)? (EPD_2in13_V4_WIDTH / 8 ): (EPD_2in13_V4_WIDTH / 8 + 1)) * EPD_2in13_V4_HEIGHT;
+    if((BlackImage = (UBYTE *)malloc(Imagesize)) == NULL) {
+      debug_printf("Failed to apply for black memory...\r\n");
+      return;
+    }
+
+    debug_printf("Paint_NewImage\r\n");
+    Paint_NewImage(BlackImage, EPD_2in13_V4_WIDTH, EPD_2in13_V4_HEIGHT, 90, WHITE);
+    Paint_Clear(WHITE);
+    EPD_2in13_V4_Display_Base(BlackImage);
+
+    //Paint_DrawString_EN(70, 15, response, &Font20, WHITE, BLACK);
+
+    /*debug_printf("Clear...\r\n");
+    EPD_2in13_V4_Init();
+    EPD_2in13_V4_Clear();
+
+    debug_printf("Goto Sleep...\r\n");
+    EPD_2in13_V4_Sleep();
+    free(BlackImage);
+    BlackImage = NULL;
+    DEV_Delay_ms(2000);//important, at least 2s
+    // close 5V
+    debug_printf("close 5V, Module enters 0 power consumption ...\r\n");
+    DEV_Module_Exit();*/
+
+    bool module_initialized = true;
+    bool redraw_screen = false;
+    int loop_count = 0;
+    //int last_sec = 0;
+    int last_min = 0;
+    while (1) {
+        redraw_screen = false;
+
+        res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
+        if (res == QOR_MBOX_OK) {
+            if (message->ev == OST_SYS_BUTTON1) {
+                debug_printf("/!\\ Received event OST_SYS_BUTTON1\r\n");
+                redraw_screen = true;
+            }
+        }
+
+        rtc_get_datetime(&dt);
+        if (dt.min != last_min) {
+            redraw_screen = true;
+            //last_sec = dt.sec;
+            last_min = dt.min;
+        }
+
+        if (redraw_screen) {
+            if (!module_initialized) {
+                DEV_Module_Init();
+                EPD_2in13_V4_Init();
+            }
+
+            Paint_NewImage(BlackImage, EPD_2in13_V4_WIDTH, EPD_2in13_V4_HEIGHT, 90, WHITE);
+            //debug_printf("Partial refresh\r\n");
+            Paint_SelectImage(BlackImage);
+            Paint_SetRotate(270);
+
+            sPaint_time.Year = dt.year;
+            sPaint_time.Month = dt.month;
+            sPaint_time.Day = dt.day;
+            sPaint_time.Hour = dt.hour;
+            sPaint_time.Min = dt.min;
+            sPaint_time.Sec = dt.sec;
+            //debug_printf("Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.hour, dt.min, dt.sec);
+
+            char date_str[100];
+            sprintf(date_str, "%d-%02d-%02d", dt.year, dt.month, dt.day);
+            Paint_DrawString_EN(10, 10, date_str, &Font24, WHITE, BLACK);
+
+            Paint_ClearWindows(10, 40, 150 + Font20.Width * 7, 80 + Font20.Height, WHITE);
+            Paint_DrawTime(10, 40, &sPaint_time, &Font24, WHITE, BLACK);
+
+            EPD_2in13_V4_Display_Partial(BlackImage);
+
+            if (loop_count++ > 10) {
+                debug_printf("Shutdown loop_count:[%d]\r\n", loop_count);
+                loop_count = 0;
+                EPD_2in13_V4_Sleep();
+                DEV_Delay_ms(2000);
+                DEV_Module_Exit();
+                module_initialized = false;
+            } else {
+                module_initialized = true;
+            }
+        }
 
         qor_sleep(500);
-        debug_printf("\r\n[UI] task woke up\r\n");
+        //debug_printf("\r\n[UI] task woke up\r\n");
     }
 }
 
+
+static void button_callback(uint32_t flags)
+{
+    static ost_ui_event_t ButtonEv = {
+        .ev = OST_SYS_BUTTON1
+    };
+
+    ButtonEv.button_mask = flags;
+    qor_mbox_notify(&UiMailBox, (void **)&ButtonEv, QOR_MBOX_OPTION_SEND_BACK);
+}
+
+
 void ui_task_initialize()
 {
-    OstState = OST_SYS_WAIT_INDEX;
+    OstState = OST_SYS_NO_EVENT;
     qor_mbox_init(&UiMailBox, (void **)&UiQueue, 10);
 
     qor_create_thread(&UiTcb, UiTask, UiStack, sizeof(UiStack) / sizeof(UiStack[0]), HMI_TASK_PRIORITY, "UiTask");
+
+    ost_button_register_callback(button_callback);
 }

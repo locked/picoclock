@@ -16,6 +16,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PICO_SRCS
     ${CMAKE_CURRENT_LIST_DIR}/wifi.c
+    ${CMAKE_CURRENT_LIST_DIR}/button_debounce.c
     ${CMAKE_CURRENT_LIST_DIR}/pico_hal_wrapper.c
     ${CMAKE_CURRENT_LIST_DIR}/pico_i2s.c
     #${CMAKE_CURRENT_LIST_DIR}/pico_sdcard_spi.c
@@ -29,7 +30,7 @@ add_library(
 )
 
 pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/pico_i2s.pio)
-#pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/pio_rotary_encoder.pio)
+pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/button_debounce.pio)
 
 target_link_libraries(${PROJECT_NAME} INTERFACE pico_stdlib hardware_exception cmsis_core pico_cyw43_arch_lwip_poll)
 target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_LIST_DIR})

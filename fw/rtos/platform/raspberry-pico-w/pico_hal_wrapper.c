@@ -17,6 +17,7 @@
 #include "hardware/irq.h"
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
+#include "hardware/rtc.h"
 #include "pico.h"
 
 // Screen
@@ -29,6 +30,9 @@
 #include "audio_player.h"
 #include "pico_i2s.h"
 // #include "pio_rotary_encoder.pio.h"
+#include "button_debounce.h"
+
+#include "tiny-json.h"
 
 #include "wifi.h"
 
@@ -36,9 +40,12 @@
 // CONSTANTS / DEFINES
 // ===========================================================================================================
 
-//const uint8_t ROTARY_A = 6;
-//const uint8_t ROTARY_B = 7;
-//const uint8_t ROTARY_BUTTON = 1;
+const uint8_t BUTTON_1 = 8;
+const uint8_t BUTTON_2 = 9;
+const uint8_t BUTTON_3 = 10;
+const uint8_t BUTTON_4 = 19;
+const uint8_t BUTTON_5 = 20;
+const uint8_t BUTTON_6 = 21;
 
 //#define SDCARD_SCK 18
 //#define SDCARD_MOSI 19
@@ -69,6 +76,8 @@ static uint32_t DebounceTs = 0;
 static bool IsDebouncing = false;
 static uint32_t ButtonsState = 0;
 static uint32_t ButtonsStatePrev = 0;
+static int lastbtn1 = 1;
+static int lastbtn2 = 1;
 
 // Rotary encoder
 // pio 0 is used
@@ -99,63 +108,21 @@ void ost_system_delay_ms(uint32_t delay)
   busy_wait_ms(delay);
 }
 
-/*
 void check_buttons()
 {
-  if (!gpio_get(ROTARY_BUTTON))
-  {
-    ButtonsState |= OST_BUTTON_OK;
+  int btn1 = debounce_read(BUTTON_1);
+  int btn2 = debounce_read(BUTTON_2);
+  if (btn1 == 1 && btn1 != lastbtn1) {
+    debug_printf("Check buttons: [%d] [%d]\r\n", btn1, btn2);
+    ButtonCallback(ButtonsState);
   }
-  else
-  {
-    ButtonsState &= ~OST_BUTTON_OK;
+  if (btn2 == 1 && btn2 != lastbtn2) {
+    debug_printf("Check buttons: [%d] [%d]\r\n", btn1, btn2);
+    ButtonCallback(ButtonsState);
   }
-
-  // note: thanks to two's complement arithmetic delta will always
-  // be correct even when new_value wraps around MAXINT / MININT
-  new_value = quadrature_encoder_get_count(pio, sm);
-  delta = new_value - old_value;
-  old_value = new_value;
-
-  if (delta > 0)
-  {
-    ButtonsState |= OST_BUTTON_LEFT;
-  }
-  else if (delta < 0)
-  {
-    ButtonsState |= OST_BUTTON_RIGHT;
-  }
-  else
-  {
-    ButtonsState &= ~OST_BUTTON_LEFT;
-    ButtonsState &= ~OST_BUTTON_RIGHT;
-  }
-
-  if (IsDebouncing)
-  {
-    // Même état pendant X millisecondes, on valide
-    if ((ButtonsStatePrev == ButtonsState) && (ButtonCallback != NULL))
-    {
-      if (ButtonsState != 0)
-      {
-        ButtonCallback(ButtonsState);
-      }
-    }
-
-    IsDebouncing = false;
-    ButtonsStatePrev = ButtonsState;
-  }
-  else
-  {
-    // Changement d'état détecté
-    if (ButtonsStatePrev != ButtonsState)
-    {
-      ButtonsStatePrev = ButtonsState;
-      IsDebouncing = true;
-    }
-  }
+  lastbtn1 = btn1;
+  lastbtn2 = btn2;
 }
-*/
 
 static void alarm_in_us(uint32_t delay_us);
 
@@ -165,7 +132,7 @@ static void alarm_irq(void)
   hw_clear_bits(&timer_hw->intr, 1u << ALARM_NUM);
   alarm_in_us(10000);
 
-  //check_buttons();
+  check_buttons();
 }
 
 static void alarm_in_us(uint32_t delay_us)
@@ -201,78 +168,84 @@ void ost_system_initialize()
 
   uart_init(UART_ID, BAUD_RATE);
   gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
-  //uart_puts(UART_ID, "==START==\r\n");
-  //uart_default_tx_wait_blocking();
-  //stdio_init_all();
 
   //------------------- Init Wifi and get time
   debug_printf("Connecting to wifi...\r\n");
   wifi_connect(WIFI_SSID, WIFI_PASSWORD);
   char response[200] = "";
-  send_tcp(SERVER_IP, SERVER_PORT, "\n", 1, response);
-  debug_printf("GOT DATE FROM SERVER:[%s]\n", response);
+  send_tcp(SERVER_IP, atoi(SERVER_PORT), "\n", 1, response);
+  debug_printf("GOT DATE FROM SERVER:[%s:%d] => [%s]\n", SERVER_IP, atoi(SERVER_PORT), response);
   wifi_disconnect();
   debug_printf("Disconnected from wifi\n");
+
+  enum { MAX_FIELDS = 20 };
+  json_t pool[MAX_FIELDS];
+
+  json_t const* root_elem = json_create(response, pool, MAX_FIELDS);
+  json_t const* status_elem = json_getProperty(root_elem, "status");
+  int status = json_getInteger(status_elem);
+  debug_printf("Parsing date from [%s]...\r\n", response);
+  json_t const* date_elem = json_getProperty(root_elem, "date");
+  json_t const* year_elem = json_getProperty(date_elem, "year");
+  int year_full = json_getInteger(year_elem);
+  /*
+  int year;
+  bool century;
+  if (year_full >= 2000) {
+    year = year_full - 2000;
+    century = false;
+  } else {
+    year = year_full - 1900;
+    century = true;
+  }
+  */
+  json_t const* day_elem = json_getProperty(date_elem, "day");
+  rtc_init();
+  datetime_t dt;
+  dt.year = year_full;
+  dt.month = json_getInteger(json_getProperty(date_elem, "month"));
+  dt.day = json_getInteger(day_elem);
+  dt.dotw = json_getInteger(json_getProperty(date_elem, "weekday"));
+  dt.hour = json_getInteger(json_getProperty(date_elem, "hour"));
+  dt.min = json_getInteger(json_getProperty(date_elem, "minute"));
+  dt.sec = json_getInteger(json_getProperty(date_elem, "second"));
+  debug_printf("STATUS FROM SERVER:[%d] year:[%d] day:[%d] weekday:[%d] month:[%d] hour:[%d]\r\n", status, dt.year, dt.day, dt.dotw, dt.month, dt.hour);
+  rtc_set_datetime(&dt);
+
 
   //------------------- Init LCD
   debug_printf("Init e-Paper module...\r\n");
   if(DEV_Module_Init()!=0){
-    return -1;
+    return;
   }
 
   debug_printf("e-Paper Init and Clear...\r\n");
   EPD_2in13_V4_Init();
   EPD_2in13_V4_Clear();
 
-  // Create a new image cache
-  UBYTE *BlackImage;
-  UWORD Imagesize = ((EPD_2in13_V4_WIDTH % 8 == 0)? (EPD_2in13_V4_WIDTH / 8 ): (EPD_2in13_V4_WIDTH / 8 + 1)) * EPD_2in13_V4_HEIGHT;
-  if((BlackImage = (UBYTE *)malloc(Imagesize)) == NULL) {
-    debug_printf("Failed to apply for black memory...\r\n");
-    return -1;
+  //------------------- Buttons init
+  debounce_debounce();
+  if (debounce_gpio(BUTTON_1) == -1) {
+    debug_printf("Error debouncing GPIO [%d]...\r\n", BUTTON_1);
   }
-
-  debug_printf("Paint_NewImage\r\n");
-  Paint_NewImage(BlackImage, EPD_2in13_V4_WIDTH, EPD_2in13_V4_HEIGHT, 90, WHITE);
-  Paint_Clear(WHITE);
-  EPD_2in13_V4_Display_Base(BlackImage);
-
-  Paint_NewImage(BlackImage, EPD_2in13_V4_WIDTH, EPD_2in13_V4_HEIGHT, 90, WHITE);
-  debug_printf("Partial refresh\r\n");
-  Paint_SelectImage(BlackImage);
-  Paint_SetRotate(270);
-
-  Paint_DrawString_EN(70, 15, response, &Font20, WHITE, BLACK);
-  //Paint_ClearWindows(10, 10, 150 + Font20.Width * 7, 80 + Font20.Height, WHITE);
-  //Paint_DrawTime(10, 10, &sPaint_time, &Font20, WHITE, BLACK);
-
-  EPD_2in13_V4_Display_Partial(BlackImage);
-  DEV_Delay_ms(500);//Analog clock 1s
-
-  debug_printf("Clear...\r\n");
-  EPD_2in13_V4_Init();
-  EPD_2in13_V4_Clear();
-
-  debug_printf("Goto Sleep...\r\n");
-  EPD_2in13_V4_Sleep();
-  free(BlackImage);
-  BlackImage = NULL;
-  DEV_Delay_ms(2000);//important, at least 2s
-  // close 5V
-  debug_printf("close 5V, Module enters 0 power consumption ...\r\n");
-  DEV_Module_Exit();
-
-  //------------------- Rotary encoder init
-/*
-  gpio_init(ROTARY_BUTTON);
-  gpio_set_dir(ROTARY_BUTTON, GPIO_IN);
-  gpio_disable_pulls(ROTARY_BUTTON);
+  //if (debounce_set_debounce_time(BUTTON_1, 8) == -1) {
+  //  debug_printf("Error debounce_set_debounce_time GPIO [%d]...\r\n", BUTTON_1);
+  //}
+  if (debounce_gpio(BUTTON_2) == -1) {
+    debug_printf("Error debouncing GPIO [%d]...\r\n", BUTTON_2);
+  }
+  //debounce_set_debounce_time(BUTTON_2, 8);
+  if (debounce_gpio(BUTTON_3) == -1) {
+    debug_printf("Error debouncing GPIO [%d]...\r\n", BUTTON_3);
+  }
+  //gpio_init(BUTTON_1);
+  //gpio_set_dir(BUTTON_1, GPIO_IN);
 
   // Rotary Encoder is managed by the PIO !
   // we don't really need to keep the offset, as this program must be loaded
   // at offset 0
-  pio_add_program(pio, &quadrature_encoder_program);
-  quadrature_encoder_program_init(pio, sm, ROTARY_A, 0);
+  //pio_add_program(pio, &quadrature_encoder_program);
+  //quadrature_encoder_program_init(pio, sm, ROTARY_A, 0);
 
   // Set irq handler for alarm irq
   irq_set_exclusive_handler(ALARM_IRQ, alarm_irq);
@@ -282,6 +255,7 @@ void ost_system_initialize()
   alarm_in_us(100000);
 
   //------------------- Init SDCARD
+/*
   gpio_init(SD_CARD_CS);
   gpio_put(SD_CARD_CS, 1);
   gpio_set_dir(SD_CARD_CS, GPIO_OUT);
