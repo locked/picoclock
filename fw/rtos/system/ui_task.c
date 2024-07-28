@@ -27,8 +27,10 @@
 
 #include "hardware/rtc.h"
 
-#include "pwm_sound.h"
-#include "pwm_sound_melodies.h"
+//#include "pwm_sound.h"
+//#include "pwm_sound_melodies.h"
+
+#include "net_task.h"
 
 
 // ===========================================================================================================
@@ -72,9 +74,6 @@ void UiTask(void *args)
     ost_ui_event_t *message = NULL;
     uint32_t res = 0;
 
-    // init screen
-    //ui_init();
-
     datetime_t dt;
     rtc_get_datetime(&dt);
     debug_printf("Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.hour, dt.min, dt.sec);
@@ -114,6 +113,7 @@ void UiTask(void *args)
     int loop_count = 0;
     //int last_sec = 0;
     int last_min = 0;
+    wakeup_alarm_struct wakeup_alarm;
     while (1) {
         redraw_screen = false;
 
@@ -126,13 +126,19 @@ void UiTask(void *args)
                 }
                 if (message->btn == 3) {
                     debug_printf("/!\\ Received event OST_SYS_BUTTON3\r\n");
-                    play_melody(16, HappyBirday, 140);
+                    //play_melody(16, HappyBirday, 140);
                 }
             }
         }
 
         rtc_get_datetime(&dt);
-        if (dt.min != last_min) {
+        bool time_initialized = dt.year != 1000;
+        if (!time_initialized) {
+            ost_request_update_time();
+            redraw_screen = true;
+        }
+        if (time_initialized && dt.min != last_min) {
+            ost_change_minute(&dt);
             redraw_screen = true;
             //last_sec = dt.sec;
             last_min = dt.min;
@@ -149,22 +155,31 @@ void UiTask(void *args)
             Paint_SelectImage(BlackImage);
             Paint_SetRotate(270);
 
-            sPaint_time.Year = dt.year;
-            sPaint_time.Month = dt.month;
-            sPaint_time.Day = dt.day;
-            sPaint_time.Hour = dt.hour;
-            sPaint_time.Min = dt.min;
-            sPaint_time.Sec = dt.sec;
-            //debug_printf("Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.hour, dt.min, dt.sec);
-
             char date_str[100];
-            sprintf(date_str, "%d-%02d-%02d", dt.year, dt.month, dt.day);
-            Paint_DrawString_EN(10, 10, date_str, &Font24, WHITE, BLACK);
+            if (time_initialized) {
+                sPaint_time.Year = dt.year;
+                sPaint_time.Month = dt.month;
+                sPaint_time.Day = dt.day;
+                sPaint_time.Hour = dt.hour;
+                sPaint_time.Min = dt.min;
+                sPaint_time.Sec = dt.sec;
+                sprintf(date_str, "%d-%02d-%02d", dt.year, dt.month, dt.day);
+                Paint_DrawString_EN(10, 10, date_str, &Font24, WHITE, BLACK);
 
-            Paint_ClearWindows(10, 40, 150 + Font20.Width * 7, 80 + Font20.Height, WHITE);
-            Paint_DrawTime(10, 40, &sPaint_time, &Font24, WHITE, BLACK);
+                Paint_ClearWindows(10, 40, 150 + Font20.Width * 7, 80 + Font20.Height, WHITE);
+                Paint_DrawTime(10, 40, &sPaint_time, &Font24, WHITE, BLACK);
 
-            EPD_2in13_V4_Display_Partial(BlackImage);
+                ost_get_wakeup_alarm(&wakeup_alarm);
+                sprintf(date_str, "Alarm: %02d:%02d", wakeup_alarm.hour, wakeup_alarm.min);
+                Paint_DrawString_EN(10, 100, date_str, &Font16, WHITE, BLACK);
+
+                EPD_2in13_V4_Display_Partial(BlackImage);
+            } else {
+                EPD_2in13_V4_Clear();
+                sprintf(date_str, "Waiting wifi connection...");
+                Paint_DrawString_EN(10, 50, date_str, &Font20, WHITE, BLACK);
+                EPD_2in13_V4_Display_Base(BlackImage);
+            }
 
             if (loop_count++ > 10) {
                 debug_printf("Shutdown loop_count:[%d]\r\n", loop_count);
@@ -184,8 +199,7 @@ void UiTask(void *args)
 }
 
 
-static void button_callback(uint32_t btn)
-{
+static void button_callback(uint32_t btn) {
     static ost_ui_event_t ButtonEv = {
         .ev = OST_SYS_BUTTON
     };
@@ -195,8 +209,7 @@ static void button_callback(uint32_t btn)
 }
 
 
-void ui_task_initialize()
-{
+void ui_task_initialize() {
     OstState = OST_SYS_NO_EVENT;
     qor_mbox_init(&UiMailBox, (void **)&UiQueue, 10);
 

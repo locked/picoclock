@@ -5,8 +5,6 @@
 // OST common files
 #include "ost_hal.h"
 #include "debug.h"
-#include <ff.h>
-#include "diskio.h"
 #include "qor.h"
 
 // Raspberry Pico SDK
@@ -29,12 +27,7 @@
 // Local
 #include "audio_player.h"
 #include "pico_i2s.h"
-// #include "pio_rotary_encoder.pio.h"
 #include "button_debounce.h"
-
-#include "tiny-json.h"
-
-#include "wifi.h"
 
 // ===========================================================================================================
 // CONSTANTS / DEFINES
@@ -176,49 +169,18 @@ void ost_system_initialize()
   uart_init(UART_ID, BAUD_RATE);
   gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
 
-  //------------------- Init Wifi and get time
-  debug_printf("Connecting to wifi...\r\n");
-  wifi_connect(WIFI_SSID, WIFI_PASSWORD);
-  char response[200] = "";
-  send_tcp(SERVER_IP, atoi(SERVER_PORT), "\n", 1, response);
-  debug_printf("GOT DATE FROM SERVER:[%s:%d] => [%s]\n", SERVER_IP, atoi(SERVER_PORT), response);
-  wifi_disconnect();
-  debug_printf("Disconnected from wifi\n");
-
-  enum { MAX_FIELDS = 20 };
-  json_t pool[MAX_FIELDS];
-
-  json_t const* root_elem = json_create(response, pool, MAX_FIELDS);
-  json_t const* status_elem = json_getProperty(root_elem, "status");
-  int status = json_getInteger(status_elem);
-  debug_printf("Parsing date from [%s]...\r\n", response);
-  json_t const* date_elem = json_getProperty(root_elem, "date");
-  json_t const* year_elem = json_getProperty(date_elem, "year");
-  int year_full = json_getInteger(year_elem);
-  /*
-  int year;
-  bool century;
-  if (year_full >= 2000) {
-    year = year_full - 2000;
-    century = false;
-  } else {
-    year = year_full - 1900;
-    century = true;
-  }
-  */
-  json_t const* day_elem = json_getProperty(date_elem, "day");
-  rtc_init();
-  datetime_t dt;
-  dt.year = year_full;
-  dt.month = json_getInteger(json_getProperty(date_elem, "month"));
-  dt.day = json_getInteger(day_elem);
-  dt.dotw = json_getInteger(json_getProperty(date_elem, "weekday"));
-  dt.hour = json_getInteger(json_getProperty(date_elem, "hour"));
-  dt.min = json_getInteger(json_getProperty(date_elem, "minute"));
-  dt.sec = json_getInteger(json_getProperty(date_elem, "second"));
-  debug_printf("STATUS FROM SERVER:[%d] year:[%d] day:[%d] weekday:[%d] month:[%d] hour:[%d]\r\n", status, dt.year, dt.day, dt.dotw, dt.month, dt.hour);
-  rtc_set_datetime(&dt);
-
+  //------------------- Init time
+  // Set time to known values to identify it needs to be updated
+	rtc_init();
+	datetime_t dt;
+	dt.year = 1000;
+	dt.month = 1;
+	dt.day = 1;
+	dt.dotw = 1;
+	dt.hour = 1;
+	dt.min = 1;
+	dt.sec = 1;
+	rtc_set_datetime(&dt);
 
   //------------------- Init LCD
   debug_printf("Init e-Paper module...\r\n");
@@ -245,14 +207,6 @@ void ost_system_initialize()
   if (debounce_gpio(BUTTON_3) == -1) {
     debug_printf("Error debouncing GPIO [%d]...\r\n", BUTTON_3);
   }
-  //gpio_init(BUTTON_1);
-  //gpio_set_dir(BUTTON_1, GPIO_IN);
-
-  // Rotary Encoder is managed by the PIO !
-  // we don't really need to keep the offset, as this program must be loaded
-  // at offset 0
-  //pio_add_program(pio, &quadrature_encoder_program);
-  //quadrature_encoder_program_init(pio, sm, ROTARY_A, 0);
 
   // Set irq handler for alarm irq
   irq_set_exclusive_handler(ALARM_IRQ, alarm_irq);

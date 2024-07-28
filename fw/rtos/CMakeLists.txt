@@ -39,10 +39,11 @@ set(OST_SRCS
     system/qor_armv6m.s
     system/audio_player.c
     system/ui_task.c
+    system/net_task.c
     system/ff/ff.c
     system/ff/ffsystem.c
     system/ff/ff_stubs.c
-    chip32/chip32_vm.c
+    #chip32/chip32_vm.c
     library/mini_qoi.c
     library/tiny-json.c
 )
@@ -50,7 +51,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/library
     ${CMAKE_CURRENT_SOURCE_DIR}/system/ff
-    ${CMAKE_CURRENT_SOURCE_DIR}/chip32
+    #${CMAKE_CURRENT_SOURCE_DIR}/chip32
     ${CMAKE_CURRENT_SOURCE_DIR}/system/
     ${CMAKE_CURRENT_SOURCE_DIR}/library/epaper
     ${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/Config

@@ -1,4 +1,3 @@
-
 #include "ost_hal.h"
 #include "debug.h"
 #include "filesystem.h"
@@ -11,10 +10,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "chip32_vm.h"
+//#include "chip32_vm.h"
 #include "system.h"
 #include "ui_task.h"
-//#include "fs_task.h"
 
 void ost_hal_panic()
 {
@@ -52,6 +50,7 @@ int main()
     qor_init(125000000UL);
 
     // 5. Initialize the tasks
+    net_task_initialize();
     ui_task_initialize();
 
     // 6. Start the operating system!
