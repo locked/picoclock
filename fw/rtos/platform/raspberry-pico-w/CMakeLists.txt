@@ -16,6 +16,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PICO_SRCS
     ${CMAKE_CURRENT_LIST_DIR}/wifi.c
+    ${CMAKE_CURRENT_LIST_DIR}/pwm_sound.c
     ${CMAKE_CURRENT_LIST_DIR}/button_debounce.c
     ${CMAKE_CURRENT_LIST_DIR}/pico_hal_wrapper.c
     ${CMAKE_CURRENT_LIST_DIR}/pico_i2s.c

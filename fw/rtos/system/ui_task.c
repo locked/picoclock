@@ -27,6 +27,9 @@
 
 #include "hardware/rtc.h"
 
+#include "pwm_sound.h"
+#include "pwm_sound_melodies.h"
+
 
 // ===========================================================================================================
 // DEFINITIONS
@@ -35,14 +38,13 @@
 typedef struct
 {
     uint8_t ev;
-    uint32_t button_mask;
+    uint32_t btn;
 } ost_ui_event_t;
 
 typedef enum
 {
     OST_SYS_NO_EVENT,
-    OST_SYS_BUTTON1,
-    OST_SYS_BUTTON2
+    OST_SYS_BUTTON,
 } ost_system_state_t;
 
 // ===========================================================================================================
@@ -117,9 +119,15 @@ void UiTask(void *args)
 
         res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
         if (res == QOR_MBOX_OK) {
-            if (message->ev == OST_SYS_BUTTON1) {
-                debug_printf("/!\\ Received event OST_SYS_BUTTON1\r\n");
-                redraw_screen = true;
+            if (message->ev == OST_SYS_BUTTON) {
+                if (message->btn == 1) {
+                    debug_printf("/!\\ Received event OST_SYS_BUTTON1\r\n");
+                    redraw_screen = true;
+                }
+                if (message->btn == 3) {
+                    debug_printf("/!\\ Received event OST_SYS_BUTTON3\r\n");
+                    play_melody(16, HappyBirday, 140);
+                }
             }
         }
 
@@ -176,13 +184,13 @@ void UiTask(void *args)
 }
 
 
-static void button_callback(uint32_t flags)
+static void button_callback(uint32_t btn)
 {
     static ost_ui_event_t ButtonEv = {
-        .ev = OST_SYS_BUTTON1
+        .ev = OST_SYS_BUTTON
     };
 
-    ButtonEv.button_mask = flags;
+    ButtonEv.btn = btn;
     qor_mbox_notify(&UiMailBox, (void **)&ButtonEv, QOR_MBOX_OPTION_SEND_BACK);
 }
 

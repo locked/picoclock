@@ -73,23 +73,23 @@ int debounce_gpio(uint gpio) {
 
     // Find a pio and sm:
     // start with trying to use pio0
-    PIO pio = pio0;
+    PIO pio = pio1;
     // claim a state machine, no panic if non is available
     uint sm = pio_claim_unused_sm(pio, false);
     // check if this is a valid sm
     if (sm == -1) {
         // pio0 did not deliver a sm, try pio1
-        pio = pio1;
+        //pio = pio1;
         // claim a state machine, no panic if non is available
-        sm = pio_claim_unused_sm(pio, false);
+        //sm = pio_claim_unused_sm(pio, false);
         // check if this is a valid sm
-        if (sm == -1) {
+        //if (sm == -1) {
             // also no sm from pio1, return an error
 #ifdef PRINT_ERRORS
             printf("debounce error: no state machine available\n");
 #endif
             return -1;
-        }
+        //}
     }
 
     pio_debounced[gpio] = pio;

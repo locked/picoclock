@@ -78,6 +78,7 @@ static uint32_t ButtonsState = 0;
 static uint32_t ButtonsStatePrev = 0;
 static int lastbtn1 = 1;
 static int lastbtn2 = 1;
+static int lastbtn3 = 1;
 
 // Rotary encoder
 // pio 0 is used
@@ -91,7 +92,8 @@ static audio_i2s_config_t config = {
     .freq = 44100,
     .bps = 32,
     .data_pin = 28,
-    .clock_pin_base = 26};
+    .clock_pin_base = 26
+};
 
 // ===========================================================================================================
 // PROTOTYPES
@@ -112,16 +114,21 @@ void check_buttons()
 {
   int btn1 = debounce_read(BUTTON_1);
   int btn2 = debounce_read(BUTTON_2);
+  int btn3 = debounce_read(BUTTON_3);
   if (btn1 == 1 && btn1 != lastbtn1) {
     debug_printf("Check buttons: [%d] [%d]\r\n", btn1, btn2);
-    ButtonCallback(ButtonsState);
+    ButtonCallback(1);
   }
   if (btn2 == 1 && btn2 != lastbtn2) {
     debug_printf("Check buttons: [%d] [%d]\r\n", btn1, btn2);
-    ButtonCallback(ButtonsState);
+    ButtonCallback(2);
+  }
+  if (btn3 == 1 && btn3 != lastbtn3) {
+    ButtonCallback(3);
   }
   lastbtn1 = btn1;
   lastbtn2 = btn2;
+  lastbtn3 = btn3;
 }
 
 static void alarm_in_us(uint32_t delay_us);
@@ -270,11 +277,16 @@ void ost_system_initialize()
   gpio_set_function(SDCARD_SCK, GPIO_FUNC_SPI);
   gpio_set_function(SDCARD_MOSI, GPIO_FUNC_SPI);
   gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
+*/
 
   //------------------- Init Sound
+/*
   i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
   audio_init(&audio_ctx);
+  char fakefile[6] = "fake";
+  ost_audio_play(fakefile);
 */
+  gpio_set_function(16, GPIO_FUNC_PWM);
 
   // ------------ Everything is initialized, print stuff here
   debug_printf("System Clock: %lu\n", clock_get_hz(clk_sys));
