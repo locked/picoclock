@@ -6,7 +6,6 @@
 void net_task_initialize();
 void net_task_connected();
 
-void ost_change_minute(datetime_t *dt);
 void ost_get_wakeup_alarm(wakeup_alarm_struct *wa);
 void ost_request_update_time();
 

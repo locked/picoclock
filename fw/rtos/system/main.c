@@ -10,7 +10,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-//#include "chip32_vm.h"
 #include "system.h"
 #include "ui_task.h"
 
@@ -31,6 +30,10 @@ void IdleTask(void *args)
         __asm volatile("wfi");
     }
 }
+
+qor_mbox_t NetMailBox;
+wakeup_alarm_struct wakeup_alarm;
+
 
 // ===========================================================================================================
 // MAIN ENTRY POINT

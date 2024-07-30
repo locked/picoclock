@@ -35,19 +35,6 @@
 // DEFINITIONS
 // ===========================================================================================================
 
-typedef struct
-{
-    uint8_t ev;
-    datetime_t *dt;
-} ost_net_event_t;
-
-typedef enum
-{
-    OST_SYS_NO_EVENT,
-    OST_SYS_MINUTE_CHANGE,
-    OST_SYS_UPDATE_TIME
-} ost_system_state_t;
-
 // ===========================================================================================================
 // GLOBAL STORY VARIABLES
 // ===========================================================================================================
@@ -55,7 +42,8 @@ typedef enum
 static qor_tcb_t NetTcb;
 static uint32_t NetStack[4096];
 
-static qor_mbox_t NetMailBox;
+extern qor_mbox_t NetMailBox;
+extern wakeup_alarm_struct wakeup_alarm;
 
 static ost_net_event_t NetEvent;
 
@@ -65,7 +53,6 @@ static ost_system_state_t OstState = OST_SYS_NO_EVENT;
 
 static ost_context_t OstContext;
 
-static wakeup_alarm_struct wakeup_alarm;
 
 void get_response_from_server(char *response) {
 	debug_printf("Connecting to wifi...\r\n");
@@ -126,21 +113,30 @@ void NetTask(void *args)
     uint32_t res = 0;
 
     bool time_initialized = false;
+    datetime_t dt;
 
     while (1) {
         res = qor_mbox_wait(&NetMailBox, (void **)&message, 5);
         if (res == QOR_MBOX_OK) {
             if (message->ev == OST_SYS_MINUTE_CHANGE) {
                 debug_printf("\r\n[NET] OST_SYS_MINUTE_CHANGE\r\n");
-                if (message->dt->hour == wakeup_alarm.hour && message->dt->min == wakeup_alarm.min) {
-                    play_melody(16, HappyBirday, 200);
+                rtc_get_datetime(&dt);
+                if (dt.hour == wakeup_alarm.hour && dt.min == wakeup_alarm.min) {
+                    play_melody(16, HarryPotter, 200);
                 }
             }
+
             if (message->ev == OST_SYS_UPDATE_TIME) {
                 debug_printf("\r\n[NET] OST_SYS_UPDATE_TIME\r\n");
                 char response[300] = "";
                 get_response_from_server(response);
                 set_date_from_response(response);
+            }
+
+            if (message->ev == OST_SYS_PLAY_SOUND) {
+                debug_printf("\r\n[NET] OST_SYS_PLAY_SOUND\r\n");
+                play_melody(16, HappyBirday, 140);
+                //play_melody(16, HarryPotter, 140);
             }
         }
 
@@ -149,18 +145,10 @@ void NetTask(void *args)
     }
 }
 
-void ost_get_wakeup_alarm(wakeup_alarm_struct *wa) {
+/*void ost_get_wakeup_alarm(wakeup_alarm_struct *wa) {
 	wa->hour = wakeup_alarm.hour;
 	wa->min = wakeup_alarm.min;
-}
-
-void ost_change_minute(datetime_t *dt) {
-    static ost_net_event_t Ev = {
-        .ev = OST_SYS_MINUTE_CHANGE
-    };
-    Ev.dt = dt;
-    qor_mbox_notify(&NetMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
-}
+}*/
 
 void ost_request_update_time() {
 	// Notify for wifi update

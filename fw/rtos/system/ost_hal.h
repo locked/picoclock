@@ -7,9 +7,24 @@ extern "C"
 #endif
 
 #include <stdint.h>
+#include "qor.h"
 
 #define OST_ID_SPI_FOR_SDCARD 0
 
+
+	typedef struct
+	{
+		uint8_t ev;
+	} ost_net_event_t;
+
+	typedef enum
+	{
+		OST_SYS_NO_EVENT,
+		OST_SYS_BUTTON,
+		OST_SYS_MINUTE_CHANGE,
+		OST_SYS_UPDATE_TIME,
+		OST_SYS_PLAY_SOUND
+	} ost_system_state_t;
 
 	// Wakeup alarm global structure
 	typedef struct {

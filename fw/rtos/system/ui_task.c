@@ -43,12 +43,6 @@ typedef struct
     uint32_t btn;
 } ost_ui_event_t;
 
-typedef enum
-{
-    OST_SYS_NO_EVENT,
-    OST_SYS_BUTTON,
-} ost_system_state_t;
-
 // ===========================================================================================================
 // GLOBAL STORY VARIABLES
 // ===========================================================================================================
@@ -57,6 +51,8 @@ static qor_tcb_t UiTcb;
 static uint32_t UiStack[4096];
 
 static qor_mbox_t UiMailBox;
+extern qor_mbox_t NetMailBox;
+extern wakeup_alarm_struct wakeup_alarm;
 
 static ost_ui_event_t UiEvent;
 
@@ -113,7 +109,7 @@ void UiTask(void *args)
     int loop_count = 0;
     //int last_sec = 0;
     int last_min = 0;
-    wakeup_alarm_struct wakeup_alarm;
+    //wakeup_alarm_struct wakeup_alarm;
     while (1) {
         redraw_screen = false;
 
@@ -126,7 +122,10 @@ void UiTask(void *args)
                 }
                 if (message->btn == 3) {
                     debug_printf("/!\\ Received event OST_SYS_BUTTON3\r\n");
-                    //play_melody(16, HappyBirday, 140);
+                    static ost_net_event_t Ev = {
+                        .ev = OST_SYS_PLAY_SOUND
+                    };
+                    qor_mbox_notify(&NetMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
                 }
             }
         }
@@ -138,7 +137,10 @@ void UiTask(void *args)
             redraw_screen = true;
         }
         if (time_initialized && dt.min != last_min) {
-            ost_change_minute(&dt);
+            static ost_net_event_t Ev = {
+                .ev = OST_SYS_MINUTE_CHANGE
+            };
+            qor_mbox_notify(&NetMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
             redraw_screen = true;
             //last_sec = dt.sec;
             last_min = dt.min;
@@ -169,9 +171,9 @@ void UiTask(void *args)
                 Paint_ClearWindows(10, 40, 150 + Font20.Width * 7, 80 + Font20.Height, WHITE);
                 Paint_DrawTime(10, 40, &sPaint_time, &Font24, WHITE, BLACK);
 
-                ost_get_wakeup_alarm(&wakeup_alarm);
+                //ost_get_wakeup_alarm(&wakeup_alarm);
                 sprintf(date_str, "Alarm: %02d:%02d", wakeup_alarm.hour, wakeup_alarm.min);
-                Paint_DrawString_EN(10, 100, date_str, &Font16, WHITE, BLACK);
+                Paint_DrawString_EN(10, 100, date_str, &Font12, WHITE, BLACK);
 
                 EPD_2in13_V4_Display_Partial(BlackImage);
             } else {
