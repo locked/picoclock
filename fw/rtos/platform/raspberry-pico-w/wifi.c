@@ -210,21 +210,22 @@ static TCP_CLIENT_T* tcp_client_init(char* tcp_server_ip) {
     return state;
 }
 
-void send_tcp(char* tcp_server_ip, int tcp_server_port, char* data, int data_len, char* response) {
+int send_tcp(char* tcp_server_ip, int tcp_server_port, char* data, int data_len, char* response) {
     TCP_CLIENT_T *state = tcp_client_init(tcp_server_ip);
     if (!state) {
-        return;
+        return -1;
     }
     if (!tcp_client_open(state, tcp_server_port)) {
         tcp_result(state, -1);
-        return;
+        return -1;
     }
 
 	DEBUG_printf("Sending [%s] to server\n", data);
 	err_t err = tcp_write(state->tcp_pcb, data, data_len, TCP_WRITE_FLAG_COPY);
 	if (err != ERR_OK) {
 		DEBUG_printf("Failed to write data %d\n", err);
-		return tcp_result(state, -1);
+		tcp_result(state, -1);
+		return -1;
 	}
 
     while(!state->complete) {
@@ -249,6 +250,8 @@ void send_tcp(char* tcp_server_ip, int tcp_server_port, char* data, int data_len
     strcpy(response, &state->buffer);
 
     free(state);
+    
+    return 0;
 }
 
 
@@ -344,9 +347,10 @@ int wifi_connect(char* wifi_ssid, char* wifi_password) {
     if (cyw43_arch_wifi_connect_timeout_ms(wifi_ssid, wifi_password, CYW43_AUTH_WPA2_AES_PSK, 30000)) {
         printf("failed to connect.\n");
         return 1;
-    } else {
-        printf("Connected.\n");
     }
+
+    printf("Connected.\n");
+    return 0;
 }
 
 void wifi_disconnect(void) {

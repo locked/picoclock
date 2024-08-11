@@ -56,6 +56,9 @@ int main()
     net_task_initialize();
     ui_task_initialize();
 
+	double b = 2.0;
+	printf("MAIN TEST: %f %f\r\n", b, 2.0);
+
     // 6. Start the operating system!
     qor_start(&IdleTcb, IdleTask, IdleStack, 1024);
 

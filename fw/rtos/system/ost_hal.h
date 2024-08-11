@@ -23,7 +23,8 @@ extern "C"
 		OST_SYS_BUTTON,
 		OST_SYS_MINUTE_CHANGE,
 		OST_SYS_UPDATE_TIME,
-		OST_SYS_PLAY_SOUND
+		OST_SYS_PLAY_SOUND,
+		OST_SYS_DISP_MSG
 	} ost_system_state_t;
 
 	// Wakeup alarm global structure

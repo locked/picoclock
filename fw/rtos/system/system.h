@@ -5,7 +5,7 @@
 
 // On regroupe ici au les priorités des différents threads afin d'avoir une vision plus large
 #define HMI_TASK_PRIORITY 1
-#define VM_TASK_PRIORITY 2
+#define NET_TASK_PRIORITY 1
 #define FS_TASK_PRIORITY 3 ///< High priority for audio / file system access
 
 #define UUID_SIZE 36 // 32 + 4 dashes in string format

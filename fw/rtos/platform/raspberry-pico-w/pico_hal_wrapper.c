@@ -16,6 +16,7 @@
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
 #include "hardware/rtc.h"
+#include "hardware/i2c.h"
 #include "pico.h"
 
 // Screen
@@ -55,6 +56,10 @@ const uint LED_PIN = 25;
 // PICO alarm (RTOS uses Alarm 0 and IRQ 0)
 #define ALARM_NUM 1
 #define ALARM_IRQ TIMER_IRQ_1
+
+#define I2C_SDA 12
+#define I2C_SCL 13
+#define I2C_BAUD_RATE 400000
 
 // ===========================================================================================================
 // GLOBAL VARIABLES
@@ -152,6 +157,18 @@ static void alarm_in_us(uint32_t delay_us)
   timer_hw->alarm[ALARM_NUM] = (uint32_t)target;
 }
 
+void init_i2c() {
+    i2c_init(i2c0, I2C_BAUD_RATE);
+
+    //printf("sensors: setting I2C pins: SDA=%d SCL=%d\n", SENSORS_SDA_PIN, SENSORS_SCL_PIN);
+    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
+
+    //printf("sensors: pulling I2C pins up\n");
+    gpio_pull_up(I2C_SDA);
+    gpio_pull_up(I2C_SCL);
+}
+
 void ost_system_initialize()
 {
   set_sys_clock_khz(125000, true);
@@ -168,6 +185,9 @@ void ost_system_initialize()
 
   uart_init(UART_ID, BAUD_RATE);
   gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+
+  // Init I2C
+  init_i2c();
 
   //------------------- Init time
   // Set time to known values to identify it needs to be updated

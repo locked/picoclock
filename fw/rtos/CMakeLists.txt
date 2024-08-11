@@ -46,6 +46,7 @@ set(OST_SRCS
     #chip32/chip32_vm.c
     library/mini_qoi.c
     library/tiny-json.c
+    library/mcp9808/mcp9808.c
 )
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -88,7 +89,7 @@ add_executable(${PROJECT_NAME} ${OST_SRCS} ${MIDDLEWARE_SRCS})
 
 # ------ Link
 target_link_libraries(${PROJECT_NAME} PUBLIC "-Wl,--start-group"
-	gcc m c stdc++ raspberry-pico-w pico_stdlib hardware_spi hardware_dma hardware_pio hardware_rtc hardware_pwm ePaper GUI Fonts Config "-Wl,--end-group")
+	gcc m c stdc++ raspberry-pico-w pico_stdlib hardware_spi hardware_dma hardware_pio hardware_i2c hardware_rtc hardware_pwm ePaper GUI Fonts Config "-Wl,--end-group")
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
 
 pico_add_extra_outputs(${PROJECT_NAME})

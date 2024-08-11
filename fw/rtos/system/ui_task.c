@@ -30,6 +30,8 @@
 //#include "pwm_sound.h"
 //#include "pwm_sound_melodies.h"
 
+#include "mcp9808/mcp9808.h"
+
 #include "net_task.h"
 
 
@@ -41,6 +43,7 @@ typedef struct
 {
     uint8_t ev;
     uint32_t btn;
+    char msg[30];
 } ost_ui_event_t;
 
 // ===========================================================================================================
@@ -62,6 +65,7 @@ static ost_system_state_t OstState = OST_SYS_NO_EVENT;
 
 static ost_context_t OstContext;
 
+
 // ===========================================================================================================
 // UI TASK (user interface, buttons manager, LCD)
 // ===========================================================================================================
@@ -70,12 +74,27 @@ void UiTask(void *args)
     ost_ui_event_t *message = NULL;
     uint32_t res = 0;
 
+    //double b = 2.0;
+    //char buf[50];
+    //floatToString(buf, b, 1);
+    //debug_printf("TEST: %d %d [%s]\r\n", b, 2.0, buf);
+
     datetime_t dt;
     rtc_get_datetime(&dt);
     debug_printf("Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.hour, dt.min, dt.sec);
 
     PAINT_TIME sPaint_time;
+    bool module_initialized = true;
+    bool redraw_screen = false;
+    bool need_screen_clear = false;
+    int loop_count = 0;
+    int last_min = 0;
+    char temp_str[10];
 
+    DEV_Module_Init();
+    EPD_2in13_V4_Init();
+
+    debug_printf("Paint_NewImage\r\n");
     // Create a new image cache
     UBYTE *BlackImage;
     UWORD Imagesize = ((EPD_2in13_V4_WIDTH % 8 == 0)? (EPD_2in13_V4_WIDTH / 8 ): (EPD_2in13_V4_WIDTH / 8 + 1)) * EPD_2in13_V4_HEIGHT;
@@ -83,33 +102,13 @@ void UiTask(void *args)
       debug_printf("Failed to apply for black memory...\r\n");
       return;
     }
-
-    debug_printf("Paint_NewImage\r\n");
     Paint_NewImage(BlackImage, EPD_2in13_V4_WIDTH, EPD_2in13_V4_HEIGHT, 90, WHITE);
+    Paint_SelectImage(BlackImage);
     Paint_Clear(WHITE);
+    Paint_SetRotate(270);
+    Paint_DrawString_EN(10, 10, "Starting...", &Font20, WHITE, BLACK);
     EPD_2in13_V4_Display_Base(BlackImage);
 
-    //Paint_DrawString_EN(70, 15, response, &Font20, WHITE, BLACK);
-
-    /*debug_printf("Clear...\r\n");
-    EPD_2in13_V4_Init();
-    EPD_2in13_V4_Clear();
-
-    debug_printf("Goto Sleep...\r\n");
-    EPD_2in13_V4_Sleep();
-    free(BlackImage);
-    BlackImage = NULL;
-    DEV_Delay_ms(2000);//important, at least 2s
-    // close 5V
-    debug_printf("close 5V, Module enters 0 power consumption ...\r\n");
-    DEV_Module_Exit();*/
-
-    bool module_initialized = true;
-    bool redraw_screen = false;
-    int loop_count = 0;
-    //int last_sec = 0;
-    int last_min = 0;
-    //wakeup_alarm_struct wakeup_alarm;
     while (1) {
         redraw_screen = false;
 
@@ -130,9 +129,18 @@ void UiTask(void *args)
             }
         }
 
+        mcp9808_get_temperature(temp_str);
+        //debug_printf("Current temp:[%s]\r\n", temp_str);
+
         rtc_get_datetime(&dt);
+        //debug_printf("rtc_get_datetime year:[%d]\r\n", dt.year);
         bool time_initialized = dt.year != 1000;
         if (!time_initialized) {
+            Paint_DrawString_EN(10, 40, "Connecting...", &Font20, WHITE, BLACK);
+            //EPD_2in13_V4_Display_Partial(BlackImage);
+            EPD_2in13_V4_Display_Base(BlackImage);
+            need_screen_clear = true;
+
             ost_request_update_time();
             redraw_screen = true;
         }
@@ -152,10 +160,15 @@ void UiTask(void *args)
                 EPD_2in13_V4_Init();
             }
 
-            Paint_NewImage(BlackImage, EPD_2in13_V4_WIDTH, EPD_2in13_V4_HEIGHT, 90, WHITE);
-            //debug_printf("Partial refresh\r\n");
-            Paint_SelectImage(BlackImage);
-            Paint_SetRotate(270);
+            //Paint_NewImage(BlackImage, EPD_2in13_V4_WIDTH, EPD_2in13_V4_HEIGHT, 90, WHITE);
+            //Paint_SelectImage(BlackImage);
+            //Paint_SetRotate(270);
+
+            if (need_screen_clear) {
+                EPD_2in13_V4_Clear();
+                Paint_Clear(WHITE);
+                need_screen_clear = false;
+            }
 
             char date_str[100];
             if (time_initialized) {
@@ -171,23 +184,21 @@ void UiTask(void *args)
                 Paint_ClearWindows(10, 40, 150 + Font20.Width * 7, 80 + Font20.Height, WHITE);
                 Paint_DrawTime(10, 40, &sPaint_time, &Font24, WHITE, BLACK);
 
+                sprintf(date_str, "Temp: %s C", temp_str);
+                Paint_DrawString_EN(10, 80, date_str, &Font12, WHITE, BLACK);
+
                 //ost_get_wakeup_alarm(&wakeup_alarm);
                 sprintf(date_str, "Alarm: %02d:%02d", wakeup_alarm.hour, wakeup_alarm.min);
                 Paint_DrawString_EN(10, 100, date_str, &Font12, WHITE, BLACK);
 
                 EPD_2in13_V4_Display_Partial(BlackImage);
-            } else {
-                EPD_2in13_V4_Clear();
-                sprintf(date_str, "Waiting wifi connection...");
-                Paint_DrawString_EN(10, 50, date_str, &Font20, WHITE, BLACK);
-                EPD_2in13_V4_Display_Base(BlackImage);
             }
 
             if (loop_count++ > 10) {
                 debug_printf("Shutdown loop_count:[%d]\r\n", loop_count);
                 loop_count = 0;
                 EPD_2in13_V4_Sleep();
-                DEV_Delay_ms(2000);
+                DEV_Delay_ms(2000);//important, at least 2s
                 DEV_Module_Exit();
                 module_initialized = false;
             } else {

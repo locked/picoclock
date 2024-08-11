@@ -54,13 +54,19 @@ static ost_system_state_t OstState = OST_SYS_NO_EVENT;
 static ost_context_t OstContext;
 
 
-void get_response_from_server(char *response) {
+int get_response_from_server(char *response) {
 	debug_printf("Connecting to wifi...\r\n");
-	wifi_connect(WIFI_SSID, WIFI_PASSWORD);
-	send_tcp(SERVER_IP, atoi(SERVER_PORT), "\n", 1, response);
-	debug_printf("GOT DATE FROM SERVER:[%s:%d] => [%s]\n", SERVER_IP, atoi(SERVER_PORT), response);
-	wifi_disconnect();
-	debug_printf("Disconnected from wifi\n");
+	int ret = wifi_connect(WIFI_SSID, WIFI_PASSWORD);
+    if (ret == 0) {
+        ret = send_tcp(SERVER_IP, atoi(SERVER_PORT), "\n", 1, response);
+        debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
+        if (ret != 0) {
+            return ret;
+        }
+    }
+    wifi_disconnect();
+    debug_printf("Disconnected from wifi, ret:[%d]\n", ret);
+    return ret;
 }
 
 void set_date_from_response(char *response) {
@@ -94,6 +100,7 @@ void set_date_from_response(char *response) {
 	dt.hour = json_getInteger(json_getProperty(date_elem, "hour"));
 	dt.min = json_getInteger(json_getProperty(date_elem, "minute"));
 	dt.sec = json_getInteger(json_getProperty(date_elem, "second"));
+    debug_printf("rtc_set_datetime SET year:[%d]\r\n", dt.year);
 	rtc_set_datetime(&dt);
 	// Save alarm
 	json_t const* wakeup_alarm_elem = json_getProperty(root_elem, "wakeup_alarm");
@@ -129,8 +136,9 @@ void NetTask(void *args)
             if (message->ev == OST_SYS_UPDATE_TIME) {
                 debug_printf("\r\n[NET] OST_SYS_UPDATE_TIME\r\n");
                 char response[300] = "";
-                get_response_from_server(response);
-                set_date_from_response(response);
+                if (get_response_from_server(response) == 0) {
+                    set_date_from_response(response);
+                }
             }
 
             if (message->ev == OST_SYS_PLAY_SOUND) {
@@ -162,5 +170,5 @@ void net_task_initialize() {
     OstState = OST_SYS_NO_EVENT;
     qor_mbox_init(&NetMailBox, (void **)&NetQueue, 10);
 
-    qor_create_thread(&NetTcb, NetTask, NetStack, sizeof(NetStack) / sizeof(NetStack[0]), HMI_TASK_PRIORITY, "NetTask");
+    qor_create_thread(&NetTcb, NetTask, NetStack, sizeof(NetStack) / sizeof(NetStack[0]), NET_TASK_PRIORITY, "NetTask");
 }
