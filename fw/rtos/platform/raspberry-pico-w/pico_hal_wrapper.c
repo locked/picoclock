@@ -34,12 +34,8 @@
 // CONSTANTS / DEFINES
 // ===========================================================================================================
 
-const uint8_t BUTTON_1 = 8;
-const uint8_t BUTTON_2 = 9;
-const uint8_t BUTTON_3 = 10;
-const uint8_t BUTTON_4 = 19;
-const uint8_t BUTTON_5 = 20;
-const uint8_t BUTTON_6 = 21;
+const uint8_t BUTTONS[] = {8, 9, 10, 19, 20, 21};
+uint8_t last_btn_values[6] = {1, 1, 1, 1, 1, 1};
 
 //#define SDCARD_SCK 18
 //#define SDCARD_MOSI 19
@@ -74,9 +70,6 @@ static uint32_t DebounceTs = 0;
 static bool IsDebouncing = false;
 static uint32_t ButtonsState = 0;
 static uint32_t ButtonsStatePrev = 0;
-static int lastbtn1 = 1;
-static int lastbtn2 = 1;
-static int lastbtn3 = 1;
 
 // Rotary encoder
 // pio 0 is used
@@ -105,11 +98,28 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)();
 // ===========================================================================================================
 void ost_system_delay_ms(uint32_t delay)
 {
-  busy_wait_ms(delay);
+    busy_wait_ms(delay);
 }
 
 void check_buttons()
 {
+    for (uint8_t btn=0; btn<6; btn++) {
+        uint8_t btn_value = gpio_get(BUTTONS[btn]);
+        if (btn_value == 1 && btn_value != last_btn_values[btn]) {
+            ButtonCallback(btn);
+        }
+        last_btn_values[btn] = btn_value;
+    }
+    /*
+    for (uint8_t btn=0; btn<4; btn++) {
+        uint8_t btn_value = debounce_read(BUTTONS[btn]);
+        if (btn_value == 1 && btn_value != last_btn_values[btn]) {
+            ButtonCallback(btn);
+        }
+        last_btn_values[btn] = btn_value;
+    }
+    */
+  /*
   int btn1 = debounce_read(BUTTON_1);
   int btn2 = debounce_read(BUTTON_2);
   int btn3 = debounce_read(BUTTON_3);
@@ -127,6 +137,7 @@ void check_buttons()
   lastbtn1 = btn1;
   lastbtn2 = btn2;
   lastbtn3 = btn3;
+  */
 }
 
 static void alarm_in_us(uint32_t delay_us);
@@ -171,49 +182,60 @@ void init_i2c() {
 
 void ost_system_initialize()
 {
-  set_sys_clock_khz(125000, true);
+    set_sys_clock_khz(125000, true);
 
-  ////------------------- Init DEBUG LED
-  gpio_init(LED_PIN);
-  gpio_set_dir(LED_PIN, GPIO_OUT);
+    ////------------------- Init DEBUG LED
+    gpio_init(LED_PIN);
+    gpio_set_dir(LED_PIN, GPIO_OUT);
 
-  //------------------- Init DEBUG PIN
-  //gpio_init(DEBUG_PIN);
-  //gpio_set_dir(DEBUG_PIN, GPIO_OUT);
+    //------------------- Init DEBUG PIN
+    //gpio_init(DEBUG_PIN);
+    //gpio_set_dir(DEBUG_PIN, GPIO_OUT);
 
-  //------------------- Init UART
+    //------------------- Init UART
 
-  uart_init(UART_ID, BAUD_RATE);
-  gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+    uart_init(UART_ID, BAUD_RATE);
+    gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
 
-  // Init I2C
-  init_i2c();
+    // Init I2C
+    init_i2c();
 
-  //------------------- Init time
-  // Set time to known values to identify it needs to be updated
-	rtc_init();
-	datetime_t dt;
-	dt.year = 1000;
-	dt.month = 1;
-	dt.day = 1;
-	dt.dotw = 1;
-	dt.hour = 1;
-	dt.min = 1;
-	dt.sec = 1;
-	rtc_set_datetime(&dt);
+    //------------------- Init time
+    // Set time to known values to identify it needs to be updated
+    rtc_init();
+    datetime_t dt;
+    dt.year = 1000;
+    dt.month = 1;
+    dt.day = 1;
+    dt.dotw = 1;
+    dt.hour = 1;
+    dt.min = 1;
+    dt.sec = 1;
+    rtc_set_datetime(&dt);
 
-  //------------------- Init LCD
-  debug_printf("Init e-Paper module...\r\n");
-  if(DEV_Module_Init()!=0){
-    return;
-  }
+    //------------------- Init LCD
+    debug_printf("Init e-Paper module...\r\n");
+    if(DEV_Module_Init()!=0){
+      return;
+    }
 
-  debug_printf("e-Paper Init and Clear...\r\n");
-  EPD_2in13_V4_Init();
-  EPD_2in13_V4_Clear();
+    debug_printf("e-Paper Init and Clear...\r\n");
+    EPD_2in13_V4_Init();
+    EPD_2in13_V4_Clear();
 
-  //------------------- Buttons init
-  debounce_debounce();
+    //------------------- Buttons init
+    for (uint8_t btn=0; btn<6; btn++) {
+        gpio_init(BUTTONS[btn]);
+        gpio_set_dir(BUTTONS[btn], GPIO_IN);
+    }
+    /*debounce_debounce();
+    for (uint8_t btn=0; btn<4; btn++) {
+        debug_printf("Debounce button [%d] GPIO [%d]...\r\n", btn, BUTTONS[btn]);
+        if (debounce_gpio(BUTTONS[btn]) == -1) {
+            debug_printf("Error debouncing GPIO [%d]...\r\n", BUTTONS[btn]);
+        }
+    }*/
+/*
   if (debounce_gpio(BUTTON_1) == -1) {
     debug_printf("Error debouncing GPIO [%d]...\r\n", BUTTON_1);
   }
@@ -227,7 +249,7 @@ void ost_system_initialize()
   if (debounce_gpio(BUTTON_3) == -1) {
     debug_printf("Error debouncing GPIO [%d]...\r\n", BUTTON_3);
   }
-
+*/
   // Set irq handler for alarm irq
   irq_set_exclusive_handler(ALARM_IRQ, alarm_irq);
   // Enable the alarm irq

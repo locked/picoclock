@@ -144,11 +144,11 @@ time_struct pcf8563_getDateTime(void) {
     t.year = pcf8563_bcdToDec(readBuffer[8]);
 
     // alarm bytes
-    t.alarm_minute = readBuffer[9];
-    if(0b10000000 & t.alarm_minute)
-        t.alarm_minute = RTCC_NO_ALARM;
+    t.alarm_min = readBuffer[9];
+    if(0b10000000 & t.alarm_min)
+        t.alarm_min = RTCC_NO_ALARM;
     else
-        t.alarm_minute = pcf8563_bcdToDec(t.alarm_minute & 0b01111111);
+        t.alarm_min = pcf8563_bcdToDec(t.alarm_min & 0b01111111);
     t.alarm_hour = readBuffer[10];
     if(0b10000000 & t.alarm_hour)
         t.alarm_hour = RTCC_NO_ALARM;
@@ -286,7 +286,7 @@ void pcf8563_setAlarm(uint8_t min, uint8_t hour, uint8_t day, uint8_t weekday) {
     }
 
     t.alarm_hour = hour;
-    t.alarm_minute = min;
+    t.alarm_min = min;
     t.alarm_weekday = weekday;
     t.alarm_day = day;
 
@@ -294,7 +294,7 @@ void pcf8563_setAlarm(uint8_t min, uint8_t hour, uint8_t day, uint8_t weekday) {
     uint8_t txBuffer[256];
     uint32_t usedTxBuffer = 0;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_ALRM_MIN_ADDR;
-    txBuffer[usedTxBuffer++] = (uint8_t)t.alarm_minute;
+    txBuffer[usedTxBuffer++] = (uint8_t)t.alarm_min;
     txBuffer[usedTxBuffer++] = (uint8_t)t.alarm_hour;
     txBuffer[usedTxBuffer++] = (uint8_t)t.alarm_day;
     txBuffer[usedTxBuffer++] = (uint8_t)t.alarm_weekday;

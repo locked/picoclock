@@ -59,15 +59,18 @@ static ost_context_t OstContext;
 int get_response_from_server(char *response) {
 	debug_printf("Connecting to wifi...\r\n");
 	int ret = wifi_connect(WIFI_SSID, WIFI_PASSWORD);
+    qor_sleep(10);
     if (ret == 0) {
         ret = send_tcp(SERVER_IP, atoi(SERVER_PORT), "\n", 1, response);
-        debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
+        qor_sleep(10);
+        debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\r\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
         if (ret != 0) {
             return ret;
         }
     }
     wifi_disconnect();
-    debug_printf("Disconnected from wifi, ret:[%d]\n", ret);
+    qor_sleep(10);
+    debug_printf("Disconnected from wifi, ret:[%d]\r\n", ret);
     return ret;
 }
 
@@ -100,10 +103,8 @@ void set_date_from_response(char *response) {
 	dt.hour = json_getInteger(json_getProperty(date_elem, "hour"));
 	dt.min = json_getInteger(json_getProperty(date_elem, "minute"));
 	dt.sec = json_getInteger(json_getProperty(date_elem, "second"));
-    debug_printf("SET in INTERNAL RTC year:[%d]\r\n", dt.year);
+    debug_printf("SET in INTERNAL + EXTERNAL RTC year:[%d]\r\n", dt.year);
 	rtc_set_datetime(&dt);
-
-    debug_printf("SET in EXTERNAL RTC year:[%d]\r\n", dt.year);
     pcf8563_setDateTime(dt.day, dt.dotw, dt.month, century, year, dt.hour, dt.min, dt.sec);
 
 	// Save alarm
@@ -112,6 +113,9 @@ void set_date_from_response(char *response) {
 	wakeup_alarm.dotw = json_getInteger(json_getProperty(wakeup_alarm_elem, "weekday"));
 	wakeup_alarm.hour = json_getInteger(json_getProperty(wakeup_alarm_elem, "hour"));
 	wakeup_alarm.min = json_getInteger(json_getProperty(wakeup_alarm_elem, "minute"));
+    // Save in RTC too
+    pcf8563_setAlarm(wakeup_alarm.min, wakeup_alarm.hour, dt.day, wakeup_alarm.dotw);
+
 	debug_printf("STATUS FROM SERVER:[%d] year:[%d] day:[%d] weekday:[%d] month:[%d] hour:[%d] wakeup_alarm:[%02d:%02d]\r\n", status, dt.year, dt.day, dt.dotw, dt.month, dt.hour, wakeup_alarm.hour, wakeup_alarm.min);
 }
 
@@ -126,14 +130,11 @@ void NetTask(void *args)
     bool time_initialized = false;
     datetime_t dt;
 
-    time_struct t = pcf8563_getDateTime();
-    debug_printf("EXTERNAL RTC year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
-
     while (1) {
         res = qor_mbox_wait(&NetMailBox, (void **)&message, 5);
         if (res == QOR_MBOX_OK) {
             if (message->ev == OST_SYS_MINUTE_CHANGE) {
-                debug_printf("\r\n[NET] OST_SYS_MINUTE_CHANGE\r\n");
+                debug_printf("[NET] OST_SYS_MINUTE_CHANGE\r\n");
                 rtc_get_datetime(&dt);
                 if (dt.hour == wakeup_alarm.hour && dt.min == wakeup_alarm.min) {
                     play_melody(16, HarryPotter, 200);
@@ -141,7 +142,7 @@ void NetTask(void *args)
             }
 
             if (message->ev == OST_SYS_UPDATE_TIME) {
-                debug_printf("\r\n[NET] OST_SYS_UPDATE_TIME\r\n");
+                debug_printf("[NET] REMOTE SYNC\r\n");
                 char response[300] = "";
                 if (get_response_from_server(response) == 0) {
                     set_date_from_response(response);
@@ -149,9 +150,12 @@ void NetTask(void *args)
             }
 
             if (message->ev == OST_SYS_PLAY_SOUND) {
-                debug_printf("\r\n[NET] OST_SYS_PLAY_SOUND\r\n");
-                play_melody(16, HappyBirday, 140);
-                //play_melody(16, HarryPotter, 140);
+                debug_printf("[NET] OST_SYS_PLAY_SOUND\r\n");
+                if (message->song == 0) {
+                    play_melody(16, HarryPotter, 140);
+                } else {
+                    play_melody(16, HappyBirday, 140);
+                }
             }
         }
 
@@ -160,17 +164,20 @@ void NetTask(void *args)
     }
 }
 
-/*void ost_get_wakeup_alarm(wakeup_alarm_struct *wa) {
-	wa->hour = wakeup_alarm.hour;
-	wa->min = wakeup_alarm.min;
-}*/
-
-void ost_request_update_time() {
-	// Notify for wifi update
+void request_remote_sync() {
+	// Notify for remote sync
     static ost_net_event_t UpdateTimeEv = {
         .ev = OST_SYS_UPDATE_TIME
     };
     qor_mbox_notify(&NetMailBox, (void **)&UpdateTimeEv, QOR_MBOX_OPTION_SEND_BACK);
+}
+
+void request_play_song(uint8_t song) {
+    static ost_net_event_t Ev = {
+        .ev = OST_SYS_PLAY_SOUND,
+        .song = 0
+    };
+    qor_mbox_notify(&NetMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
 }
 
 void net_task_initialize() {

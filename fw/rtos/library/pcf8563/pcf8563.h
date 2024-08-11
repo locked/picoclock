@@ -105,7 +105,7 @@ typedef struct {
 
 	/* alarm */
 	uint8_t alarm_hour;
-	uint8_t alarm_minute;
+	uint8_t alarm_min;
 	uint8_t alarm_weekday;
 	uint8_t alarm_day;
 

@@ -6,7 +6,7 @@
 void net_task_initialize();
 void net_task_connected();
 
-void ost_get_wakeup_alarm(wakeup_alarm_struct *wa);
-void ost_request_update_time();
+void request_remote_sync();
+void request_play_song(uint8_t song);
 
 #endif // NET_TASK_H

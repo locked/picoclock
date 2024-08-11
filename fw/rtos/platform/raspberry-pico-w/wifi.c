@@ -81,11 +81,11 @@ static err_t tcp_client_close(void *arg) {
 // Called with results of operation
 static err_t tcp_result(void *arg, int status) {
     TCP_CLIENT_T *state = (TCP_CLIENT_T*)arg;
-    if (status == 0) {
+    /*if (status == 0) {
         DEBUG_printf("test success\n");
     } else {
         DEBUG_printf("test failed %d\n", status);
-    }
+    }*/
     state->complete = true;
     return tcp_client_close(arg);
 }
@@ -344,7 +344,7 @@ int wifi_connect(char* wifi_ssid, char* wifi_password) {
     cyw43_arch_enable_sta_mode();
 
     printf("Connecting to Wi-Fi...\n");
-    if (cyw43_arch_wifi_connect_timeout_ms(wifi_ssid, wifi_password, CYW43_AUTH_WPA2_AES_PSK, 30000)) {
+    if (cyw43_arch_wifi_connect_timeout_ms(wifi_ssid, wifi_password, CYW43_AUTH_WPA2_AES_PSK, 6000)) {
         printf("failed to connect.\n");
         return 1;
     }

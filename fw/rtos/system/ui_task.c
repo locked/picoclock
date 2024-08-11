@@ -46,7 +46,8 @@ typedef struct
 {
     uint8_t ev;
     uint32_t btn;
-    char msg[30];
+    //char msg[30];
+    bool clear;
 } ost_ui_event_t;
 
 // ===========================================================================================================
@@ -88,16 +89,17 @@ void UiTask(void *args)
 
     PAINT_TIME sPaint_time;
     bool module_initialized = true;
-    bool redraw_screen = true;
     bool need_screen_clear = true;
     int loop_count = 0;
     int last_min = 0;
-    char temp_str[10];
+    int current_screen = 0;
+    int max_screen = 1;
+    char temp_str[100];
+    char temp2_str[10];
 
     DEV_Module_Init();
     EPD_2in13_V4_Init();
 
-    debug_printf("Paint_NewImage\r\n");
     // Create a new image cache
     UBYTE *BlackImage;
     UWORD Imagesize = ((EPD_2in13_V4_WIDTH % 8 == 0)? (EPD_2in13_V4_WIDTH / 8 ): (EPD_2in13_V4_WIDTH / 8 + 1)) * EPD_2in13_V4_HEIGHT;
@@ -112,105 +114,125 @@ void UiTask(void *args)
     Paint_DrawString_EN(10, 10, "Starting...", &Font20, WHITE, BLACK);
     EPD_2in13_V4_Display_Base(BlackImage);
 
-    while (1) {
-        redraw_screen = false;
+    time_struct dt = pcf8563_getDateTime();
+    debug_printf("GET EXTERNAL RTC volt_low:[%d] year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.volt_low, dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
 
+    bool time_initialized = !dt.volt_low;
+    if (!time_initialized) {
+        Paint_DrawString_EN(10, 40, "Connecting...", &Font20, WHITE, BLACK);
+        EPD_2in13_V4_Display_Base(BlackImage);
+
+        request_remote_sync();
+    }
+    Paint_Clear(WHITE);
+
+    while (1) {
         res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
         if (res == QOR_MBOX_OK) {
+            // Buttons click
             if (message->ev == OST_SYS_BUTTON) {
-                if (message->btn == 1) {
-                    debug_printf("/!\\ Received event OST_SYS_BUTTON1\r\n");
-                    redraw_screen = true;
+                debug_printf("/!\\ Received event OST_SYS_BUTTON:[%d]\r\n", message->btn);
+                if (message->btn == 0) {
+                    request_remote_sync();
                 }
-                if (message->btn == 3) {
-                    debug_printf("/!\\ Received event OST_SYS_BUTTON3\r\n");
-                    static ost_net_event_t Ev = {
-                        .ev = OST_SYS_PLAY_SOUND
+                if (message->btn == 1) {
+                    request_play_song(0);
+                }
+                if (message->btn == 2 || message->btn == 3) {
+                    current_screen += message->btn == 2 ? 1 : -1;
+                    if (current_screen > max_screen) {
+                        current_screen = 0;
+                    }
+                    if (current_screen < 0) {
+                        current_screen = 0;
+                    }
+                    static ost_ui_event_t Ev = {
+                        .ev = OST_SYS_REFRESH_SCREEN,
+                        .clear = true
                     };
-                    qor_mbox_notify(&NetMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
+                    qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
+                }
+            }
+
+            // Refresh screens
+            if (message->ev == OST_SYS_REFRESH_SCREEN) {
+                debug_printf("/!\\ Received event OST_SYS_REFRESH_SCREEN:[%d] current_screen:[%d]\r\n", message->btn, current_screen);
+                if (!module_initialized) {
+                    DEV_Module_Init();
+                    EPD_2in13_V4_Init();
+                }
+                if (message->clear) {
+                    EPD_2in13_V4_Clear();
+                    Paint_Clear(WHITE);
+                }
+
+                // Display screen X
+                if (current_screen == 0) {
+                    time_struct dt = pcf8563_getDateTime();
+                    sPaint_time.Year = dt.year;
+                    sPaint_time.Month = dt.month;
+                    sPaint_time.Day = dt.day;
+                    sPaint_time.Hour = dt.hour;
+                    sPaint_time.Min = dt.min;
+                    sPaint_time.Sec = dt.sec;
+                    sprintf(temp_str, "%d-%02d-%02d", dt.year, dt.month, dt.day);
+                    Paint_DrawString_EN(10, 10, temp_str, &Font24, WHITE, BLACK);
+
+                    Paint_ClearWindows(10, 40, 150 + Font20.Width * 7, 80 + Font20.Height, WHITE);
+                    Paint_DrawTime(10, 40, &sPaint_time, &Font24, WHITE, BLACK);
+
+                    mcp9808_get_temperature(temp2_str);
+                    sprintf(temp_str, "Temp: %s C", temp2_str);
+                    Paint_DrawString_EN(10, 80, temp_str, &Font12, WHITE, BLACK);
+
+                    //ost_get_wakeup_alarm(&wakeup_alarm);
+                    sprintf(temp_str, "Alarm: %02d:%02d", dt.alarm_hour, dt.alarm_min);
+                    Paint_DrawString_EN(10, 100, temp_str, &Font12, WHITE, BLACK);
+
+                    EPD_2in13_V4_Display_Partial(BlackImage);
+                } else if (current_screen == 1) {
+                    sprintf(temp_str, "Weather");
+                    Paint_DrawString_EN(10, 10, temp_str, &Font24, WHITE, BLACK);
+
+                    mcp9808_get_temperature(temp2_str);
+                    sprintf(temp_str, "Temp: %s C", temp2_str);
+                    Paint_DrawString_EN(10, 80, temp_str, &Font12, WHITE, BLACK);
+
+                    EPD_2in13_V4_Display_Base(BlackImage);
+                }
+
+                // Shutdown screen periodically
+                if (loop_count++ > 10) {
+                    debug_printf("Shutdown loop_count:[%d]\r\n", loop_count);
+                    loop_count = 0;
+                    EPD_2in13_V4_Sleep();
+                    DEV_Delay_ms(2000);//important, at least 2s
+                    DEV_Module_Exit();
+                    module_initialized = false;
+                } else {
+                    module_initialized = true;
                 }
             }
         }
-
-        mcp9808_get_temperature(temp_str);
-        //debug_printf("Current temp:[%s]\r\n", temp_str);
 
         //rtc_get_datetime(&dt);
         time_struct dt = pcf8563_getDateTime();
-        debug_printf("GET EXTERNAL RTC volt_low:[%d] year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.volt_low, dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
-        //debug_printf("rtc_get_datetime year:[%d]\r\n", dt.year);
+        //debug_printf("GET EXTERNAL RTC volt_low:[%d] year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.volt_low, dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
 
-        //bool time_initialized = dt.year != 1000;
-        bool time_initialized = !dt.volt_low;
-        if (!time_initialized) {
-            Paint_DrawString_EN(10, 40, "Connecting...", &Font20, WHITE, BLACK);
-            //EPD_2in13_V4_Display_Partial(BlackImage);
-            EPD_2in13_V4_Display_Base(BlackImage);
-            need_screen_clear = true;
-
-            ost_request_update_time();
-            redraw_screen = true;
-        }
+        time_initialized = !dt.volt_low;
         if (time_initialized && dt.min != last_min) {
-            static ost_net_event_t Ev = {
+            static ost_net_event_t NetEv = {
                 .ev = OST_SYS_MINUTE_CHANGE
             };
-            qor_mbox_notify(&NetMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
-            redraw_screen = true;
-            //last_sec = dt.sec;
+            qor_mbox_notify(&NetMailBox, (void **)&NetEv, QOR_MBOX_OPTION_SEND_BACK);
+
+            static ost_ui_event_t UiEv = {
+                .ev = OST_SYS_REFRESH_SCREEN,
+                .clear = false
+            };
+            qor_mbox_notify(&UiMailBox, (void **)&UiEv, QOR_MBOX_OPTION_SEND_BACK);
+
             last_min = dt.min;
-        }
-
-        if (redraw_screen) {
-            if (!module_initialized) {
-                DEV_Module_Init();
-                EPD_2in13_V4_Init();
-            }
-
-            //Paint_NewImage(BlackImage, EPD_2in13_V4_WIDTH, EPD_2in13_V4_HEIGHT, 90, WHITE);
-            //Paint_SelectImage(BlackImage);
-            //Paint_SetRotate(270);
-
-            if (need_screen_clear) {
-                EPD_2in13_V4_Clear();
-                Paint_Clear(WHITE);
-                need_screen_clear = false;
-            }
-
-            char date_str[100];
-            if (time_initialized) {
-                sPaint_time.Year = dt.year;
-                sPaint_time.Month = dt.month;
-                sPaint_time.Day = dt.day;
-                sPaint_time.Hour = dt.hour;
-                sPaint_time.Min = dt.min;
-                sPaint_time.Sec = dt.sec;
-                sprintf(date_str, "%d-%02d-%02d", dt.year, dt.month, dt.day);
-                Paint_DrawString_EN(10, 10, date_str, &Font24, WHITE, BLACK);
-
-                Paint_ClearWindows(10, 40, 150 + Font20.Width * 7, 80 + Font20.Height, WHITE);
-                Paint_DrawTime(10, 40, &sPaint_time, &Font24, WHITE, BLACK);
-
-                sprintf(date_str, "Temp: %s C", temp_str);
-                Paint_DrawString_EN(10, 80, date_str, &Font12, WHITE, BLACK);
-
-                //ost_get_wakeup_alarm(&wakeup_alarm);
-                sprintf(date_str, "Alarm: %02d:%02d", wakeup_alarm.hour, wakeup_alarm.min);
-                Paint_DrawString_EN(10, 100, date_str, &Font12, WHITE, BLACK);
-
-                EPD_2in13_V4_Display_Partial(BlackImage);
-            }
-
-            if (loop_count++ > 10) {
-                debug_printf("Shutdown loop_count:[%d]\r\n", loop_count);
-                loop_count = 0;
-                EPD_2in13_V4_Sleep();
-                DEV_Delay_ms(2000);//important, at least 2s
-                DEV_Module_Exit();
-                module_initialized = false;
-            } else {
-                module_initialized = true;
-            }
         }
 
         qor_sleep(500);
@@ -223,7 +245,6 @@ static void button_callback(uint32_t btn) {
     static ost_ui_event_t ButtonEv = {
         .ev = OST_SYS_BUTTON
     };
-
     ButtonEv.btn = btn;
     qor_mbox_notify(&UiMailBox, (void **)&ButtonEv, QOR_MBOX_OPTION_SEND_BACK);
 }

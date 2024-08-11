@@ -5,6 +5,8 @@
 
 #include "pwm_sound.h"
 
+#include "qor.h"
+
 
 static inline void pwm_calcDivTop(pwm_config *c,int frequency,int sysClock) {
 	uint  count = sysClock * 16 / frequency;
@@ -46,11 +48,13 @@ void play_melody(uint gpio, note_struct * n, uint tempo) {
 			pwm_init(slice_num,&cfg,true);
 			pwm_set_chan_level(slice_num,PWM_CHAN_A,cfg.top / 2);
 			pwm_set_enabled(slice_num, true);
-			sleep_us(900 * duration);
+			//sleep_us(900 * duration);
+			qor_sleep(duration);
 			pwm_set_chan_level(slice_num,PWM_CHAN_A,0);
 			sleep_us(100 * duration);
 		} else {
-			sleep_us(1000 * duration);
+			//sleep_us(1000 * duration);
+			qor_sleep(duration);
 		}
 	}
 }

@@ -15,12 +15,14 @@ extern "C"
 	typedef struct
 	{
 		uint8_t ev;
+		uint8_t song;
 	} ost_net_event_t;
 
 	typedef enum
 	{
 		OST_SYS_NO_EVENT,
 		OST_SYS_BUTTON,
+		OST_SYS_REFRESH_SCREEN,
 		OST_SYS_MINUTE_CHANGE,
 		OST_SYS_UPDATE_TIME,
 		OST_SYS_PLAY_SOUND,
