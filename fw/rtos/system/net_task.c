@@ -29,6 +29,8 @@
 #include "pwm_sound.h"
 #include "pwm_sound_melodies.h"
 
+#include "pcf8563/pcf8563.h"
+
 
 
 // ===========================================================================================================
@@ -80,17 +82,15 @@ void set_date_from_response(char *response) {
 	json_t const* date_elem = json_getProperty(root_elem, "date");
 	json_t const* year_elem = json_getProperty(date_elem, "year");
 	int year_full = json_getInteger(year_elem);
-	/*
 	int year;
 	bool century;
 	if (year_full >= 2000) {
-	year = year_full - 2000;
-	century = false;
+        year = year_full - 2000;
+        century = false;
 	} else {
-	year = year_full - 1900;
-	century = true;
+        year = year_full - 1900;
+        century = true;
 	}
-	*/
 	json_t const* day_elem = json_getProperty(date_elem, "day");
 	datetime_t dt;
 	dt.year = year_full;
@@ -100,8 +100,12 @@ void set_date_from_response(char *response) {
 	dt.hour = json_getInteger(json_getProperty(date_elem, "hour"));
 	dt.min = json_getInteger(json_getProperty(date_elem, "minute"));
 	dt.sec = json_getInteger(json_getProperty(date_elem, "second"));
-    debug_printf("rtc_set_datetime SET year:[%d]\r\n", dt.year);
+    debug_printf("SET in INTERNAL RTC year:[%d]\r\n", dt.year);
 	rtc_set_datetime(&dt);
+
+    debug_printf("SET in EXTERNAL RTC year:[%d]\r\n", dt.year);
+    pcf8563_setDateTime(dt.day, dt.dotw, dt.month, century, year, dt.hour, dt.min, dt.sec);
+
 	// Save alarm
 	json_t const* wakeup_alarm_elem = json_getProperty(root_elem, "wakeup_alarm");
 	wakeup_alarm.isset = json_getInteger(json_getProperty(wakeup_alarm_elem, "isset"));
@@ -121,6 +125,9 @@ void NetTask(void *args)
 
     bool time_initialized = false;
     datetime_t dt;
+
+    time_struct t = pcf8563_getDateTime();
+    debug_printf("EXTERNAL RTC year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
 
     while (1) {
         res = qor_mbox_wait(&NetMailBox, (void **)&message, 5);
@@ -149,7 +156,7 @@ void NetTask(void *args)
         }
 
         qor_sleep(5000);
-        debug_printf("\r\n[NET] task woke up\r\n");
+        //debug_printf("\r\n[NET] task woke up\r\n");
     }
 }
 

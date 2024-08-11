@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "ost_hal.h"
@@ -31,6 +32,8 @@
 //#include "pwm_sound_melodies.h"
 
 #include "mcp9808/mcp9808.h"
+
+#include "pcf8563/pcf8563.h"
 
 #include "net_task.h"
 
@@ -79,14 +82,14 @@ void UiTask(void *args)
     //floatToString(buf, b, 1);
     //debug_printf("TEST: %d %d [%s]\r\n", b, 2.0, buf);
 
-    datetime_t dt;
-    rtc_get_datetime(&dt);
-    debug_printf("Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.hour, dt.min, dt.sec);
+    //datetime_t dt;
+    //rtc_get_datetime(&dt);
+    //debug_printf("Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.hour, dt.min, dt.sec);
 
     PAINT_TIME sPaint_time;
     bool module_initialized = true;
-    bool redraw_screen = false;
-    bool need_screen_clear = false;
+    bool redraw_screen = true;
+    bool need_screen_clear = true;
     int loop_count = 0;
     int last_min = 0;
     char temp_str[10];
@@ -132,9 +135,13 @@ void UiTask(void *args)
         mcp9808_get_temperature(temp_str);
         //debug_printf("Current temp:[%s]\r\n", temp_str);
 
-        rtc_get_datetime(&dt);
+        //rtc_get_datetime(&dt);
+        time_struct dt = pcf8563_getDateTime();
+        debug_printf("GET EXTERNAL RTC volt_low:[%d] year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.volt_low, dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
         //debug_printf("rtc_get_datetime year:[%d]\r\n", dt.year);
-        bool time_initialized = dt.year != 1000;
+
+        //bool time_initialized = dt.year != 1000;
+        bool time_initialized = !dt.volt_low;
         if (!time_initialized) {
             Paint_DrawString_EN(10, 40, "Connecting...", &Font20, WHITE, BLACK);
             //EPD_2in13_V4_Display_Partial(BlackImage);
