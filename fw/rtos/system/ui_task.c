@@ -144,7 +144,7 @@ void UiTask(void *args)
                         current_screen = 0;
                     }
                     if (current_screen < 0) {
-                        current_screen = 0;
+                        current_screen = max_screen;
                     }
                     static ost_ui_event_t Ev = {
                         .ev = OST_SYS_REFRESH_SCREEN,
@@ -189,7 +189,11 @@ void UiTask(void *args)
                     sprintf(temp_str, "Alarm: %02d:%02d", dt.alarm_hour, dt.alarm_min);
                     Paint_DrawString_EN(10, 100, temp_str, &Font12, WHITE, BLACK);
 
-                    EPD_2in13_V4_Display_Partial(BlackImage);
+                    if (message->clear) {
+                        EPD_2in13_V4_Display_Base(BlackImage);
+                    } else {
+                        EPD_2in13_V4_Display_Partial(BlackImage);
+                    }
                 } else if (current_screen == 1) {
                     sprintf(temp_str, "Weather");
                     Paint_DrawString_EN(10, 10, temp_str, &Font24, WHITE, BLACK);
