@@ -11,6 +11,8 @@ extern "C"
 
 #define OST_ID_SPI_FOR_SDCARD 0
 
+#define FRONT_PANEL_LED_PIN 11
+
 
 	typedef struct
 	{

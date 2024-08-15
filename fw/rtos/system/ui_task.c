@@ -94,6 +94,7 @@ void UiTask(void *args)
     int last_min = 0;
     int current_screen = 0;
     int max_screen = 1;
+    bool backlight_on = false;
     char temp_str[100];
     char temp2_str[10];
 
@@ -126,6 +127,8 @@ void UiTask(void *args)
     }
     Paint_Clear(WHITE);
 
+    int screen_x = 20;
+
     while (1) {
         res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
         if (res == QOR_MBOX_OK) {
@@ -133,10 +136,24 @@ void UiTask(void *args)
             if (message->ev == OST_SYS_BUTTON) {
                 debug_printf("/!\\ Received event OST_SYS_BUTTON:[%d]\r\n", message->btn);
                 if (message->btn == 0) {
-                    request_remote_sync();
+                    if (current_screen == 0) {
+                        if (backlight_on) {
+                            gpio_put(FRONT_PANEL_LED_PIN, 0);
+                            backlight_on = false;
+                        } else {
+                            gpio_put(FRONT_PANEL_LED_PIN, 1);
+                            backlight_on = true;
+                        }
+                    } else if (current_screen == 1) {
+                        request_play_song(0);
+                    }
                 }
                 if (message->btn == 1) {
-                    request_play_song(0);
+                    if (current_screen == 0) {
+                        request_remote_sync();
+                    } else if (current_screen == 1) {
+                        request_play_song(1);
+                    }
                 }
                 if (message->btn == 2 || message->btn == 3) {
                     current_screen += message->btn == 2 ? 1 : -1;
@@ -168,6 +185,11 @@ void UiTask(void *args)
 
                 // Display screen X
                 if (current_screen == 0) {
+                    for (int xx=100; xx<280; xx++) {
+                        Paint_SetPixel(xx, 30, BLACK);
+                        //Paint_DrawPoint(xx, 30, BLACK, DOT_PIXEL_8X8, DOT_FILL_AROUND);
+                    }
+
                     time_struct dt = pcf8563_getDateTime();
                     sPaint_time.Year = dt.year;
                     sPaint_time.Month = dt.month;
@@ -176,18 +198,18 @@ void UiTask(void *args)
                     sPaint_time.Min = dt.min;
                     sPaint_time.Sec = dt.sec;
                     sprintf(temp_str, "%d-%02d-%02d", dt.year, dt.month, dt.day);
-                    Paint_DrawString_EN(10, 10, temp_str, &Font24, WHITE, BLACK);
+                    Paint_DrawString_EN(screen_x, 10, temp_str, &Font24, WHITE, BLACK);
 
-                    Paint_ClearWindows(10, 40, 150 + Font20.Width * 7, 80 + Font20.Height, WHITE);
-                    Paint_DrawTime(10, 40, &sPaint_time, &Font24, WHITE, BLACK);
+                    Paint_ClearWindows(screen_x, 40, 150 + Font20.Width * 7, 80 + Font20.Height, WHITE);
+                    Paint_DrawTime(screen_x, 40, &sPaint_time, &Font24, WHITE, BLACK);
 
                     mcp9808_get_temperature(temp2_str);
                     sprintf(temp_str, "Temp: %s C", temp2_str);
-                    Paint_DrawString_EN(10, 80, temp_str, &Font12, WHITE, BLACK);
+                    Paint_DrawString_EN(screen_x, 80, temp_str, &Font12, WHITE, BLACK);
 
                     //ost_get_wakeup_alarm(&wakeup_alarm);
                     sprintf(temp_str, "Alarm: %02d:%02d", dt.alarm_hour, dt.alarm_min);
-                    Paint_DrawString_EN(10, 100, temp_str, &Font12, WHITE, BLACK);
+                    Paint_DrawString_EN(screen_x, 100, temp_str, &Font12, WHITE, BLACK);
 
                     if (message->clear) {
                         EPD_2in13_V4_Display_Base(BlackImage);
@@ -196,11 +218,11 @@ void UiTask(void *args)
                     }
                 } else if (current_screen == 1) {
                     sprintf(temp_str, "Weather");
-                    Paint_DrawString_EN(10, 10, temp_str, &Font24, WHITE, BLACK);
+                    Paint_DrawString_EN(screen_x, 10, temp_str, &Font24, WHITE, BLACK);
 
                     mcp9808_get_temperature(temp2_str);
                     sprintf(temp_str, "Temp: %s C", temp2_str);
-                    Paint_DrawString_EN(10, 80, temp_str, &Font12, WHITE, BLACK);
+                    Paint_DrawString_EN(screen_x, 80, temp_str, &Font12, WHITE, BLACK);
 
                     EPD_2in13_V4_Display_Base(BlackImage);
                 }

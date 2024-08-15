@@ -213,6 +213,16 @@ void ost_system_initialize()
     dt.sec = 1;
     rtc_set_datetime(&dt);
 
+    // Front panel LEDs
+    gpio_init(FRONT_PANEL_LED_PIN);
+    gpio_set_dir(FRONT_PANEL_LED_PIN, GPIO_OUT);
+    /*while (1) {
+        gpio_put(FRONT_PANEL_LED_PIN, 1);
+        busy_wait_ms(1000);
+        gpio_put(FRONT_PANEL_LED_PIN, 0);
+        busy_wait_ms(1000);
+    }*/
+
     //------------------- Init LCD
     debug_printf("Init e-Paper module...\r\n");
     if(DEV_Module_Init()!=0){
