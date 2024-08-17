@@ -37,6 +37,8 @@
 
 #include "net_task.h"
 
+#include "graphics.h"
+
 
 // ===========================================================================================================
 // DEFINITIONS
@@ -127,7 +129,9 @@ void UiTask(void *args)
     }
     Paint_Clear(WHITE);
 
-    int screen_x = 20;
+    int screen_x = 34;
+    int icon_left_x = 0;
+    int icon_right_x = 214;
 
     while (1) {
         res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
@@ -185,10 +189,9 @@ void UiTask(void *args)
 
                 // Display screen X
                 if (current_screen == 0) {
-                    for (int xx=100; xx<280; xx++) {
-                        Paint_SetPixel(xx, 30, BLACK);
-                        //Paint_DrawPoint(xx, 30, BLACK, DOT_PIXEL_8X8, DOT_FILL_AROUND);
-                    }
+                    display_icon(icon_left_x, 90, ICON_LEFTARROW);
+                    display_icon(icon_right_x, 10, ICON_LIGHT);
+                    display_icon(icon_right_x, 90, ICON_RIGHTARROW);
 
                     time_struct dt = pcf8563_getDateTime();
                     sPaint_time.Year = dt.year;
@@ -200,7 +203,7 @@ void UiTask(void *args)
                     sprintf(temp_str, "%d-%02d-%02d", dt.year, dt.month, dt.day);
                     Paint_DrawString_EN(screen_x, 10, temp_str, &Font24, WHITE, BLACK);
 
-                    Paint_ClearWindows(screen_x, 40, 150 + Font20.Width * 7, 80 + Font20.Height, WHITE);
+                    Paint_ClearWindows(screen_x, 40, 50 + Font20.Width * 7, 80 + Font20.Height, WHITE);
                     Paint_DrawTime(screen_x, 40, &sPaint_time, &Font24, WHITE, BLACK);
 
                     mcp9808_get_temperature(temp2_str);

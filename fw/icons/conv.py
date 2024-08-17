@@ -1,6 +1,6 @@
 from PIL import Image
 
-im = Image.open('2024-08-15_pixel.gif')
+im = Image.open('2024-08-15_leftarrow.gif')
 
 pixels = list(im.getdata())
 width, height = im.size
@@ -25,7 +25,7 @@ for x in range(width):
 print ("line_struct light[]={")
 i = 0
 for line in lines:
-    print("  {%d, %d, %d, %d}" % (line[0][0], line[0][1], line[1][0], line[1][1]), end="")
+    print("  {%d, %d, %d}" % (line[0][0], line[0][1], line[1][1]), end="")
     i+=1
     last = i == len(lines)
     print("};" if last else ",")

@@ -48,6 +48,7 @@ set(OST_SRCS
     library/tiny-json.c
     library/mcp9808/mcp9808.c
     library/pcf8563/pcf8563.c
+    library/graphics.c
 )
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
