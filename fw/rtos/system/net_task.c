@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ost_hal.h"
 #include "debug.h"
@@ -64,8 +65,8 @@ int get_response_from_server(char *response) {
         ret = send_tcp(SERVER_IP, atoi(SERVER_PORT), "\n", 1, response);
         qor_sleep(10);
         debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\r\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
-        if (ret != 0) {
-            return ret;
+        if (ret == 0 && strlen(response) < 10) {
+            ret = 1;
         }
     }
     wifi_disconnect();

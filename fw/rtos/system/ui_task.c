@@ -182,8 +182,8 @@ void UiTask(void *args)
                 if (!module_initialized) {
                     DEV_Module_Init();
                     EPD_2in13_V4_Init();
-                    EPD_2in13_V4_Clear();
-                    Paint_Clear(WHITE);
+                    message->clear = true;
+                    module_initialized = true;
                 }
                 if (message->clear) {
                     EPD_2in13_V4_Clear();
@@ -222,6 +222,7 @@ void UiTask(void *args)
 
                     if (message->clear) {
                         EPD_2in13_V4_Display_Base(BlackImage);
+                        message->clear = false;
                     } else {
                         EPD_2in13_V4_Display_Partial(BlackImage);
                     }
@@ -276,7 +277,7 @@ void UiTask(void *args)
             int ts = dt.hour * 3600 + dt.min * 60 + dt.sec;
             if (last_sync == -1) {
                 // First run, initialize as if sync nearly 1 hour ago
-                last_sync = ts - 3600 + 30;
+                last_sync = ts - 3600 + 10;
             }
             if (((ts - last_sync) > 3600) || ((ts - last_sync) < 0)) {
                 // Trigger server sync
