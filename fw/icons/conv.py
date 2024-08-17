@@ -1,6 +1,8 @@
 from PIL import Image
 
-im = Image.open('2024-08-15_leftarrow.gif')
+name = input('Name:')
+
+im = Image.open('%s.gif' % (name))
 
 pixels = list(im.getdata())
 width, height = im.size
@@ -22,7 +24,7 @@ for x in range(width):
 
 #print(lines)
 
-print ("line_struct light[]={")
+print ("line_struct icon_%s[]={" % (name))
 i = 0
 for line in lines:
     print("  {%d, %d, %d}" % (line[0][0], line[0][1], line[1][1]), end="")

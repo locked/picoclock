@@ -132,6 +132,7 @@ void UiTask(void *args)
     int screen_x = 34;
     int icon_left_x = 0;
     int icon_right_x = 214;
+    int last_sync = -1;
 
     while (1) {
         res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
@@ -181,6 +182,8 @@ void UiTask(void *args)
                 if (!module_initialized) {
                     DEV_Module_Init();
                     EPD_2in13_V4_Init();
+                    EPD_2in13_V4_Clear();
+                    Paint_Clear(WHITE);
                 }
                 if (message->clear) {
                     EPD_2in13_V4_Clear();
@@ -191,6 +194,7 @@ void UiTask(void *args)
                 if (current_screen == 0) {
                     display_icon(icon_left_x, 90, ICON_LEFTARROW);
                     display_icon(icon_right_x, 10, ICON_LIGHT);
+                    display_icon(icon_right_x, 50, ICON_WIFI);
                     display_icon(icon_right_x, 90, ICON_RIGHTARROW);
 
                     time_struct dt = pcf8563_getDateTime();
@@ -203,15 +207,17 @@ void UiTask(void *args)
                     sprintf(temp_str, "%d-%02d-%02d", dt.year, dt.month, dt.day);
                     Paint_DrawString_EN(screen_x, 10, temp_str, &Font24, WHITE, BLACK);
 
-                    Paint_ClearWindows(screen_x, 40, 50 + Font20.Width * 7, 80 + Font20.Height, WHITE);
+                    Paint_ClearWindows(screen_x, 40, screen_x + Font24.Width * 8, 40 + Font24.Height, WHITE);
                     Paint_DrawTime(screen_x, 40, &sPaint_time, &Font24, WHITE, BLACK);
 
                     mcp9808_get_temperature(temp2_str);
                     sprintf(temp_str, "Temp: %s C", temp2_str);
+                    Paint_ClearWindows(screen_x + Font12.Width * 6, 80, screen_x + Font12.Width * 12, 80 + Font12.Height, WHITE);
                     Paint_DrawString_EN(screen_x, 80, temp_str, &Font12, WHITE, BLACK);
 
                     //ost_get_wakeup_alarm(&wakeup_alarm);
-                    sprintf(temp_str, "Alarm: %02d:%02d", dt.alarm_hour, dt.alarm_min);
+                    sprintf(temp_str, "Alarm: %02d:%02d (%d)", dt.alarm_hour, dt.alarm_min, dt.alarm_weekday);
+                    Paint_ClearWindows(screen_x + Font12.Width * 7, 100, screen_x + Font12.Width * 17, 100 + Font12.Height, WHITE);
                     Paint_DrawString_EN(screen_x, 100, temp_str, &Font12, WHITE, BLACK);
 
                     if (message->clear) {
@@ -249,19 +255,35 @@ void UiTask(void *args)
         //debug_printf("GET EXTERNAL RTC volt_low:[%d] year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.volt_low, dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
 
         time_initialized = !dt.volt_low;
-        if (time_initialized && dt.min != last_min) {
-            static ost_net_event_t NetEv = {
-                .ev = OST_SYS_MINUTE_CHANGE
-            };
-            qor_mbox_notify(&NetMailBox, (void **)&NetEv, QOR_MBOX_OPTION_SEND_BACK);
+        if (time_initialized) {
+            if (dt.min != last_min) {
+                // Minute change
+                if (dt.hour == dt.alarm_hour && dt.min == dt.alarm_min) {
+                    static ost_net_event_t NetEv = {
+                        .ev = OST_SYS_ALARM
+                    };
+                    qor_mbox_notify(&NetMailBox, (void **)&NetEv, QOR_MBOX_OPTION_SEND_BACK);
+                }
 
-            static ost_ui_event_t UiEv = {
-                .ev = OST_SYS_REFRESH_SCREEN,
-                .clear = false
-            };
-            qor_mbox_notify(&UiMailBox, (void **)&UiEv, QOR_MBOX_OPTION_SEND_BACK);
+                static ost_ui_event_t UiEv = {
+                    .ev = OST_SYS_REFRESH_SCREEN,
+                    .clear = false
+                };
+                qor_mbox_notify(&UiMailBox, (void **)&UiEv, QOR_MBOX_OPTION_SEND_BACK);
 
-            last_min = dt.min;
+                last_min = dt.min;
+            }
+            int ts = dt.hour * 3600 + dt.min * 60 + dt.sec;
+            if (last_sync == -1) {
+                // First run, initialize as if sync nearly 1 hour ago
+                last_sync = ts - 3600 + 30;
+            }
+            if (((ts - last_sync) > 3600) || ((ts - last_sync) < 0)) {
+                // Trigger server sync
+                debug_printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
+                request_remote_sync();
+                last_sync = ts;
+            }
         }
 
         qor_sleep(500);

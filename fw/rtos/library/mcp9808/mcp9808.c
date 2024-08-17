@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <string.h>
+
 #define MCP9808_TA_REGISTER_ADDR 0x05
 
 
@@ -64,8 +66,8 @@ float mcp9808_get_temperature(char *temp_str) {
         temp = (measure_data[0] * 16.0) + (measure_data[1] / 16.0);
     }
 
-    //char buf[50];
-    floatToString(temp_str, temp, 2);
+    //floatToString(temp_str, temp, 2);
+    itoa(temp, temp_str, 10);
 	//printf("mcp9808: %s", buf);
 
 	return temp;

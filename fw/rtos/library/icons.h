@@ -1,4 +1,3 @@
-
 line_struct icon_light[]={
   {1, 14, 16},
   {2, 14, 16},
@@ -53,7 +52,6 @@ line_struct icon_light[]={
   {27, 25, 27},
   {28, 14, 16}};
 
-
 line_struct icon_rightarrow[]={
   {6, 7, 8},
   {7, 7, 10},
@@ -94,3 +92,41 @@ line_struct icon_leftarrow[]={
   {21, 18, 23},
   {22, 20, 23},
   {23, 22, 23}};
+
+
+line_struct icon_wifi[]={
+  {8, 10, 19},
+  {9, 8, 10},
+  {9, 19, 21},
+  {10, 6, 8},
+  {10, 21, 23},
+  {11, 5, 6},
+  {11, 23, 24},
+  {12, 4, 5},
+  {12, 24, 25},
+  {13, 3, 4},
+  {13, 11, 18},
+  {13, 25, 26},
+  {14, 9, 11},
+  {14, 18, 20},
+  {15, 8, 9},
+  {15, 20, 21},
+  {16, 7, 8},
+  {16, 21, 22},
+  {17, 6, 7},
+  {17, 22, 23},
+  {18, 12, 17},
+  {19, 10, 13},
+  {19, 16, 19},
+  {20, 9, 10},
+  {20, 19, 20},
+  {22, 12, 17},
+  {23, 13, 16}};
+
+
+icon_struct icons[4] = {
+  {icon_light, sizeof(icon_light)},
+  {icon_rightarrow, sizeof(icon_rightarrow)},
+  {icon_leftarrow, sizeof(icon_leftarrow)},
+  {icon_wifi, sizeof(icon_wifi)}
+};

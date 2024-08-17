@@ -133,12 +133,9 @@ void NetTask(void *args)
     while (1) {
         res = qor_mbox_wait(&NetMailBox, (void **)&message, 5);
         if (res == QOR_MBOX_OK) {
-            if (message->ev == OST_SYS_MINUTE_CHANGE) {
-                debug_printf("[NET] OST_SYS_MINUTE_CHANGE\r\n");
-                rtc_get_datetime(&dt);
-                if (dt.hour == wakeup_alarm.hour && dt.min == wakeup_alarm.min) {
-                    play_melody(16, HarryPotter, 200);
-                }
+            if (message->ev == OST_SYS_ALARM) {
+                debug_printf("[NET] OST_SYS_ALARM\r\n");
+                play_melody(16, HarryPotter, 200);
             }
 
             if (message->ev == OST_SYS_UPDATE_TIME) {
