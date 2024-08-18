@@ -1,5 +1,7 @@
 <?php
 
+$config = require_once("clock.config.php");
+
 $date = date("Y-m-d H:i:s");
 $year = intval(date("Y"));
 $month = intval(date("m"));
@@ -10,10 +12,10 @@ $minute = intval(date("i"));
 $second = intval(date("s"));
 
 $wakeup_alarm_weekday = 0;
-$wakeup_alarm_hour = 8;
-$wakeup_alarm_minute = 45;
+$wakeup_alarm_hour = $config["alarm"][0];
+$wakeup_alarm_minute = $config["alarm"][1];
 
-$weather = getWeather();
+$weather = getWeather($config);
 
 $data = [
         "status" => 0,
@@ -39,25 +41,24 @@ $response = json_encode($data)."\n";
 
 echo $response;
 
-function getWeather() {
-	$lat = 0;
-	$lon = 0;
-	$tz = "";
+function getWeather($config) {
+	$lat = $config["lat"];
+	$lon = $config["lon"];
+	$tz = $config["tz"];
 	$url = "https://api.open-meteo.com/v1/forecast?latitude=".$lat."&longitude=".$lon."&current=temperature_2m,wind_speed_10m,precipitation,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum&timezone=".urlencode($tz);
 	//echo $url;
 	$weather_raw = file_get_contents($url);
 	$wj = json_decode($weather_raw, true);
 	$weather = [];
 	$code = match ($wj["current"]["weather_code"]) {
-		0 => ["Clear sky"],
-		2 => ["Mainly clear, partly cloudy"],
-		1, 2, 3	=> ["Mainly clear, partly cloudy, and overcast"],
-		45, 48  => ["Fog and depositing rime fog"],
-		51, 53, 55 => ["Drizzle: Light, moderate, and dense intensity"],
-		56, 57     => ["Freezing Drizzle: Light and dense intensity"],
-		61, 63, 65 => ["Rain: Slight, moderate and heavy intensity"],
-		66, 67     => ["Freezing Rain: Light and heavy intensity"],
-		71, 73, 75 => ["Snow fall: Slight, moderate, and heavy intensity"],
+		0          => ["Clear sky"],
+		1, 2, 3    => ["Mainly clear, partly cloudy"],
+		45, 48     => ["Fog and depositing rime fog"],
+		51, 53, 55 => ["Drizzle: Light, moderate, and dense"],
+		56, 57     => ["Freezing Drizzle: Light and dense"],
+		61, 63, 65 => ["Rain: Slight, moderate and heavy"],
+		66, 67     => ["Freezing Rain: Light and heavy"],
+		71, 73, 75 => ["Snow fall: Slight, moderate, and heavy"],
 		77         => ["Snow grains"],
 		80, 81, 82 => ["Rain showers: Slight, moderate, and violent"],
 		85, 86     => ["Snow showers slight and heavy"],
