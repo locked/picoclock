@@ -1,9 +1,3 @@
-# ==================================================================================================
-# OPEN STORY TELLER MAIN CMAKE BUILD FILE
-# (see README.md for invokable options)
-# Default target: TBD ?
-# ==================================================================================================
-
 cmake_minimum_required(VERSION 3.13)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -43,18 +37,19 @@ set(OST_SRCS
     system/ff/ff.c
     system/ff/ffsystem.c
     system/ff/ff_stubs.c
-    #chip32/chip32_vm.c
     library/mini_qoi.c
     library/tiny-json.c
     library/mcp9808/mcp9808.c
     library/pcf8563/pcf8563.c
     library/graphics.c
+    library/tinyhttp/http.c
+    library/tinyhttp/chunk.c
+    library/tinyhttp/header.c
 )
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/library
     ${CMAKE_CURRENT_SOURCE_DIR}/system/ff
-    #${CMAKE_CURRENT_SOURCE_DIR}/chip32
     ${CMAKE_CURRENT_SOURCE_DIR}/system/
     ${CMAKE_CURRENT_SOURCE_DIR}/library/epaper
     ${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/Config

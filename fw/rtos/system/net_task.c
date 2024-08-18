@@ -1,15 +1,3 @@
-/**
- * @file net_task.c
- *
- * @author your name (you@domain.com)
- * @brief
- * @version 0.1
- * @date 2023-07-29
- *
- * @copyright Copyright (c) 2023
- *
- */
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -31,6 +19,8 @@
 #include "pwm_sound_melodies.h"
 
 #include "pcf8563/pcf8563.h"
+
+#include "tinyhttp/http.h"
 
 
 
@@ -62,9 +52,10 @@ int get_response_from_server(char *response) {
 	int ret = wifi_connect(WIFI_SSID, WIFI_PASSWORD);
     qor_sleep(10);
     if (ret == 0) {
-        ret = send_tcp(SERVER_IP, atoi(SERVER_PORT), "\n", 1, response);
+        char query[100] = "GET /clock.php HTTP/1.0\r\nContent-Length: 0\r\n\r\n";
+        ret = send_tcp(SERVER_IP, atoi(SERVER_PORT), query, strlen(query), response);
         qor_sleep(10);
-        debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\r\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
+        //debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\r\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
         if (ret == 0 && strlen(response) < 10) {
             ret = 1;
         }
@@ -75,7 +66,65 @@ int get_response_from_server(char *response) {
     return ret;
 }
 
-void set_date_from_response(char *response) {
+// HTTP lib
+// Response data/funcs
+struct HttpResponse {
+	char body[4096];
+    int code;
+};
+static void* response_realloc(void* opaque, void* ptr, int size) {
+    return realloc(ptr, size);
+}
+static void response_body(void* opaque, const char* data, int size) {
+    struct HttpResponse* response = (struct HttpResponse*)opaque;
+    debug_printf("[NET] ADD [%d] BYTES TO BODY:[%s]\r\n", size, data);
+    strncpy(response->body, data, size+1);
+}
+static void response_header(void* opaque, const char* ckey, int nkey, const char* cvalue, int nvalue) {
+}
+static void response_code(void* opaque, int code) {
+    struct HttpResponse* response = (struct HttpResponse*)opaque;
+    debug_printf("[NET] SET CODE [%d]\r\n", code);
+    response->code = code;
+}
+static const struct http_funcs responseFuncs = {
+    response_realloc,
+    response_body,
+    response_header,
+    response_code,
+};
+
+int parse_http_response(char *http_response, char *body) {
+    debug_printf("[NET] PARSE HTTP:[%s]\r\n", http_response);
+
+    struct HttpResponse response;
+    response.code = 0;
+
+    struct http_roundtripper rt;
+    http_init(&rt, responseFuncs, &response);
+    //debug_printf("[NET] PARSE HTTP: INIT OK\r\n");
+    int read;
+    int ndata = strlen(http_response);
+    http_data(&rt, http_response, ndata, &read);
+    //debug_printf("[NET] PARSE HTTP: http_data OK\r\n");
+
+    http_free(&rt);
+
+    if (http_iserror(&rt)) {
+        debug_printf("Error parsing data\r\n");
+        return -1;
+    }
+
+    if (strlen(response.body) > 0) {
+        debug_printf("CODE:[%d] BODY:[%s]\r\n", response.code, response.body);
+        strcpy(body, response.body);
+        return 0;
+    }
+
+    return -1;
+}
+
+void parse_json_response(char *response) {
 	enum { MAX_FIELDS = 20 };
 	json_t pool[MAX_FIELDS];
 
@@ -123,8 +172,7 @@ void set_date_from_response(char *response) {
 // ===========================================================================================================
 // Network TASK (wifi, alarm)
 // ===========================================================================================================
-void NetTask(void *args)
-{
+void NetTask(void *args) {
     ost_net_event_t *message = NULL;
     uint32_t res = 0;
 
@@ -141,9 +189,12 @@ void NetTask(void *args)
 
             if (message->ev == OST_SYS_UPDATE_TIME) {
                 debug_printf("[NET] REMOTE SYNC\r\n");
-                char response[300] = "";
-                if (get_response_from_server(response) == 0) {
-                    set_date_from_response(response);
+                char http_response[2000] = "";
+                if (get_response_from_server(http_response) == 0) {
+                    char body[2000] = "";
+                    if (parse_http_response(http_response, body) == 0) {
+                        parse_json_response(body);
+                    }
                 }
             }
 

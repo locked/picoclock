@@ -13,8 +13,7 @@
 #include "system.h"
 #include "ui_task.h"
 
-void ost_hal_panic()
-{
+void ost_hal_panic() {
 }
 
 // ===========================================================================================================
@@ -22,10 +21,8 @@ void ost_hal_panic()
 // ===========================================================================================================
 static qor_tcb_t IdleTcb;
 static uint32_t IdleStack[1024];
-void IdleTask(void *args)
-{
-    while (1)
-    {
+void IdleTask(void *args) {
+    while (1) {
         // Instrumentation, power saving, os functions won't work here
         __asm volatile("wfi");
     }
@@ -38,8 +35,7 @@ wakeup_alarm_struct wakeup_alarm;
 // ===========================================================================================================
 // MAIN ENTRY POINT
 // ===========================================================================================================
-int main()
-{
+int main() {
     // 1. Call the platform initialization
     ost_system_initialize();
 

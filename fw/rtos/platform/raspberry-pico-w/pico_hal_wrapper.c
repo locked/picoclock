@@ -96,13 +96,11 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)();
 // ===========================================================================================================
 // OST HAL IMPLEMENTATION
 // ===========================================================================================================
-void ost_system_delay_ms(uint32_t delay)
-{
+void ost_system_delay_ms(uint32_t delay) {
     busy_wait_ms(delay);
 }
 
-void check_buttons()
-{
+void check_buttons() {
     for (uint8_t btn=0; btn<6; btn++) {
         uint8_t btn_value = gpio_get(BUTTONS[btn]);
         if (btn_value == 1 && btn_value != last_btn_values[btn]) {
@@ -111,6 +109,7 @@ void check_buttons()
         last_btn_values[btn] = btn_value;
     }
     /*
+     * Not enough PIO/SM for PIO debounce
     for (uint8_t btn=0; btn<4; btn++) {
         uint8_t btn_value = debounce_read(BUTTONS[btn]);
         if (btn_value == 1 && btn_value != last_btn_values[btn]) {
@@ -119,53 +118,32 @@ void check_buttons()
         last_btn_values[btn] = btn_value;
     }
     */
-  /*
-  int btn1 = debounce_read(BUTTON_1);
-  int btn2 = debounce_read(BUTTON_2);
-  int btn3 = debounce_read(BUTTON_3);
-  if (btn1 == 1 && btn1 != lastbtn1) {
-    debug_printf("Check buttons: [%d] [%d]\r\n", btn1, btn2);
-    ButtonCallback(1);
-  }
-  if (btn2 == 1 && btn2 != lastbtn2) {
-    debug_printf("Check buttons: [%d] [%d]\r\n", btn1, btn2);
-    ButtonCallback(2);
-  }
-  if (btn3 == 1 && btn3 != lastbtn3) {
-    ButtonCallback(3);
-  }
-  lastbtn1 = btn1;
-  lastbtn2 = btn2;
-  lastbtn3 = btn3;
-  */
 }
 
 static void alarm_in_us(uint32_t delay_us);
 
-static void alarm_irq(void)
-{
-  // Clear the alarm irq
-  hw_clear_bits(&timer_hw->intr, 1u << ALARM_NUM);
-  alarm_in_us(10000);
+static void alarm_irq(void) {
+    // Clear the alarm irq
+    hw_clear_bits(&timer_hw->intr, 1u << ALARM_NUM);
+    alarm_in_us(10000);
 
-  check_buttons();
+    check_buttons();
 }
 
-static void alarm_in_us(uint32_t delay_us)
-{
-  // Enable the interrupt for our alarm (the timer outputs 4 alarm irqs)
-  hw_set_bits(&timer_hw->inte, 1u << ALARM_NUM);
+static void alarm_in_us(uint32_t delay_us) {
+    // Enable the interrupt for our alarm (the timer outputs 4 alarm irqs)
+    hw_set_bits(&timer_hw->inte, 1u << ALARM_NUM);
 
-  // Enable interrupt in block and at processor
+    // Enable interrupt in block and at processor
 
-  // Alarm is only 32 bits so if trying to delay more
-  // than that need to be careful and keep track of the upper
-  // bits
-  uint64_t target = timer_hw->timerawl + delay_us;
+    // Alarm is only 32 bits so if trying to delay more
+    // than that need to be careful and keep track of the upper
+    // bits
+    uint64_t target = timer_hw->timerawl + delay_us;
 
-  // Write the lower 32 bits of the target time to the alarm which
-  // will arm it
-  timer_hw->alarm[ALARM_NUM] = (uint32_t)target;
+    // Write the lower 32 bits of the target time to the alarm which
+    // will arm it
+    timer_hw->alarm[ALARM_NUM] = (uint32_t)target;
 }
 
 void init_i2c() {
@@ -216,12 +194,6 @@ void ost_system_initialize()
     // Front panel LEDs
     gpio_init(FRONT_PANEL_LED_PIN);
     gpio_set_dir(FRONT_PANEL_LED_PIN, GPIO_OUT);
-    /*while (1) {
-        gpio_put(FRONT_PANEL_LED_PIN, 1);
-        busy_wait_ms(1000);
-        gpio_put(FRONT_PANEL_LED_PIN, 0);
-        busy_wait_ms(1000);
-    }*/
 
     //------------------- Init LCD
     debug_printf("Init e-Paper module...\r\n");
@@ -245,114 +217,91 @@ void ost_system_initialize()
             debug_printf("Error debouncing GPIO [%d]...\r\n", BUTTONS[btn]);
         }
     }*/
+
+    // Set irq handler for alarm irq
+    irq_set_exclusive_handler(ALARM_IRQ, alarm_irq);
+    // Enable the alarm irq
+    irq_set_enabled(ALARM_IRQ, true);
+
+    alarm_in_us(100000);
+
+    //------------------- Init SDCARD
 /*
-  if (debounce_gpio(BUTTON_1) == -1) {
-    debug_printf("Error debouncing GPIO [%d]...\r\n", BUTTON_1);
-  }
-  //if (debounce_set_debounce_time(BUTTON_1, 8) == -1) {
-  //  debug_printf("Error debounce_set_debounce_time GPIO [%d]...\r\n", BUTTON_1);
-  //}
-  if (debounce_gpio(BUTTON_2) == -1) {
-    debug_printf("Error debouncing GPIO [%d]...\r\n", BUTTON_2);
-  }
-  //debounce_set_debounce_time(BUTTON_2, 8);
-  if (debounce_gpio(BUTTON_3) == -1) {
-    debug_printf("Error debouncing GPIO [%d]...\r\n", BUTTON_3);
-  }
-*/
-  // Set irq handler for alarm irq
-  irq_set_exclusive_handler(ALARM_IRQ, alarm_irq);
-  // Enable the alarm irq
-  irq_set_enabled(ALARM_IRQ, true);
+    gpio_init(SD_CARD_CS);
+    gpio_put(SD_CARD_CS, 1);
+    gpio_set_dir(SD_CARD_CS, GPIO_OUT);
 
-  alarm_in_us(100000);
+    gpio_init(SD_CARD_PRESENCE);
+    gpio_set_dir(SD_CARD_PRESENCE, GPIO_IN);
 
-  //------------------- Init SDCARD
-/*
-  gpio_init(SD_CARD_CS);
-  gpio_put(SD_CARD_CS, 1);
-  gpio_set_dir(SD_CARD_CS, GPIO_OUT);
+    spi_init(spi0, 1000 * 1000); // slow clock
 
-  gpio_init(SD_CARD_PRESENCE);
-  gpio_set_dir(SD_CARD_PRESENCE, GPIO_IN);
+    spi_set_format(spi0, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 
-  spi_init(spi0, 1000 * 1000); // slow clock
-
-  spi_set_format(spi0, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
-
-  gpio_set_function(SDCARD_SCK, GPIO_FUNC_SPI);
-  gpio_set_function(SDCARD_MOSI, GPIO_FUNC_SPI);
-  gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
+    gpio_set_function(SDCARD_SCK, GPIO_FUNC_SPI);
+    gpio_set_function(SDCARD_MOSI, GPIO_FUNC_SPI);
+    gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
 */
 
-  //------------------- Init Sound
+    //------------------- Init Sound
 /*
-  i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
-  audio_init(&audio_ctx);
-  char fakefile[6] = "fake";
-  ost_audio_play(fakefile);
+    i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
+    audio_init(&audio_ctx);
+    char fakefile[6] = "fake";
+    ost_audio_play(fakefile);
 */
-  gpio_set_function(16, GPIO_FUNC_PWM);
+    gpio_set_function(16, GPIO_FUNC_PWM);
 
-  // ------------ Everything is initialized, print stuff here
-  debug_printf("System Clock: %lu\n", clock_get_hz(clk_sys));
+    // ------------ Everything is initialized, print stuff here
+    debug_printf("System Clock: %lu\n", clock_get_hz(clk_sys));
 }
 
-void system_putc(char ch)
-{
-  uart_putc_raw(UART_ID, ch);
+void system_putc(char ch) {
+    uart_putc_raw(UART_ID, ch);
 }
 
 #include <time.h>
-clock_t clock()
-{
-  return (clock_t)time_us_64() / 1000;
+clock_t clock() {
+    return (clock_t)time_us_64() / 1000;
 }
 static uint64_t stopwatch_start_time;
 static uint64_t stopwatch_end_time;
 
-void ost_system_stopwatch_start()
-{
-  stopwatch_start_time = clock();
+void ost_system_stopwatch_start() {
+    stopwatch_start_time = clock();
 }
 
-uint32_t ost_system_stopwatch_stop()
-{
-  stopwatch_end_time = clock();
-  return (stopwatch_end_time - stopwatch_start_time);
+uint32_t ost_system_stopwatch_stop() {
+    stopwatch_end_time = clock();
+    return (stopwatch_end_time - stopwatch_start_time);
 }
 
-void ost_button_register_callback(ost_button_callback_t cb)
-{
-  ButtonCallback = cb;
+void ost_button_register_callback(ost_button_callback_t cb) {
+    ButtonCallback = cb;
 }
 
-int ost_hal_gpio_get(ost_hal_gpio_t gpio)
-{
-  int value = 0;
-  switch (gpio)
-  {
-    break;
-  default:
-    break;
-  }
+int ost_hal_gpio_get(ost_hal_gpio_t gpio) {
+    int value = 0;
+    switch (gpio) {
+        break;
+    default:
+        break;
+    }
 
-  return value;
+    return value;
 }
 
-void ost_hal_gpio_set(ost_hal_gpio_t gpio, int value)
-{
-  switch (gpio)
-  {
-  case OST_GPIO_DEBUG_LED:
+void ost_hal_gpio_set(ost_hal_gpio_t gpio, int value) {
+    switch (gpio) {
+    case OST_GPIO_DEBUG_LED:
 
-    break;
-  case OST_GPIO_DEBUG_PIN:
+        break;
+    case OST_GPIO_DEBUG_PIN:
 
-    break;
-  default:
-    break;
-  }
+        break;
+    default:
+        break;
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -406,61 +355,54 @@ uint8_t ost_hal_sdcard_get_presence()
 
 void ost_audio_play(const char *filename)
 {
-  audio_play(&audio_ctx, filename);
-  config.freq = audio_ctx.audio_info.sample_rate;
-  config.channels = audio_ctx.audio_info.channels;
-  pico_i2s_set_frequency(&i2s, &config);
+    audio_play(&audio_ctx, filename);
+    config.freq = audio_ctx.audio_info.sample_rate;
+    config.channels = audio_ctx.audio_info.channels;
+    pico_i2s_set_frequency(&i2s, &config);
 
-  i2s.buffer_index = 0;
+    i2s.buffer_index = 0;
 
-  // On appelle une première fois le process pour récupérer et initialiser le premier buffer...
-  audio_process(&audio_ctx);
+    // On appelle une première fois le process pour récupérer et initialiser le premier buffer...
+    audio_process(&audio_ctx);
 
-  // Puis le deuxième ... (pour avoir un buffer d'avance)
-  audio_process(&audio_ctx);
+    // Puis le deuxième ... (pour avoir un buffer d'avance)
+    audio_process(&audio_ctx);
 
-  // On lance les DMA
-  i2s_start(&i2s);
+    // On lance les DMA
+    i2s_start(&i2s);
 }
 
-void ost_audio_stop()
-{
-  memset(i2s.out_ctrl_blocks[0], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
-  memset(i2s.out_ctrl_blocks[1], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
-  audio_stop(&audio_ctx);
-  i2s_stop(&i2s);
+void ost_audio_stop() {
+    memset(i2s.out_ctrl_blocks[0], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
+    memset(i2s.out_ctrl_blocks[1], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
+    audio_stop(&audio_ctx);
+    i2s_stop(&i2s);
 }
 
-int ost_audio_process()
-{
-  return audio_process(&audio_ctx);
+int ost_audio_process() {
+    return audio_process(&audio_ctx);
 }
 
 static ost_audio_callback_t AudioCallBack = NULL;
 
-void ost_audio_register_callback(ost_audio_callback_t cb)
-{
-  AudioCallBack = cb;
+void ost_audio_register_callback(ost_audio_callback_t cb) {
+    AudioCallBack = cb;
 }
 
-void ost_hal_audio_new_frame(const void *buff, int size)
-{
-  if (size > STEREO_BUFFER_SIZE)
-  {
-    // Problème
-    return;
-  }
-  memcpy(i2s.out_ctrl_blocks[i2s.buffer_index], buff, size * sizeof(uint32_t));
-  i2s.buffer_index = 1 - i2s.buffer_index;
+void ost_hal_audio_new_frame(const void *buff, int size) {
+    if (size > STEREO_BUFFER_SIZE) {
+        // Problème
+        return;
+    }
+    memcpy(i2s.out_ctrl_blocks[i2s.buffer_index], buff, size * sizeof(uint32_t));
+    i2s.buffer_index = 1 - i2s.buffer_index;
 }
 
-void __isr __time_critical_func(audio_i2s_dma_irq_handler)()
-{
-  dma_hw->ints0 = 1u << i2s.dma_ch_out_data; // clear the IRQ
+void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
+    dma_hw->ints0 = 1u << i2s.dma_ch_out_data; // clear the IRQ
 
-  // Warn the application layer that we have done on that channel
-  if (AudioCallBack != NULL)
-  {
-    AudioCallBack();
-  }
+    // Warn the application layer that we have done on that channel
+    if (AudioCallBack != NULL) {
+        AudioCallBack();
+    }
 }

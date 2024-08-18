@@ -44,11 +44,9 @@
 // DEFINITIONS
 // ===========================================================================================================
 
-typedef struct
-{
+typedef struct {
     uint8_t ev;
     uint32_t btn;
-    //char msg[30];
     bool clear;
 } ost_ui_event_t;
 
@@ -75,19 +73,9 @@ static ost_context_t OstContext;
 // ===========================================================================================================
 // UI TASK (user interface, buttons manager, LCD)
 // ===========================================================================================================
-void UiTask(void *args)
-{
+void UiTask(void *args) {
     ost_ui_event_t *message = NULL;
     uint32_t res = 0;
-
-    //double b = 2.0;
-    //char buf[50];
-    //floatToString(buf, b, 1);
-    //debug_printf("TEST: %d %d [%s]\r\n", b, 2.0, buf);
-
-    //datetime_t dt;
-    //rtc_get_datetime(&dt);
-    //debug_printf("Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.hour, dt.min, dt.sec);
 
     PAINT_TIME sPaint_time;
     bool module_initialized = true;
