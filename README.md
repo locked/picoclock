@@ -20,3 +20,4 @@ The configuration is done remotely, and the clock synchronize from time to time 
 - "pcb": the PCBs:
   - the main PCB receiving the RP2040 board
   - the front PCB with the backlight leds
+- **api**: remote api basic php script
