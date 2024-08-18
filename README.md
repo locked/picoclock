@@ -15,9 +15,9 @@ The configuration is done remotely, and the clock synchronize from time to time 
 
 ## Repository Architecture
 
-- "3d": contains printable models for the case, buttons
-- "fw": the firmware, based on a lightweight "rtos"
-- "pcb": the PCBs:
+- **3d**: contains printable models for the case, buttons
+- **fw**: the firmware, based on a lightweight "rtos"
+- **pcb**: the PCBs:
   - the main PCB receiving the RP2040 board
   - the front PCB with the backlight leds
 - **api**: remote api basic php script
