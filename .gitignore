@@ -1,0 +1,4 @@
+pcb/*/*-backups
+pcb/*-backups
+pcb/*/*.lck
+pcb/*.lck
