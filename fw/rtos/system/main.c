@@ -29,7 +29,10 @@ void IdleTask(void *args) {
 }
 
 qor_mbox_t NetMailBox;
+
 wakeup_alarm_struct wakeup_alarm;
+
+weather_struct weather = {"", "", "", ""};
 
 
 // ===========================================================================================================

@@ -39,6 +39,28 @@ extern "C"
 	  int min;
 	} wakeup_alarm_struct;
 
+	typedef struct {
+		char code_desc[100];
+		char temperature_2m[20];
+		char wind_speed_10m[20];
+		char precipitation[20];
+		int day_0_precip_sum;
+		int day_0_temp_min;
+		int day_0_temp_max;
+		char day_0_sunrise[6];
+		char day_0_sunset[6];
+		int day_1_precip_sum;
+		int day_1_temp_min;
+		int day_1_temp_max;
+		char day_1_sunrise[6];
+		char day_1_sunset[6];
+		int day_2_precip_sum;
+		int day_2_temp_min;
+		int day_2_temp_max;
+		char day_2_sunrise[6];
+		char day_2_sunset[6];
+	} weather_struct;
+
     // ----------------------------------------------------------------------------
     // SHARED TYPES
     // ----------------------------------------------------------------------------
@@ -83,6 +105,8 @@ extern "C"
     void ost_system_delay_ms(uint32_t delay);
     void ost_system_stopwatch_start();
     uint32_t ost_system_stopwatch_stop();
+
+	uint8_t get_uniq_id();
 
     // Audio API
     void ost_audio_play(const char *filename);

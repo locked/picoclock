@@ -39,6 +39,19 @@
 
 #include "graphics.h"
 
+#include <malloc.h>
+
+uint32_t getTotalHeap(void) {
+   extern char __StackLimit, __bss_end__;
+   
+   return &__StackLimit  - &__bss_end__;
+}
+
+uint32_t getFreeHeap(void) {
+   struct mallinfo m = mallinfo();
+
+   return getTotalHeap() - m.uordblks;
+}
 
 // ===========================================================================================================
 // DEFINITIONS
@@ -60,6 +73,8 @@ static uint32_t UiStack[4096];
 static qor_mbox_t UiMailBox;
 extern qor_mbox_t NetMailBox;
 extern wakeup_alarm_struct wakeup_alarm;
+
+extern weather_struct weather;
 
 static ost_ui_event_t UiEvent;
 
@@ -83,10 +98,15 @@ void UiTask(void *args) {
     int loop_count = 0;
     int last_min = 0;
     int current_screen = 0;
-    int max_screen = 1;
+    int max_screen = 2;
     bool backlight_on = false;
     char temp_str[100];
     char temp2_str[10];
+    char last_sync_str[9] = "";
+    int screen_x = 34;
+    int icon_left_x = 0;
+    int icon_right_x = 214;
+    int last_sync = -1;
 
     DEV_Module_Init();
     EPD_2in13_V4_Init();
@@ -117,11 +137,6 @@ void UiTask(void *args) {
     }
     Paint_Clear(WHITE);
 
-    int screen_x = 34;
-    int icon_left_x = 0;
-    int icon_right_x = 214;
-    int last_sync = -1;
-
     while (1) {
         res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
         if (res == QOR_MBOX_OK) {
@@ -129,7 +144,7 @@ void UiTask(void *args) {
             if (message->ev == OST_SYS_BUTTON) {
                 debug_printf("/!\\ Received event OST_SYS_BUTTON:[%d]\r\n", message->btn);
                 if (message->btn == 0) {
-                    if (current_screen == 0) {
+                    if (current_screen == 0 || current_screen == 1) {
                         if (backlight_on) {
                             gpio_put(FRONT_PANEL_LED_PIN, 0);
                             backlight_on = false;
@@ -137,14 +152,14 @@ void UiTask(void *args) {
                             gpio_put(FRONT_PANEL_LED_PIN, 1);
                             backlight_on = true;
                         }
-                    } else if (current_screen == 1) {
+                    } else if (current_screen == 2) {
                         request_play_song(0);
                     }
                 }
                 if (message->btn == 1) {
-                    if (current_screen == 0) {
+                    if (current_screen == 0 || current_screen == 1) {
                         request_remote_sync();
-                    } else if (current_screen == 1) {
+                    } else if (current_screen == 2) {
                         request_play_song(1);
                     }
                 }
@@ -179,11 +194,13 @@ void UiTask(void *args) {
                 }
 
                 // Display screen X
+                bool shutdown_screen = false;
+                int _y = 8;
+                display_icon(icon_left_x, 90, ICON_LEFTARROW);
+                display_icon(icon_right_x, 90, ICON_RIGHTARROW);
                 if (current_screen == 0) {
-                    display_icon(icon_left_x, 90, ICON_LEFTARROW);
                     display_icon(icon_right_x, 10, ICON_LIGHT);
                     display_icon(icon_right_x, 50, ICON_WIFI);
-                    display_icon(icon_right_x, 90, ICON_RIGHTARROW);
 
                     time_struct dt = pcf8563_getDateTime();
                     sPaint_time.Year = dt.year;
@@ -193,7 +210,7 @@ void UiTask(void *args) {
                     sPaint_time.Min = dt.min;
                     sPaint_time.Sec = dt.sec;
                     sprintf(temp_str, "%d-%02d-%02d", dt.year, dt.month, dt.day);
-                    Paint_DrawString_EN(screen_x, 10, temp_str, &Font24, WHITE, BLACK);
+                    Paint_DrawString_EN(screen_x, _y, temp_str, &Font24, WHITE, BLACK);
 
                     Paint_ClearWindows(screen_x, 40, screen_x + Font24.Width * 8, 40 + Font24.Height, WHITE);
                     Paint_DrawTime(screen_x, 40, &sPaint_time, &Font24, WHITE, BLACK);
@@ -214,19 +231,58 @@ void UiTask(void *args) {
                     } else {
                         EPD_2in13_V4_Display_Partial(BlackImage);
                     }
+                    shutdown_screen = loop_count++ > 10;
                 } else if (current_screen == 1) {
+                    display_icon(icon_right_x, 10, ICON_LIGHT);
+                    display_icon(icon_right_x, 50, ICON_WIFI);
+
                     sprintf(temp_str, "Weather");
-                    Paint_DrawString_EN(screen_x, 10, temp_str, &Font24, WHITE, BLACK);
+                    Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
+                    _y += Font16.Height + 1;
 
                     mcp9808_get_temperature(temp2_str);
-                    sprintf(temp_str, "Temp: %s C", temp2_str);
-                    Paint_DrawString_EN(screen_x, 80, temp_str, &Font12, WHITE, BLACK);
+                    sprintf(temp_str, "Clock temp: %s C", temp2_str);
+                    Paint_DrawString_EN(screen_x, _y + Font12.Height * 0, temp_str, &Font12, WHITE, BLACK);
+
+                    Paint_DrawString_EN(screen_x, _y + Font12.Height * 1, weather.code_desc, &Font12, WHITE, BLACK);
+                    sprintf(temp_str, "Temp: %s", weather.temperature_2m);
+                    Paint_DrawString_EN(screen_x, _y + Font12.Height * 2, temp_str, &Font12, WHITE, BLACK);
+                    sprintf(temp_str, "Wind: %s", weather.wind_speed_10m);
+                    Paint_DrawString_EN(screen_x, _y + Font12.Height * 3, temp_str, &Font12, WHITE, BLACK);
+                    sprintf(temp_str, "Precipitation: %s", weather.precipitation);
+                    Paint_DrawString_EN(screen_x, _y + Font12.Height * 4, temp_str, &Font12, WHITE, BLACK);
+
+                    sprintf(temp_str, " %02dC   %02dC   %02dC", weather.day_0_temp_min, weather.day_1_temp_min, weather.day_2_temp_min);
+                    Paint_DrawString_EN(screen_x, _y + Font12.Height * 5, temp_str, &Font12, WHITE, BLACK);
+
+                    sprintf(temp_str, " %02dC   %02dC   %02dC", weather.day_0_temp_max, weather.day_1_temp_max, weather.day_2_temp_max);
+                    Paint_DrawString_EN(screen_x, _y + Font12.Height * 6, temp_str, &Font12, WHITE, BLACK);
+
+                    sprintf(temp_str, "%s %s %s", weather.day_0_sunrise, weather.day_1_sunrise, weather.day_2_sunrise);
+                    Paint_DrawString_EN(screen_x, _y + Font12.Height * 7, temp_str, &Font12, WHITE, BLACK);
 
                     EPD_2in13_V4_Display_Base(BlackImage);
+                    shutdown_screen = loop_count++ > 10;
+                } else if (current_screen == 2) {
+                    sprintf(temp_str, "Debug");
+                    Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
+
+                    _y += Font16.Height + 1;
+                    sprintf(temp_str, "ID: %d", get_uniq_id());
+                    Paint_DrawString_EN(screen_x, _y + Font12.Height * 0, temp_str, &Font12, WHITE, BLACK);
+
+                    sprintf(temp_str, "Last sync: %s", last_sync_str);
+                    Paint_DrawString_EN(screen_x, _y + Font12.Height * 1, temp_str, &Font12, WHITE, BLACK);
+
+                    sprintf(temp_str, "Mem(free/tot): %d/%d", getFreeHeap(), getTotalHeap());
+                    Paint_DrawString_EN(screen_x, _y + Font12.Height * 2, temp_str, &Font12, WHITE, BLACK);
+
+                    EPD_2in13_V4_Display_Base(BlackImage);
+                    shutdown_screen = true;
                 }
 
                 // Shutdown screen periodically
-                if (loop_count++ > 10) {
+                if (shutdown_screen) {
                     debug_printf("Shutdown loop_count:[%d]\r\n", loop_count);
                     loop_count = 0;
                     EPD_2in13_V4_Sleep();
@@ -272,6 +328,7 @@ void UiTask(void *args) {
                 debug_printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
                 request_remote_sync();
                 last_sync = ts;
+                sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
             }
         }
 

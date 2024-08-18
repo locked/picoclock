@@ -17,6 +17,7 @@
 #include "hardware/clocks.h"
 #include "hardware/rtc.h"
 #include "hardware/i2c.h"
+#include "pico/unique_id.h"
 #include "pico.h"
 
 // Screen
@@ -98,6 +99,12 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)();
 // ===========================================================================================================
 void ost_system_delay_ms(uint32_t delay) {
     busy_wait_ms(delay);
+}
+
+uint8_t get_uniq_id() {
+    pico_unique_board_id_t board_uid;
+    pico_get_unique_board_id(&board_uid);
+    return *(board_uid.id);
 }
 
 void check_buttons() {

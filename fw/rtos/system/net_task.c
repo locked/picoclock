@@ -38,6 +38,8 @@ static uint32_t NetStack[4096];
 extern qor_mbox_t NetMailBox;
 extern wakeup_alarm_struct wakeup_alarm;
 
+extern weather_struct weather;
+
 static ost_net_event_t NetEvent;
 
 static ost_net_event_t *NetQueue[10];
@@ -84,7 +86,7 @@ static void response_header(void* opaque, const char* ckey, int nkey, const char
 }
 static void response_code(void* opaque, int code) {
     struct HttpResponse* response = (struct HttpResponse*)opaque;
-    debug_printf("[NET] SET CODE [%d]\r\n", code);
+    //debug_printf("[NET] SET CODE [%d]\r\n", code);
     response->code = code;
 }
 static const struct http_funcs responseFuncs = {
@@ -124,11 +126,13 @@ int parse_http_response(char *http_response, char *body) {
     return -1;
 }
 
-void parse_json_response(char *response) {
-	enum { MAX_FIELDS = 20 };
+int parse_json_response(char *response) {
+    debug_printf("[NET] PARSE JSON:[%s]\r\n", response);
+	enum { MAX_FIELDS = 100 };
 	json_t pool[MAX_FIELDS];
 
 	json_t const* root_elem = json_create(response, pool, MAX_FIELDS);
+    if (root_elem == NULL) return -1;
 	json_t const* status_elem = json_getProperty(root_elem, "status");
 	int status = json_getInteger(status_elem);
 	debug_printf("Parsing date from [%s]...\r\n", response);
@@ -166,6 +170,50 @@ void parse_json_response(char *response) {
     // Save in RTC too
     pcf8563_setAlarm(wakeup_alarm.min, wakeup_alarm.hour, dt.day, wakeup_alarm.dotw);
 
+    // Save weather
+    debug_printf("Save weather\r\n");
+    // https://open-meteo.com/en/docs#current=precipitation,weather_code&hourly=&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum
+	json_t const* weather_json = json_getProperty(root_elem, "weather");
+	json_t const* current_weather_json = json_getProperty(weather_json, "current");
+    sprintf(weather.code_desc, json_getPropertyValue(current_weather_json, "code_desc"));
+    sprintf(weather.temperature_2m, json_getPropertyValue(current_weather_json, "temperature_2m"));
+    sprintf(weather.wind_speed_10m, json_getPropertyValue(current_weather_json, "wind_speed_10m"));
+    sprintf(weather.precipitation, json_getPropertyValue(current_weather_json, "precipitation"));
+
+    debug_printf("Get daily\r\n");
+	json_t const* daily_weather_json = json_getProperty(weather_json, "daily");
+    if (daily_weather_json != NULL) {
+        json_t const* tmp_json;
+        json_t const* child;
+        tmp_json = json_getProperty(daily_weather_json, "precipitation_sum");
+        child = json_getChild(tmp_json);
+        weather.day_0_precip_sum = (int)json_getReal(child);
+
+        tmp_json = json_getProperty(daily_weather_json, "temperature_2m_min");
+        child = json_getChild(tmp_json);
+        weather.day_0_temp_min = (int)json_getReal(child);
+        child = json_getSibling(child);
+        weather.day_1_temp_min = (int)json_getReal(child);
+        child = json_getSibling(child);
+        weather.day_2_temp_min = (int)json_getReal(child);
+
+        tmp_json = json_getProperty(daily_weather_json, "temperature_2m_max");
+        child = json_getChild(tmp_json);
+        weather.day_0_temp_max = (int)json_getReal(child);
+        child = json_getSibling(child);
+        weather.day_1_temp_max = (int)json_getReal(child);
+        child = json_getSibling(child);
+        weather.day_2_temp_max = (int)json_getReal(child);
+
+        tmp_json = json_getProperty(daily_weather_json, "sunrise");
+        child = json_getChild(tmp_json);
+        sprintf(weather.day_0_sunrise, json_getValue(child));
+        child = json_getSibling(child);
+        sprintf(weather.day_1_sunrise, json_getValue(child));
+        child = json_getSibling(child);
+        sprintf(weather.day_2_sunrise, json_getValue(child));
+    }
+
 	debug_printf("STATUS FROM SERVER:[%d] year:[%d] day:[%d] weekday:[%d] month:[%d] hour:[%d] wakeup_alarm:[%02d:%02d]\r\n", status, dt.year, dt.day, dt.dotw, dt.month, dt.hour, wakeup_alarm.hour, wakeup_alarm.min);
 }
 
@@ -189,9 +237,9 @@ void NetTask(void *args) {
 
             if (message->ev == OST_SYS_UPDATE_TIME) {
                 debug_printf("[NET] REMOTE SYNC\r\n");
-                char http_response[2000] = "";
+                char http_response[4000] = "";
                 if (get_response_from_server(http_response) == 0) {
-                    char body[2000] = "";
+                    char body[4000] = "";
                     if (parse_http_response(http_response, body) == 0) {
                         parse_json_response(body);
                     }
