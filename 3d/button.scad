@@ -1,14 +1,16 @@
 include <common.scad>;
 
-outer_diam = 4.3;   // pcb holes are 5mm
+outer_diam = 4.4;   // pcb holes are 5mm
 depth = 6 + 1.6 + 1;
 
-btn = [2, 2, 3];
-fente = [0.8, 0.5, 2];
+btn_size = 2.3;
+btn = [btn_size, btn_size, 3];
+fente = [1.3, 0.5, 3];
 
 module body() {
+    cylinder(h=4, d=outer_diam+0.5, $fn=30);
     cylinder(h=depth, d=outer_diam, $fn=30);
-    translate([0, 0, depth]) cylinder(h=1, d=outer_diam+2, $fn=30);
+    translate([0, 0, depth]) cylinder(h=1, d=outer_diam+2, $fn=50);
 }
 
 difference() {
