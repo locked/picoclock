@@ -2,3 +2,5 @@ pcb/*/*-backups
 pcb/*-backups
 pcb/*/*.lck
 pcb/*.lck
+pcb/gerbers*
+pcb/*/gerbers*
