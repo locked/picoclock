@@ -4,3 +4,5 @@ pcb/*/*.lck
 pcb/*.lck
 pcb/gerbers*
 pcb/*/gerbers*
+fw/rtos/build
+fw/rtos/*/old
