@@ -103,6 +103,10 @@ module case($case) {
         // SD card
     }
 
+    // pcb additional support
+    translate([-15, front_panel[1], -$case[2]/2 + thickness]) cube([30, 5, 3]);
+    translate([-15, front_panel[1], $case[2]/2 - thickness - 3]) cube([30, 5, 3]);
+
     difference() {
         color("Green") {
             translate([-($case[0]/2-inner_cyl_shift), front_panel[1], -($case[2]/2-inner_cyl_shift)])

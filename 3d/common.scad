@@ -18,8 +18,8 @@ vent = 40;
 
 pcb_screw = [157, 48, 3]; // width, height, diam
 pcb_screw_insert = [3, 7.9]; // height, diam
-usb = [9, 3.5];
-usb_from_middle = 3.5;
+usb = [10, 3.5];
+usb_from_middle = 2.5;
 
 pin_header_height = 8;
 pin_socket_height = 3;
