@@ -100,8 +100,6 @@ void DEV_GPIO_Init(void)
 	EPD_MOSI_PIN	= 11;
 	*/
 
-	/*
-	*/
 	EPD_RST_PIN     = 6;
 	EPD_DC_PIN      = 4; //28;
 	EPD_BUSY_PIN    = 7;
@@ -122,18 +120,15 @@ function:	Module Initialize, the library and initialize the pins, SPI protocol
 parameter:
 Info:
 ******************************************************************************/
-UBYTE DEV_Module_Init(void)
-{
-    stdio_init_all();
-
+UBYTE DEV_Module_Init(void) {
 	// GPIO Config
 	DEV_GPIO_Init();
-	
-    spi_init(SPI_PORT, 4000 * 1000);
-    gpio_set_function(EPD_CLK_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(EPD_MOSI_PIN, GPIO_FUNC_SPI);
-	
-    printf("DEV_Module_Init OK \r\n");
+
+	spi_init(SPI_PORT, 4000 * 1000);
+	gpio_set_function(EPD_CLK_PIN, GPIO_FUNC_SPI);
+	gpio_set_function(EPD_MOSI_PIN, GPIO_FUNC_SPI);
+
+	printf("DEV_Module_Init OK \r\n");
 	return 0;
 }
 

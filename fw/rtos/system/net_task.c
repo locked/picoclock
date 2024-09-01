@@ -22,6 +22,8 @@
 
 #include "tinyhttp/http.h"
 
+#include "flash_storage.h"
+
 
 
 // ===========================================================================================================
@@ -36,7 +38,7 @@ static qor_tcb_t NetTcb;
 static uint32_t NetStack[4096];
 
 extern qor_mbox_t NetMailBox;
-extern wakeup_alarm_struct wakeup_alarm;
+extern wakeup_alarm_struct wakeup_alarms[4];
 
 extern weather_struct weather;
 
@@ -161,7 +163,53 @@ int parse_json_response(char *response) {
 	rtc_set_datetime(&dt);
     pcf8563_setDateTime(dt.day, dt.dotw, dt.month, century, year, dt.hour, dt.min, dt.sec);
 
-	// Save alarm
+	// Save alarms
+	json_t const* wakeup_alarms_elem = json_getProperty(root_elem, "wakeup_alarms");
+    // Store each alarms
+    json_t const* alarm_child;
+    int tmp;
+    bool wakeup_alarms_changed = false;
+    alarm_child = json_getChild(wakeup_alarms_elem);
+    for (int i=0; i<4; i++) {
+        if (alarm_child == NULL) {
+            // Clear alarms
+            if (wakeup_alarms[i].isset != 0 || wakeup_alarms[i].weekdays != 0 || wakeup_alarms[i].hour != 0 || wakeup_alarms[i].min != 0) {
+                wakeup_alarms_changed = true;
+            }
+            wakeup_alarms[i].isset = 0;
+            wakeup_alarms[i].weekdays = 0;
+            wakeup_alarms[i].hour = 0;
+            wakeup_alarms[i].min = 0;
+        } else {
+            tmp = json_getInteger(json_getProperty(alarm_child, "isset"));
+            if (tmp != wakeup_alarms[i].isset) {
+                wakeup_alarms[i].isset = tmp;
+                wakeup_alarms_changed = true;
+            }
+            tmp = json_getInteger(json_getProperty(alarm_child, "weekdays"));
+            if (tmp != wakeup_alarms[i].weekdays) {
+                wakeup_alarms[i].weekdays = tmp;
+                wakeup_alarms_changed = true;
+            }
+            tmp = json_getInteger(json_getProperty(alarm_child, "hour"));
+            if (tmp != wakeup_alarms[i].hour) {
+                wakeup_alarms[i].hour = tmp;
+                wakeup_alarms_changed = true;
+            }
+            tmp = json_getInteger(json_getProperty(alarm_child, "minute"));
+            if (tmp != wakeup_alarms[i].min) {
+                wakeup_alarms[i].min = tmp;
+                wakeup_alarms_changed = true;
+            }
+
+            alarm_child = json_getSibling(alarm_child);
+        }
+    }
+    if (wakeup_alarms_changed) {
+        flash_store_alarms(wakeup_alarms);
+    }
+    /*
+     * Old, only 1 alarm:
 	json_t const* wakeup_alarm_elem = json_getProperty(root_elem, "wakeup_alarm");
 	wakeup_alarm.isset = json_getInteger(json_getProperty(wakeup_alarm_elem, "isset"));
 	wakeup_alarm.dotw = json_getInteger(json_getProperty(wakeup_alarm_elem, "weekday"));
@@ -169,6 +217,7 @@ int parse_json_response(char *response) {
 	wakeup_alarm.min = json_getInteger(json_getProperty(wakeup_alarm_elem, "minute"));
     // Save in RTC too
     pcf8563_setAlarm(wakeup_alarm.min, wakeup_alarm.hour, dt.day, wakeup_alarm.dotw);
+     */
 
     // Save weather
     debug_printf("Save weather\r\n");
@@ -214,7 +263,7 @@ int parse_json_response(char *response) {
         sprintf(weather.day_2_sunrise, json_getValue(child));
     }
 
-	debug_printf("STATUS FROM SERVER:[%d] year:[%d] day:[%d] weekday:[%d] month:[%d] hour:[%d] wakeup_alarm:[%02d:%02d]\r\n", status, dt.year, dt.day, dt.dotw, dt.month, dt.hour, wakeup_alarm.hour, wakeup_alarm.min);
+	debug_printf("STATUS FROM SERVER:[%d] year:[%d] day:[%d] weekday:[%d] month:[%d] hour:[%d] wakeup_alarm[0]:[%02d:%02d]\r\n", status, dt.year, dt.day, dt.dotw, dt.month, dt.hour, wakeup_alarms[0].hour, wakeup_alarms[0].min);
 }
 
 // ===========================================================================================================
@@ -232,7 +281,7 @@ void NetTask(void *args) {
         if (res == QOR_MBOX_OK) {
             if (message->ev == OST_SYS_ALARM) {
                 debug_printf("[NET] OST_SYS_ALARM\r\n");
-                play_melody(16, HarryPotter, 200);
+                play_melody(GPIO_PWM, HarryPotter, 200);
             }
 
             if (message->ev == OST_SYS_UPDATE_TIME) {
@@ -249,19 +298,20 @@ void NetTask(void *args) {
             if (message->ev == OST_SYS_PLAY_SOUND) {
                 debug_printf("[NET] OST_SYS_PLAY_SOUND\r\n");
                 if (message->song == 0) {
-                    play_melody(16, HarryPotter, 140);
+                    play_melody(GPIO_PWM, HarryPotter, 140);
                 } else {
-                    play_melody(16, HappyBirday, 140);
+                    play_melody(GPIO_PWM, HappyBirday, 140);
                 }
             }
         }
 
-        qor_sleep(5000);
+        qor_sleep(500);
         //debug_printf("\r\n[NET] task woke up\r\n");
     }
 }
 
 void request_remote_sync() {
+    debug_printf("request_remote_sync\r\n");
 	// Notify for remote sync
     static ost_net_event_t UpdateTimeEv = {
         .ev = OST_SYS_UPDATE_TIME

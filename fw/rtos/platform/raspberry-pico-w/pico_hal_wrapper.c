@@ -1,3 +1,5 @@
+#define PICO_MAX_SHARED_IRQ_HANDLERS 5u
+
 // C library
 #include <string.h>
 #include <stdlib.h>
@@ -26,21 +28,31 @@
 #include "ImageData.h"
 #include "EPD_2in13_V4.h"
 
-// Local
-#include "audio_player.h"
-#include "pico_i2s.h"
-#include "button_debounce.h"
-#define PICO_AUDIO_I2S_DATA_PIN 16
-#define PICO_AUDIO_I2S_CLOCK_PIN_BASE 17
 
-// Audio
+// Audio (PIO)
+//#include "audio_player.h"
+//#include "pico_i2s.h"
+//#define PICO_AUDIO_I2S_DATA_PIN 16
+//#define PICO_AUDIO_I2S_CLOCK_PIN_BASE 17
+/*
+static __attribute__((aligned(8))) pio_i2s i2s;
+static volatile uint32_t msTicks = 0;
+static audio_ctx_t audio_ctx;
+static audio_i2s_config_t config = {
+    .freq = 44100,
+    .bps = 32,
+    .data_pin = PICO_AUDIO_I2S_DATA_PIN,
+    .clock_pin_base = PICO_AUDIO_I2S_CLOCK_PIN_BASE
+};
+*/
+
+// Audio (no PIO)
 //#include <stdio.h>
 //#include <math.h>
 //#include "hardware/structs/clocks.h"
 //#include "pico/audio_i2s.h"
 //#include "pico/binary_info.h"
 //bi_decl(bi_3pins_with_names(PICO_AUDIO_I2S_DATA_PIN, "I2S DIN", PICO_AUDIO_I2S_CLOCK_PIN_BASE, "I2S BCK", PICO_AUDIO_I2S_CLOCK_PIN_BASE+1, "I2S LRCK"));
-
 
 
 // ===========================================================================================================
@@ -73,9 +85,6 @@ const uint LED_PIN = 25;
 // ===========================================================================================================
 // GLOBAL VARIABLES
 // ===========================================================================================================
-static __attribute__((aligned(8))) pio_i2s i2s;
-static volatile uint32_t msTicks = 0;
-static audio_ctx_t audio_ctx;
 
 // Buttons
 static ost_button_callback_t ButtonCallback = NULL;
@@ -84,24 +93,18 @@ static bool IsDebouncing = false;
 static uint32_t ButtonsState = 0;
 static uint32_t ButtonsStatePrev = 0;
 
-static PIO pio = pio1;
-static uint8_t sm = 0;
+//static PIO pio = pio0;
+//static uint8_t sm = 0;
 
 static int new_value, delta, old_value = 0;
 
-static audio_i2s_config_t config = {
-    .freq = 44100,
-    .bps = 32,
-    .data_pin = PICO_AUDIO_I2S_DATA_PIN,
-    .clock_pin_base = PICO_AUDIO_I2S_CLOCK_PIN_BASE
-};
 
 // ===========================================================================================================
 // PROTOTYPES
 // ===========================================================================================================
 extern void init_spi(void);
 void dma_init();
-void __isr __time_critical_func(audio_i2s_dma_irq_handler)();
+//void __isr __time_critical_func(audio_i2s_dma_irq_handler)();
 
 // ===========================================================================================================
 // OST HAL IMPLEMENTATION
@@ -266,6 +269,8 @@ void ost_system_initialize()
 {
     set_sys_clock_khz(125000, true);
 
+    stdio_init_all();
+
     ////------------------- Init DEBUG LED
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
@@ -302,10 +307,8 @@ void ost_system_initialize()
     //------------------- Init LCD
     debug_printf("Init e-Paper module...\r\n");
     if(DEV_Module_Init()!=0){
-      return;
+        return;
     }
-
-    debug_printf("e-Paper Init and Clear...\r\n");
     EPD_2in13_V4_Init();
     EPD_2in13_V4_Clear();
 
@@ -349,9 +352,11 @@ void ost_system_initialize()
 
     //------------------- Init Sound
     //play_sine();
+    /*
     i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
     audio_init(&audio_ctx);
     ost_audio_register_callback(audio_callback);
+    */
 
     //gpio_set_function(16, GPIO_FUNC_PWM);
 
@@ -456,7 +461,7 @@ uint8_t ost_hal_sdcard_get_presence()
 // AUDIO HAL
 // ----------------------------------------------------------------------------
 
-
+/*
 void ost_audio_play(const char *filename) {
     audio_play(&audio_ctx, filename);
     config.freq = audio_ctx.audio_info.sample_rate;
@@ -511,3 +516,4 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
         AudioCallBack();
     }
 }
+*/

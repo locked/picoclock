@@ -13,6 +13,7 @@ extern "C"
 
 #define FRONT_PANEL_LED_PIN 11
 
+#define GPIO_PWM 16
 
 	typedef struct
 	{
@@ -34,7 +35,7 @@ extern "C"
 	// Wakeup alarm global structure
 	typedef struct {
 	  int isset;
-	  int dotw;
+	  int weekdays;	// This is a bitmask
 	  int hour;
 	  int min;
 	} wakeup_alarm_struct;

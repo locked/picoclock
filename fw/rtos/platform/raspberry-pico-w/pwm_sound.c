@@ -8,11 +8,11 @@
 #include "qor.h"
 
 
-static inline void pwm_calcDivTop(pwm_config *c,int frequency,int sysClock) {
+static inline void pwm_calcDivTop(pwm_config *c, int frequency, int sysClock) {
 	uint  count = sysClock * 16 / frequency;
 	uint  div =  count / 60000;  // to be lower than 65535*15/16 (rounding error)
 	if (div < 16) {
-		div=16;
+		div = 16;
 	}
 	c->div = div;
 	c->top = count / div;

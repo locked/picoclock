@@ -19,6 +19,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
+
 # ==========================
 # COMMON FILES
 # ==========================
@@ -46,7 +47,8 @@ set(OST_SRCS
     library/tinyhttp/chunk.c
     library/tinyhttp/header.c
     library/button_debounce.c
-    library/pico_i2s.c
+    library/flash_storage.c
+    #library/pico_i2s.c
     platform/raspberry-pico-w/wifi.c
     platform/raspberry-pico-w/pwm_sound.c
     platform/raspberry-pico-w/pico_hal_wrapper.c

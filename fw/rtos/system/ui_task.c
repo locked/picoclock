@@ -27,6 +27,7 @@
 #include "EPD_2in13_V4.h"
 
 #include "hardware/rtc.h"
+#include <hardware/sync.h>
 
 #include "mcp9808/mcp9808.h"
 
@@ -37,6 +38,8 @@
 #include "graphics.h"
 
 #include <malloc.h>
+
+#include "flash_storage.h"
 
 uint32_t getTotalHeap(void) {
    extern char __StackLimit, __bss_end__;
@@ -69,7 +72,7 @@ static uint32_t UiStack[4096];
 
 static qor_mbox_t UiMailBox;
 extern qor_mbox_t NetMailBox;
-extern wakeup_alarm_struct wakeup_alarm;
+extern wakeup_alarm_struct wakeup_alarms[4];
 
 extern weather_struct weather;
 
@@ -95,7 +98,7 @@ void UiTask(void *args) {
     int loop_count = 0;
     int last_min = 0;
     int current_screen = 0;
-    int max_screen = 2;
+    int max_screen = 3;
     bool backlight_on = false;
     char temp_str[100];
     char temp2_str[10];
@@ -104,9 +107,6 @@ void UiTask(void *args) {
     int icon_left_x = 0;
     int icon_right_x = 214;
     int last_sync = -1;
-
-    DEV_Module_Init();
-    EPD_2in13_V4_Init();
 
     // Create a new image cache
     UBYTE *BlackImage;
@@ -134,6 +134,9 @@ void UiTask(void *args) {
     }
     Paint_Clear(WHITE);
 
+    // Load alarms
+    flash_read_alarms(wakeup_alarms);
+
     while (1) {
         res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
         if (res == QOR_MBOX_OK) {
@@ -141,8 +144,8 @@ void UiTask(void *args) {
             if (message->ev == OST_SYS_BUTTON) {
                 debug_printf("/!\\ Received event OST_SYS_BUTTON:[%d]\r\n", message->btn);
                 if (message->btn == 0) {
-                    if (current_screen == 0 || current_screen == 1) {
-                        ost_audio_play("sinewave");
+                    if (current_screen < 3) {
+                        // ost_audio_play("sinewave"); // for debugging
                         if (backlight_on) {
                             gpio_put(FRONT_PANEL_LED_PIN, 0);
                             backlight_on = false;
@@ -150,14 +153,14 @@ void UiTask(void *args) {
                             gpio_put(FRONT_PANEL_LED_PIN, 1);
                             backlight_on = true;
                         }
-                    } else if (current_screen == 2) {
+                    } else if (current_screen == 3) {
                         request_play_song(0);
                     }
                 }
                 if (message->btn == 1) {
-                    if (current_screen == 0 || current_screen == 1) {
+                    if (current_screen < 3) {
                         request_remote_sync();
-                    } else if (current_screen == 2) {
+                    } else if (current_screen == 3) {
                         request_play_song(1);
                     }
                 }
@@ -181,7 +184,6 @@ void UiTask(void *args) {
             if (message->ev == OST_SYS_REFRESH_SCREEN) {
                 debug_printf("/!\\ Received event OST_SYS_REFRESH_SCREEN:[%d] current_screen:[%d]\r\n", message->btn, current_screen);
                 if (!module_initialized) {
-                    DEV_Module_Init();
                     EPD_2in13_V4_Init();
                     message->clear = true;
                     module_initialized = true;
@@ -207,7 +209,7 @@ void UiTask(void *args) {
                     sPaint_time.Hour = dt.hour;
                     sPaint_time.Min = dt.min;
                     sPaint_time.Sec = dt.sec;
-                    sprintf(temp_str, "%d-%02d-%02d", dt.year, dt.month, dt.day);
+                    sprintf(temp_str, "%02d/%02d (%d)", dt.day, dt.month, dt.weekday);
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font24, WHITE, BLACK);
 
                     Paint_ClearWindows(screen_x, 40, screen_x + Font24.Width * 8, 40 + Font24.Height, WHITE);
@@ -218,10 +220,9 @@ void UiTask(void *args) {
                     Paint_ClearWindows(screen_x + Font12.Width * 6, 80, screen_x + Font12.Width * 12, 80 + Font12.Height, WHITE);
                     Paint_DrawString_EN(screen_x, 80, temp_str, &Font12, WHITE, BLACK);
 
-                    //ost_get_wakeup_alarm(&wakeup_alarm);
-                    sprintf(temp_str, "Alarm: %02d:%02d (%d)", dt.alarm_hour, dt.alarm_min, dt.alarm_weekday);
-                    Paint_ClearWindows(screen_x + Font12.Width * 7, 100, screen_x + Font12.Width * 17, 100 + Font12.Height, WHITE);
-                    Paint_DrawString_EN(screen_x, 100, temp_str, &Font12, WHITE, BLACK);
+                    //sprintf(temp_str, "Alarm: %02d:%02d (%d)", dt.alarm_hour, dt.alarm_min, dt.alarm_weekday);
+                    //Paint_ClearWindows(screen_x + Font12.Width * 7, 100, screen_x + Font12.Width * 17, 100 + Font12.Height, WHITE);
+                    //Paint_DrawString_EN(screen_x, 100, temp_str, &Font12, WHITE, BLACK);
 
                     if (message->clear) {
                         EPD_2in13_V4_Display_Base(BlackImage);
@@ -262,6 +263,16 @@ void UiTask(void *args) {
                     EPD_2in13_V4_Display_Base(BlackImage);
                     shutdown_screen = loop_count++ > 10;
                 } else if (current_screen == 2) {
+                    sprintf(temp_str, "Alarms");
+                    Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
+                    for (int i=0; i<4; i++) {
+                        _y += Font16.Height + 1;
+                        sprintf(temp_str, "[%d] %d:%d (%d)", wakeup_alarms[i].isset, wakeup_alarms[i].hour, wakeup_alarms[i].min, wakeup_alarms[i].weekdays);
+                        Paint_DrawString_EN(screen_x, _y + Font12.Height * 0, temp_str, &Font12, WHITE, BLACK);
+                    }
+                    EPD_2in13_V4_Display_Base(BlackImage);
+                    shutdown_screen = true;
+                } else if (current_screen == 3) {
                     sprintf(temp_str, "Debug");
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
 
@@ -301,11 +312,21 @@ void UiTask(void *args) {
         if (time_initialized) {
             if (dt.min != last_min) {
                 // Minute change
-                if (dt.hour == dt.alarm_hour && dt.min == dt.alarm_min) {
-                    static ost_net_event_t NetEv = {
-                        .ev = OST_SYS_ALARM
-                    };
-                    qor_mbox_notify(&NetMailBox, (void **)&NetEv, QOR_MBOX_OPTION_SEND_BACK);
+                for (int i=0; i<4; i++) {
+                    wakeup_alarm_struct alarm = wakeup_alarms[i];
+                    debug_printf("Check alarm:[%d] [%d:%d] vs [%d:%d]\r\n", i, alarm.hour, alarm.min, dt.hour, dt.min);
+                    if (alarm.isset == 1 && alarm.hour == dt.hour && alarm.min == dt.min) {
+                        // Check weekday
+                        if (alarm.weekdays & (1 << (7 - dt.weekday))) {
+                            debug_printf("Trigger alarm dt.weekday:[%d] alarm.weekdays:[%d]\r\n", dt.weekday, alarm.weekdays);
+                            static ost_net_event_t NetEv = {
+                                .ev = OST_SYS_ALARM
+                            };
+                            qor_mbox_notify(&NetMailBox, (void **)&NetEv, QOR_MBOX_OPTION_SEND_BACK);
+                        } else {
+                            debug_printf("NO trigger alarm dt.weekday:[%d] alarm.weekdays:[%d]\r\n", dt.weekday, alarm.weekdays);
+                        }
+                    }
                 }
 
                 static ost_ui_event_t UiEv = {
