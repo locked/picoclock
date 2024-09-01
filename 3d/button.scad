@@ -3,7 +3,8 @@ include <common.scad>;
 outer_diam = 4.4;   // pcb holes are 5mm
 depth = 6 + 1.6 + 1;
 
-btn_size = 2.3;
+//btn_size = 2.4;	// Ok, tight
+btn_size = 2.5;	// Ok, loose
 btn = [btn_size, btn_size, 3];
 fente = [1.3, 0.5, 3];
 
