@@ -45,8 +45,15 @@ set(OST_SRCS
     library/tinyhttp/http.c
     library/tinyhttp/chunk.c
     library/tinyhttp/header.c
+    library/button_debounce.c
+    library/pico_i2s.c
+    platform/raspberry-pico-w/wifi.c
+    platform/raspberry-pico-w/pwm_sound.c
+    platform/raspberry-pico-w/pico_hal_wrapper.c
 )
 include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/hal
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/library
     ${CMAKE_CURRENT_SOURCE_DIR}/system/ff
@@ -55,6 +62,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/Config
     ${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/GUI
     ${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/e-Paper
+    ${CMAKE_CURRENT_SOURCE_DIR}/platform/raspberry-pico-w/
 )
 
 message("=============  TARGET: RASPBERRY PICO  =============")
@@ -71,6 +79,11 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/platform/raspberry-pico-w/pico_extras_import
 # target_link_libraries(BUNDLE_LIBRARIES INTERFACE )
 project(${PROJECT_NAME} LANGUAGES CXX C ASM)
 
+set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
 # initialize the Raspberry Pi Pico SDK
 # after project!
 pico_sdk_init()
@@ -80,18 +93,23 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/e-Paper)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/Fonts)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/GUI)
 
-# ------ PLATFORM
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/platform/raspberry-pico-w)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/platform/raspberry-pico-w)
-
+# ------ Executable
 add_executable(${PROJECT_NAME} ${OST_SRCS} ${MIDDLEWARE_SRCS})
 
 # ------ Link
 target_link_libraries(${PROJECT_NAME} PUBLIC "-Wl,--start-group"
-	gcc m c stdc++ raspberry-pico-w pico_stdlib hardware_spi hardware_dma hardware_pio hardware_i2c hardware_rtc hardware_pwm ePaper GUI Fonts Config "-Wl,--end-group")
+	gcc m c stdc++ pico_stdlib hardware_spi hardware_dma hardware_pio hardware_i2c hardware_rtc hardware_pwm hardware_exception cmsis_core pico_cyw43_arch_lwip_poll ePaper GUI Fonts Config pico_audio_i2s "-Wl,--end-group")
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
 
 pico_add_extra_outputs(${PROJECT_NAME})
+
+
+pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/library/pico_i2s.pio)
+pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/library/button_debounce.pio)
+
+pico_enable_stdio_usb(${PROJECT_NAME} 1)
+pico_enable_stdio_uart(${PROJECT_NAME} 1)
+
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     WIFI_SSID=\"${WIFI_SSID}\"

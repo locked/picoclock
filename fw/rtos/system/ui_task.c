@@ -28,9 +28,6 @@
 
 #include "hardware/rtc.h"
 
-//#include "pwm_sound.h"
-//#include "pwm_sound_melodies.h"
-
 #include "mcp9808/mcp9808.h"
 
 #include "pcf8563/pcf8563.h"
@@ -64,7 +61,7 @@ typedef struct {
 } ost_ui_event_t;
 
 // ===========================================================================================================
-// GLOBAL STORY VARIABLES
+// GLOBAL VARIABLES
 // ===========================================================================================================
 
 static qor_tcb_t UiTcb;
