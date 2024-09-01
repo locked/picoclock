@@ -4,9 +4,9 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_COLOR_MAKEFILE ON)
 set(PROJECT_NAME picoclock)
 
-# ==================================================================================================
+# ==========================
 # DEFAULT VARIABLES OPTIONS
-# ==================================================================================================
+# ==========================
 if(NOT OST_BUNDLE)
     set(OST_BUNDLE "RASPI_PICO")
 endif()
@@ -19,9 +19,9 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# ==================================================================================================
-# OST COMMON FILES
-# ==================================================================================================
+# ==========================
+# COMMON FILES
+# ==========================
 set(OST_SRCS
     system/main.c
     system/sdcard.c
@@ -118,9 +118,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     SERVER_PORT=\"${SERVER_PORT}\"
 )
 
-# ==================================================================================================
+# ==========================
 # CUSTOM TARGETS
-# ==================================================================================================
+# ==========================
 add_custom_target(RaspberryPico
     COMMAND ${CMAKE_COMMAND}
     -DOST_BUNDLE=RASPI_PICO
