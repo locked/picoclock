@@ -145,6 +145,7 @@ void UiTask(void *args) {
                 debug_printf("/!\\ Received event OST_SYS_BUTTON:[%d]\r\n", message->btn);
                 if (message->btn == 0) {
                     if (current_screen == 0 || current_screen == 1) {
+                        ost_audio_play("sinewave");
                         if (backlight_on) {
                             gpio_put(FRONT_PANEL_LED_PIN, 0);
                             backlight_on = false;

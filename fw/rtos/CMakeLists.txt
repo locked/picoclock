@@ -65,6 +65,8 @@ add_definitions(-DOST_USE_FF_LIBRARY)
 # note: this must happen before project()
 include(${CMAKE_CURRENT_SOURCE_DIR}/platform/raspberry-pico-w/pico_sdk_import.cmake)
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/platform/raspberry-pico-w/pico_extras_import.cmake)
+
 # add_library(BUNDLE_LIBRARIES INTERFACE)
 # target_link_libraries(BUNDLE_LIBRARIES INTERFACE )
 project(${PROJECT_NAME} LANGUAGES CXX C ASM)
