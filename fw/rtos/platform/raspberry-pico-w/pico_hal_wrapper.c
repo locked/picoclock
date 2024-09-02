@@ -358,7 +358,7 @@ void ost_system_initialize()
     ost_audio_register_callback(audio_callback);
     */
 
-    //gpio_set_function(16, GPIO_FUNC_PWM);
+    gpio_set_function(GPIO_PWM, GPIO_FUNC_PWM);
 
     // ------------ Everything is initialized, print stuff here
     debug_printf("System Clock: %lu\n", clock_get_hz(clk_sys));
