@@ -8,6 +8,9 @@
 #include "qor.h"
 
 
+int sound_status = SOUND_STATUS_STOPPED;
+
+
 static inline void pwm_calcDivTop(pwm_config *c, int frequency, int sysClock) {
 	uint  count = sysClock * 16 / frequency;
 	uint  div =  count / 60000;  // to be lower than 65535*15/16 (rounding error)
@@ -20,28 +23,29 @@ static inline void pwm_calcDivTop(pwm_config *c, int frequency, int sysClock) {
 
 
 void play_melody(uint gpio, note_struct * n, uint tempo) {
-	// Find out which PWM slice is connected to GPIO 0 (it's slice 0)
+	// Find out which PWM slice is connected to the GPIO
 	uint slice_num = pwm_gpio_to_slice_num(gpio);
 
 	pwm_config cfg = pwm_get_default_config();
 
-	pwm_set_chan_level(slice_num,PWM_CHAN_A,0);
+	pwm_set_chan_level(slice_num, PWM_CHAN_A, 0);
 
 	int wholenote = (60000 * 4) / tempo;
 
 	int loop;
 	int duration;
 
-	for(loop=0;;loop++) {
+	sound_status = SOUND_STATUS_PLAYING;
+	for (loop=0;;loop++) {
 		duration = n[loop].duration;
-		if(duration == 0) break;
+		if (duration == 0) break;
 
-		if(duration>0)
-		  duration = wholenote / duration;
+		if (duration > 0)
+			duration = wholenote / duration;
 		else
-		  duration = ( 3 * wholenote / (-duration))/2;
+			duration = (3 * wholenote / (-duration))/2;
 
-		if(n[loop].frequency!=REST) {
+		if (n[loop].frequency!=REST) {
 			pwm_set_enabled(slice_num, false);
 			//get new frequency
 			pwm_calcDivTop(&cfg,n[loop].frequency,125000000);
@@ -56,5 +60,13 @@ void play_melody(uint gpio, note_struct * n, uint tempo) {
 			//sleep_us(1000 * duration);
 			qor_sleep(duration);
 		}
+		if (sound_status == SOUND_STATUS_STOPPED) {
+			break;
+		}
 	}
+	sound_status = SOUND_STATUS_STOPPED;
+}
+
+void stop_melody() {
+	sound_status = SOUND_STATUS_STOPPED;
 }

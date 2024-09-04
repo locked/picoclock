@@ -41,6 +41,9 @@
 
 #include "flash_storage.h"
 
+#include "pwm_sound.h"
+
+
 uint32_t getTotalHeap(void) {
    extern char __StackLimit, __bss_end__;
    
@@ -66,23 +69,19 @@ typedef struct {
 // ===========================================================================================================
 // GLOBAL VARIABLES
 // ===========================================================================================================
-
 static qor_tcb_t UiTcb;
 static uint32_t UiStack[4096];
-
 static qor_mbox_t UiMailBox;
+static ost_ui_event_t UiEvent;
+static ost_ui_event_t *UiQueue[10];
+static ost_system_state_t OstState = OST_SYS_NO_EVENT;
+static ost_context_t OstContext;
+
+// Externs
 extern qor_mbox_t NetMailBox;
 extern wakeup_alarm_struct wakeup_alarms[4];
-
 extern weather_struct weather;
-
-static ost_ui_event_t UiEvent;
-
-static ost_ui_event_t *UiQueue[10];
-
-static ost_system_state_t OstState = OST_SYS_NO_EVENT;
-
-static ost_context_t OstContext;
+extern int current_screen;
 
 
 // ===========================================================================================================
@@ -97,8 +96,6 @@ void UiTask(void *args) {
     bool need_screen_clear = true;
     int loop_count = 0;
     int last_min = 0;
-    int current_screen = 0;
-    int max_screen = 3;
     bool backlight_on = false;
     char temp_str[100];
     char temp2_str[10];
@@ -143,40 +140,52 @@ void UiTask(void *args) {
             // Buttons click
             if (message->ev == OST_SYS_BUTTON) {
                 debug_printf("/!\\ Received event OST_SYS_BUTTON:[%d]\r\n", message->btn);
-                if (message->btn == 0) {
-                    if (current_screen < 3) {
-                        // ost_audio_play("sinewave"); // for debugging
-                        if (backlight_on) {
-                            gpio_put(FRONT_PANEL_LED_PIN, 0);
-                            backlight_on = false;
-                        } else {
-                            gpio_put(FRONT_PANEL_LED_PIN, 1);
-                            backlight_on = true;
-                        }
-                    } else if (current_screen == 3) {
-                        request_play_song(0);
-                    }
-                }
-                if (message->btn == 1) {
-                    if (current_screen < 3) {
-                        request_remote_sync();
-                    } else if (current_screen == 3) {
-                        request_play_song(1);
-                    }
-                }
-                if (message->btn == 2 || message->btn == 3) {
-                    current_screen += message->btn == 2 ? 1 : -1;
-                    if (current_screen > max_screen) {
-                        current_screen = 0;
-                    }
-                    if (current_screen < 0) {
-                        current_screen = max_screen;
-                    }
+                if (current_screen == SCREEN_ALARM) {
+                    // In alarm
+                    stop_melody();
+                    current_screen = SCREEN_MAIN;
                     static ost_ui_event_t Ev = {
                         .ev = OST_SYS_REFRESH_SCREEN,
                         .clear = true
                     };
                     qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
+                } else {
+                    // Normal mode
+                    if (message->btn == 0) {
+                        if (current_screen < 3) {
+                            // ost_audio_play("sinewave"); // for debugging
+                            if (backlight_on) {
+                                gpio_put(FRONT_PANEL_LED_PIN, 0);
+                                backlight_on = false;
+                            } else {
+                                gpio_put(FRONT_PANEL_LED_PIN, 1);
+                                backlight_on = true;
+                            }
+                        } else if (current_screen == 3) {
+                            request_play_song(0);
+                        }
+                    }
+                    if (message->btn == 1) {
+                        if (current_screen < 3) {
+                            request_remote_sync();
+                        } else if (current_screen == 3) {
+                            request_play_song(1);
+                        }
+                    }
+                    if (message->btn == 2 || message->btn == 3) {
+                        current_screen += message->btn == 2 ? 1 : -1;
+                        if (current_screen > MAX_SCREEN_ID) {
+                            current_screen = 0;
+                        }
+                        if (current_screen < 0) {
+                            current_screen = MAX_SCREEN_ID;
+                        }
+                        static ost_ui_event_t Ev = {
+                            .ev = OST_SYS_REFRESH_SCREEN,
+                            .clear = true
+                        };
+                        qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
+                    }
                 }
             }
 
@@ -198,7 +207,7 @@ void UiTask(void *args) {
                 int _y = 8;
                 display_icon(icon_left_x, 90, ICON_LEFTARROW);
                 display_icon(icon_right_x, 90, ICON_RIGHTARROW);
-                if (current_screen == 0) {
+                if (current_screen == SCREEN_MAIN) {
                     display_icon(icon_right_x, 10, ICON_LIGHT);
                     display_icon(icon_right_x, 50, ICON_WIFI);
 
@@ -231,7 +240,7 @@ void UiTask(void *args) {
                         EPD_2in13_V4_Display_Partial(BlackImage);
                     }
                     shutdown_screen = loop_count++ > 10;
-                } else if (current_screen == 1) {
+                } else if (current_screen == SCREEN_WEATHER) {
                     display_icon(icon_right_x, 10, ICON_LIGHT);
                     display_icon(icon_right_x, 50, ICON_WIFI);
 
@@ -262,7 +271,7 @@ void UiTask(void *args) {
 
                     EPD_2in13_V4_Display_Base(BlackImage);
                     shutdown_screen = loop_count++ > 10;
-                } else if (current_screen == 2) {
+                } else if (current_screen == SCREEN_LIST_ALARMS) {
                     sprintf(temp_str, "Alarms");
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
                     for (int i=0; i<4; i++) {
@@ -272,7 +281,7 @@ void UiTask(void *args) {
                     }
                     EPD_2in13_V4_Display_Base(BlackImage);
                     shutdown_screen = true;
-                } else if (current_screen == 3) {
+                } else if (current_screen == SCREEN_DEBUG) {
                     sprintf(temp_str, "Debug");
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
 
@@ -285,6 +294,17 @@ void UiTask(void *args) {
 
                     sprintf(temp_str, "Mem(free/tot): %d/%d", getFreeHeap(), getTotalHeap());
                     Paint_DrawString_EN(screen_x, _y + Font12.Height * 2, temp_str, &Font12, WHITE, BLACK);
+
+                    EPD_2in13_V4_Display_Base(BlackImage);
+                    shutdown_screen = true;
+                } else if (current_screen == SCREEN_ALARM) {
+                    sprintf(temp_str, "ALARM");
+                    Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
+
+                    time_struct dt = pcf8563_getDateTime();
+                    _y += Font16.Height + 1;
+                    sprintf(temp_str, "%02d:%02d", dt.hour, dt.min);
+                    Paint_DrawString_EN(screen_x, _y, temp_str, &Font24, WHITE, BLACK);
 
                     EPD_2in13_V4_Display_Base(BlackImage);
                     shutdown_screen = true;
@@ -323,6 +343,13 @@ void UiTask(void *args) {
                                 .ev = OST_SYS_ALARM
                             };
                             qor_mbox_notify(&NetMailBox, (void **)&NetEv, QOR_MBOX_OPTION_SEND_BACK);
+
+                            current_screen = SCREEN_ALARM;
+                            static ost_ui_event_t Ev = {
+                                .ev = OST_SYS_REFRESH_SCREEN,
+                                .clear = true
+                            };
+                            qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
                         } else {
                             debug_printf("NO trigger alarm dt.weekday:[%d] alarm.weekdays:[%d]\r\n", dt.weekday, alarm.weekdays);
                         }
@@ -344,15 +371,16 @@ void UiTask(void *args) {
             }
             if (((ts - last_sync) > 3600) || ((ts - last_sync) < 0)) {
                 // Trigger server sync
-                debug_printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
+                printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
                 request_remote_sync();
                 last_sync = ts;
                 sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
+                printf("sync trigger done\r\n");
             }
         }
 
         qor_sleep(500);
-        //debug_printf("\r\n[UI] task woke up\r\n");
+        //printf("[UI] task woke up\r\n");
     }
 }
 

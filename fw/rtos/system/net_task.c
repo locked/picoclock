@@ -26,34 +26,28 @@
 
 
 
-// ===========================================================================================================
-// DEFINITIONS
-// ===========================================================================================================
-
-// ===========================================================================================================
-// GLOBAL STORY VARIABLES
-// ===========================================================================================================
+// GLOBAL VARIABLES
 
 static qor_tcb_t NetTcb;
 static uint32_t NetStack[4096];
+static ost_net_event_t NetEvent;
+static ost_net_event_t *NetQueue[10];
+static ost_system_state_t OstState = OST_SYS_NO_EVENT;
+static ost_context_t OstContext;
 
 extern qor_mbox_t NetMailBox;
+
+// Externs
 extern wakeup_alarm_struct wakeup_alarms[4];
-
 extern weather_struct weather;
-
-static ost_net_event_t NetEvent;
-
-static ost_net_event_t *NetQueue[10];
-
-static ost_system_state_t OstState = OST_SYS_NO_EVENT;
-
-static ost_context_t OstContext;
 
 
 int get_response_from_server(char *response) {
-	debug_printf("Connecting to wifi...\r\n");
+	printf("Sleep a bit [0]...\r\n");
+    qor_sleep(10);
+	printf("Connecting to wifi...\r\n");
 	int ret = wifi_connect(WIFI_SSID, WIFI_PASSWORD);
+	printf("Sleep a bit [1]...\r\n");
     qor_sleep(10);
     if (ret == 0) {
         char query[100] = "GET /clock.php HTTP/1.0\r\nContent-Length: 0\r\n\r\n";
@@ -64,9 +58,10 @@ int get_response_from_server(char *response) {
             ret = 1;
         }
     }
+	printf("Disconnect...\r\n");
     wifi_disconnect();
     qor_sleep(10);
-    debug_printf("Disconnected from wifi, ret:[%d]\r\n", ret);
+    printf("Disconnected from wifi, ret:[%d]\r\n", ret);
     return ret;
 }
 
@@ -98,14 +93,14 @@ static const struct http_funcs responseFuncs = {
     response_code,
 };
 
-int parse_http_response(char *http_response, char *body) {
+int parse_http_response(char *http_response, struct HttpResponse *response) {
     debug_printf("[NET] PARSE HTTP:[%s]\r\n", http_response);
 
-    struct HttpResponse response;
-    response.code = 0;
+    //struct HttpResponse* response = (struct HttpResponse*)opaque;
+    response->code = 0;
 
     struct http_roundtripper rt;
-    http_init(&rt, responseFuncs, &response);
+    http_init(&rt, responseFuncs, response);
     //debug_printf("[NET] PARSE HTTP: INIT OK\r\n");
     int read;
     int ndata = strlen(http_response);
@@ -119,9 +114,8 @@ int parse_http_response(char *http_response, char *body) {
         return -1;
     }
 
-    if (strlen(response.body) > 0) {
-        debug_printf("CODE:[%d] BODY:[%s]\r\n", response.code, response.body);
-        strcpy(body, response.body);
+    if (strlen(response->body) > 0) {
+        debug_printf("CODE:[%d] BODY:[%s]\r\n", response->code, response->body);
         return 0;
     }
 
@@ -135,7 +129,7 @@ int parse_json_response(char *response) {
 
 	json_t const* root_elem = json_create(response, pool, MAX_FIELDS);
     if (root_elem == NULL) return -1;
-	json_t const* status_elem = json_getProperty(root_elem, "status");
+    json_t const* status_elem = json_getProperty(root_elem, "status");
 	int status = json_getInteger(status_elem);
 	debug_printf("Parsing date from [%s]...\r\n", response);
 	json_t const* date_elem = json_getProperty(root_elem, "date");
@@ -206,21 +200,12 @@ int parse_json_response(char *response) {
         }
     }
     if (wakeup_alarms_changed) {
-        flash_store_alarms(wakeup_alarms);
+        // Decommenting this cause qor_sleep() to hang (even if not called)
+        //flash_store_alarms(wakeup_alarms);
     }
-    /*
-     * Old, only 1 alarm:
-	json_t const* wakeup_alarm_elem = json_getProperty(root_elem, "wakeup_alarm");
-	wakeup_alarm.isset = json_getInteger(json_getProperty(wakeup_alarm_elem, "isset"));
-	wakeup_alarm.dotw = json_getInteger(json_getProperty(wakeup_alarm_elem, "weekday"));
-	wakeup_alarm.hour = json_getInteger(json_getProperty(wakeup_alarm_elem, "hour"));
-	wakeup_alarm.min = json_getInteger(json_getProperty(wakeup_alarm_elem, "minute"));
-    // Save in RTC too
-    pcf8563_setAlarm(wakeup_alarm.min, wakeup_alarm.hour, dt.day, wakeup_alarm.dotw);
-     */
 
     // Save weather
-    debug_printf("Save weather\r\n");
+    printf("Save weather\r\n");
     // https://open-meteo.com/en/docs#current=precipitation,weather_code&hourly=&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum
 	json_t const* weather_json = json_getProperty(root_elem, "weather");
 	json_t const* current_weather_json = json_getProperty(weather_json, "current");
@@ -263,7 +248,7 @@ int parse_json_response(char *response) {
         sprintf(weather.day_2_sunrise, json_getValue(child));
     }
 
-	debug_printf("STATUS FROM SERVER:[%d] year:[%d] day:[%d] weekday:[%d] month:[%d] hour:[%d] wakeup_alarm[0]:[%02d:%02d]\r\n", status, dt.year, dt.day, dt.dotw, dt.month, dt.hour, wakeup_alarms[0].hour, wakeup_alarms[0].min);
+	printf("STATUS FROM SERVER:[%d] year:[%d] day:[%d] weekday:[%d] month:[%d] hour:[%d] wakeup_alarm[0]:[%02d:%02d]\r\n", status, dt.year, dt.day, dt.dotw, dt.month, dt.hour, wakeup_alarms[0].hour, wakeup_alarms[0].min);
 }
 
 // ===========================================================================================================
@@ -273,30 +258,27 @@ void NetTask(void *args) {
     ost_net_event_t *message = NULL;
     uint32_t res = 0;
 
-    bool time_initialized = false;
-    datetime_t dt;
-
     while (1) {
         res = qor_mbox_wait(&NetMailBox, (void **)&message, 5);
         if (res == QOR_MBOX_OK) {
             if (message->ev == OST_SYS_ALARM) {
-                debug_printf("[NET] OST_SYS_ALARM\r\n");
+                printf("[NET] OST_SYS_ALARM\r\n");
                 play_melody(GPIO_PWM, HarryPotter, 200);
             }
 
             if (message->ev == OST_SYS_UPDATE_TIME) {
-                debug_printf("[NET] REMOTE SYNC\r\n");
-                char http_response[4000] = "";
-                if (get_response_from_server(http_response) == 0) {
-                    char body[4000] = "";
-                    if (parse_http_response(http_response, body) == 0) {
-                        parse_json_response(body);
+                char http_buffer[4096] = "";
+                printf("[NET] REMOTE SYNC\r\n");
+                if (get_response_from_server(http_buffer) == 0) {
+                    struct HttpResponse response;
+                    if (parse_http_response(http_buffer, &response) == 0) {
+                        parse_json_response(response.body);
                     }
                 }
             }
 
             if (message->ev == OST_SYS_PLAY_SOUND) {
-                debug_printf("[NET] OST_SYS_PLAY_SOUND\r\n");
+                printf("[NET] OST_SYS_PLAY_SOUND\r\n");
                 if (message->song == 0) {
                     play_melody(GPIO_PWM, HarryPotter, 140);
                 } else {
@@ -306,12 +288,11 @@ void NetTask(void *args) {
         }
 
         qor_sleep(500);
-        //debug_printf("\r\n[NET] task woke up\r\n");
+        //printf("[NET] task woke up\r\n");
     }
 }
 
 void request_remote_sync() {
-    debug_printf("request_remote_sync\r\n");
 	// Notify for remote sync
     static ost_net_event_t UpdateTimeEv = {
         .ev = OST_SYS_UPDATE_TIME

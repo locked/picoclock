@@ -15,6 +15,17 @@ extern "C"
 
 #define GPIO_PWM 16
 
+// normal screens
+#define SCREEN_MAIN 0
+#define SCREEN_WEATHER 1
+#define SCREEN_LIST_ALARMS 2
+#define SCREEN_DEBUG 3
+// unreachable screens
+#define SCREEN_ALARM 10
+
+#define MAX_SCREEN_ID 3
+
+
 	typedef struct
 	{
 		uint8_t ev;

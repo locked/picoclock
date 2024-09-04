@@ -1,6 +1,9 @@
 #ifndef PWM_SOUND_TASK_H
 #define PWM_SOUND_TASK_H
 
+#define SOUND_STATUS_STOPPED 0
+#define SOUND_STATUS_PLAYING 1
+
 #define NOTE_B0  31
 #define NOTE_C1  33
 #define NOTE_CS1 35
@@ -98,5 +101,7 @@ typedef struct {
 } note_struct;
 
 void play_melody(uint gpio, note_struct * n, uint tempo);
+
+void stop_melody();
 
 #endif // PWM_SOUND_TASK_H

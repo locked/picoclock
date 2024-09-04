@@ -305,7 +305,7 @@ void ost_system_initialize()
     gpio_set_dir(FRONT_PANEL_LED_PIN, GPIO_OUT);
 
     //------------------- Init LCD
-    debug_printf("Init e-Paper module...\r\n");
+    printf("Init e-Paper module...\r\n");
     if(DEV_Module_Init()!=0){
         return;
     }
@@ -361,7 +361,7 @@ void ost_system_initialize()
     gpio_set_function(GPIO_PWM, GPIO_FUNC_PWM);
 
     // ------------ Everything is initialized, print stuff here
-    debug_printf("System Clock: %lu\n", clock_get_hz(clk_sys));
+    printf("System Clock: %lu\n", clock_get_hz(clk_sys));
 }
 
 void system_putc(char ch) {

@@ -12,6 +12,18 @@
 
 #include "system.h"
 #include "ui_task.h"
+#include "net_task.h"
+
+
+//
+// Globals
+//
+wakeup_alarm_struct wakeup_alarms[4];
+weather_struct weather = {"", "", "", ""};
+int current_screen = 0;
+
+qor_mbox_t NetMailBox;
+
 
 void ost_hal_panic() {
 }
@@ -27,12 +39,6 @@ void IdleTask(void *args) {
         __asm volatile("wfi");
     }
 }
-
-qor_mbox_t NetMailBox;
-
-wakeup_alarm_struct wakeup_alarms[4];
-
-weather_struct weather = {"", "", "", ""};
 
 
 // ===========================================================================================================
