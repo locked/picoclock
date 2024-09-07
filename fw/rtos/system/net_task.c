@@ -267,8 +267,8 @@ void NetTask(void *args) {
             }
 
             if (message->ev == OST_SYS_UPDATE_TIME) {
-                char http_buffer[4096] = "";
                 printf("[NET] REMOTE SYNC\r\n");
+                char http_buffer[4096] = "";
                 if (get_response_from_server(http_buffer) == 0) {
                     struct HttpResponse response;
                     if (parse_http_response(http_buffer, &response) == 0) {
@@ -293,11 +293,14 @@ void NetTask(void *args) {
 }
 
 void request_remote_sync() {
+    printf("request_remote_sync\r\n");
 	// Notify for remote sync
     static ost_net_event_t UpdateTimeEv = {
         .ev = OST_SYS_UPDATE_TIME
     };
+    printf("request_remote_sync: qor_mbox_notify\r\n");
     qor_mbox_notify(&NetMailBox, (void **)&UpdateTimeEv, QOR_MBOX_OPTION_SEND_BACK);
+    printf("request_remote_sync: qor_mbox_notify done\r\n");
 }
 
 void request_play_song(uint8_t song) {

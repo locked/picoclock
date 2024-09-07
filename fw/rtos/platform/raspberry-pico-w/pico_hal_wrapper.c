@@ -62,10 +62,10 @@ static audio_i2s_config_t config = {
 const uint8_t BUTTONS[] = {8, 9, 10, 19, 20, 21};
 uint8_t last_btn_values[6] = {1, 1, 1, 1, 1, 1};
 
-//#define SDCARD_SCK 18
-//#define SDCARD_MOSI 19
-//#define SDCARD_MISO 16
-//const uint8_t SD_CARD_CS = 17;
+#define SDCARD_SCK 18
+#define SDCARD_MOSI 19
+#define SDCARD_MISO 16
+const uint8_t SD_CARD_CS = 17;
 //const uint8_t SD_CARD_PRESENCE = 24;
 
 #define UART_ID uart0

@@ -132,7 +132,7 @@ void UiTask(void *args) {
     Paint_Clear(WHITE);
 
     // Load alarms
-    flash_read_alarms(wakeup_alarms);
+    //flash_read_alarms(wakeup_alarms);
 
     while (1) {
         res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
@@ -221,17 +221,24 @@ void UiTask(void *args) {
                     sprintf(temp_str, "%02d/%02d (%d)", dt.day, dt.month, dt.weekday);
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font24, WHITE, BLACK);
 
-                    Paint_ClearWindows(screen_x, 40, screen_x + Font24.Width * 8, 40 + Font24.Height, WHITE);
+                    _y += Font24.Height + 1;
+                    Paint_ClearWindows(screen_x, _y, screen_x + Font24.Width * 8, 40 + Font24.Height, WHITE);
                     Paint_DrawTime(screen_x, 40, &sPaint_time, &Font24, WHITE, BLACK);
 
                     mcp9808_get_temperature(temp2_str);
                     sprintf(temp_str, "Temp: %s C", temp2_str);
-                    Paint_ClearWindows(screen_x + Font12.Width * 6, 80, screen_x + Font12.Width * 12, 80 + Font12.Height, WHITE);
-                    Paint_DrawString_EN(screen_x, 80, temp_str, &Font12, WHITE, BLACK);
+                    _y += Font24.Height + 3;
+                    Paint_ClearWindows(screen_x + Font12.Width * 6, _y, screen_x + Font12.Width * 12, 80 + Font12.Height, WHITE);
+                    Paint_DrawString_EN(screen_x, _y, temp_str, &Font12, WHITE, BLACK);
 
                     //sprintf(temp_str, "Alarm: %02d:%02d (%d)", dt.alarm_hour, dt.alarm_min, dt.alarm_weekday);
                     //Paint_ClearWindows(screen_x + Font12.Width * 7, 100, screen_x + Font12.Width * 17, 100 + Font12.Height, WHITE);
                     //Paint_DrawString_EN(screen_x, 100, temp_str, &Font12, WHITE, BLACK);
+                    for (int i=0; i<4; i++) {
+                        sprintf(temp_str, "[%d] %d:%d (%d)", wakeup_alarms[i].isset, wakeup_alarms[i].hour, wakeup_alarms[i].min, wakeup_alarms[i].weekdays);
+                        Paint_DrawString_EN(screen_x + Font12.Width * 12, _y, temp_str, &Font12, WHITE, BLACK);
+                        _y += Font12.Height + 1;
+                    }
 
                     if (message->clear) {
                         EPD_2in13_V4_Display_Base(BlackImage);
