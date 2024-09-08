@@ -6,3 +6,7 @@ pcb/gerbers*
 pcb/*/gerbers*
 fw/rtos/build
 fw/rtos/*/old
+pcb/fp-info-cache
+pcb/fp-lib-table
+pcb/*/fp-info-cache
+pcb/*/fp-lib-table
