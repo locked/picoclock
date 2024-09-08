@@ -62,11 +62,11 @@ static audio_i2s_config_t config = {
 const uint8_t BUTTONS[] = {8, 9, 10, 19, 20, 21};
 uint8_t last_btn_values[6] = {1, 1, 1, 1, 1, 1};
 
-#define SDCARD_SCK 18
-#define SDCARD_MOSI 19
-#define SDCARD_MISO 16
-const uint8_t SD_CARD_CS = 17;
-//const uint8_t SD_CARD_PRESENCE = 24;
+#define SDCARD_SCK 14
+#define SDCARD_MOSI 15
+#define SDCARD_MISO 12
+const uint8_t SD_CARD_CS = 13;
+const uint8_t SD_CARD_PRESENCE = 17;
 
 #define UART_ID uart0
 #define BAUD_RATE 115200
@@ -270,6 +270,8 @@ void ost_system_initialize()
     set_sys_clock_khz(125000, true);
 
     stdio_init_all();
+    sleep_ms(2000);
+    printf("START\r\n");
 
     ////------------------- Init DEBUG LED
     gpio_init(LED_PIN);
@@ -333,7 +335,6 @@ void ost_system_initialize()
     alarm_in_us(100000);
 
     //------------------- Init SDCARD
-/*
     gpio_init(SD_CARD_CS);
     gpio_put(SD_CARD_CS, 1);
     gpio_set_dir(SD_CARD_CS, GPIO_OUT);
@@ -341,14 +342,14 @@ void ost_system_initialize()
     gpio_init(SD_CARD_PRESENCE);
     gpio_set_dir(SD_CARD_PRESENCE, GPIO_IN);
 
-    spi_init(spi0, 1000 * 1000); // slow clock
+    spi_init(spi1, 1000 * 1000); // slow clock
 
-    spi_set_format(spi0, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+    spi_set_format(spi1, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 
     gpio_set_function(SDCARD_SCK, GPIO_FUNC_SPI);
     gpio_set_function(SDCARD_MOSI, GPIO_FUNC_SPI);
     gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
-*/
+
 
     //------------------- Init Sound
     //play_sine();
@@ -415,15 +416,14 @@ void ost_hal_gpio_set(ost_hal_gpio_t gpio, int value) {
 // ----------------------------------------------------------------------------
 // SDCARD HAL
 // ----------------------------------------------------------------------------
-/*
 void ost_hal_sdcard_set_slow_clock()
 {
-  spi_set_baudrate(spi0, 1000000UL);
+  spi_set_baudrate(spi1, 1000000UL);
 }
 
 void ost_hal_sdcard_set_fast_clock()
 {
-  spi_set_baudrate(spi0, 40000000UL);
+  spi_set_baudrate(spi1, 40000000UL);
 }
 
 void ost_hal_sdcard_cs_high()
@@ -438,24 +438,24 @@ void ost_hal_sdcard_cs_low()
 
 void ost_hal_sdcard_spi_exchange(const uint8_t *buffer, uint8_t *out, uint32_t size)
 {
-  spi_write_read_blocking(spi0, buffer, out, size);
+  spi_write_read_blocking(spi1, buffer, out, size);
 }
 
 void ost_hal_sdcard_spi_write(const uint8_t *buffer, uint32_t size)
 {
-  spi_write_blocking(spi0, buffer, size);
+  spi_write_blocking(spi1, buffer, size);
 }
 
 void ost_hal_sdcard_spi_read(uint8_t *out, uint32_t size)
 {
-  spi_read_blocking(spi0, 0xFF, out, size);
+  spi_read_blocking(spi1, 0xFF, out, size);
 }
 
 uint8_t ost_hal_sdcard_get_presence()
 {
   return 1; // not wired
 }
-*/
+
 
 // ----------------------------------------------------------------------------
 // AUDIO HAL
