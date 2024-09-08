@@ -18,23 +18,44 @@ $wakeup_alarm_minute = $config["alarm"][1];
 $weather = getWeather($config);
 
 $data = [
-        "status" => 0,
-        "date" => [
-                "full" => $date,
-                "year" => $year,
-                "month" => $month,
-                "day" => $day,
-                "weekday" => $weekday,
-                "hour" => $hour,
-                "minute" => $minute,
-                "second" => $second,
-        ],
-        "wakeup_alarm" => [
-                "isset" => 1,
-                "weekday" => $wakeup_alarm_weekday,
-                "hour" => $wakeup_alarm_hour,
-                "minute" => $wakeup_alarm_minute,
+	"status" => 0,
+	"date" => [
+		"full" => $date,
+		"year" => $year,
+		"month" => $month,
+		"day" => $day,
+		"weekday" => $weekday,
+		"hour" => $hour,
+		"minute" => $minute,
+		"second" => $second,
 	],
+	"wakeup_alarm" => [
+		"isset" => 1,
+		"weekday" => $wakeup_alarm_weekday,
+		"hour" => $wakeup_alarm_hour,
+		"minute" => $wakeup_alarm_minute,
+	],
+	"wakeup_alarms" => [[
+		"isset" => 1,
+		"weekdays" => 0b10000010,	// bitmask: Saturday, Sunday
+		"hour" => 9,
+		"minute" => 30,
+	],[
+		"isset" => 1,
+		"weekdays" => 0b01110000,	// bitmask: Tuesday, Wednesday
+		"hour" => 7,
+		"minute" => 50,
+	],[
+		"isset" => 1,
+		"weekdays" => 0b00001100,	// bitmask: Thursday, Friday
+		"hour" => 7,
+		"minute" => 10,
+	],[
+		"isset" => 1,
+		"weekdays" => 0b01000000,	// bitmask: Monday
+		"hour" => 9,
+		"minute" => 0,
+	]],
 	"weather" => $weather,
 ];
 $response = json_encode($data)."\n";
