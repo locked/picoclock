@@ -3432,6 +3432,10 @@
 		(uuid "fd51756e-c131-4a3a-8067-24cca87d539d")
 	)
 	(no_connect
+		(at 55.88 90.17)
+		(uuid "1fce8f2e-c464-47a1-be38-456611f24bc2")
+	)
+	(no_connect
 		(at 55.88 57.15)
 		(uuid "976ebff1-5bad-42a9-b4d5-d96b491823f5")
 	)
