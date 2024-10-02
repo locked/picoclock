@@ -14,12 +14,13 @@ speaker_screw_dist = 52;
 foot_radius = 10;
 foot_dist_factor = [0.7, 0.85];
 
-vent = 40;
+vent = 50;
 
-pcb_screw = [157, 48, 3]; // width, height, diam
+pcb_screw = [157, 48, 3.5]; // width, height, diam
 pcb_screw_insert = [3, 7.9]; // height, diam
 usb = [10, 3.5];
 usb_from_middle = 2.5;
+sdcard = [15, 3];
 
 pin_header_height = 8;
 pin_socket_height = 3;
