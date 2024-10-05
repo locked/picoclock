@@ -3,7 +3,7 @@ case = [100*case_size_factor, 61*case_size_factor, 38*case_size_factor];
 
 thickness = 2;
 
-inner_cyl_radius = 6;
+inner_cyl_radius = 6.5;
 inner_cyl_shift = 10; //$case[2]/5;
 
 screen = [60, 3, 30];
@@ -18,8 +18,8 @@ vent = 50;
 
 pcb_screw = [157, 48, 3.5]; // width, height, diam
 pcb_screw_insert = [3, 7.9]; // height, diam
-usb = [10, 3.5];
-usb_from_middle = 2.5;
+usb = [11, 3.5];
+usb_from_middle = 2;
 sdcard = [15, 3];
 
 pin_header_height = 8;

@@ -105,15 +105,15 @@ module case($case) {
     }
 
     // pcb additional support
-    translate([-15, front_panel[1], -$case[2]/2 + thickness]) cube([30, 5, 3]);
-    translate([-15, front_panel[1], $case[2]/2 - thickness - 3]) cube([30, 5, 3]);
+    pcb_support_length = $case[0] - 24;
+    translate([-pcb_support_length/2, front_panel[1], -$case[2]/2 + 2]) cube([pcb_support_length, 5, 2]);
+    translate([-pcb_support_length/2, front_panel[1], $case[2]/2 - thickness - 2]) cube([pcb_support_length, 5, 2]);
 
-    inner_cyl_x = $case[0]/2-inner_cyl_shift;
-    inner_cyl_z = $case[2]/2-inner_cyl_shift;
-    inner_cyl_h = 12; //$case[1]-front_panel[1]-thickness;
+    inner_cyl_x = $case[0]/2-inner_cyl_shift-0.5;
+    inner_cyl_z = $case[2]/2-inner_cyl_shift+0.1;
+    inner_cyl_h = 18;
     difference() {
         color("Green") {
-
             translate([-inner_cyl_x, front_panel[1], -inner_cyl_z])
             rotate([-90]) cylinder(h=inner_cyl_h, r=inner_cyl_radius);
             translate([+inner_cyl_x, front_panel[1], -inner_cyl_z])
@@ -128,35 +128,38 @@ module case($case) {
         color("Red") {
             // PCB screw holes insert (front)
             translate([-pcb_screw[0]/2, front_panel[1], -pcb_screw[1]/2])
-            rotate([-90]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
+            rotate([-90, -16]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
             translate([pcb_screw[0]/2, front_panel[1], -pcb_screw[1]/2])
-            rotate([-90]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
+            rotate([-90, 16]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
             translate([-pcb_screw[0]/2, front_panel[1], pcb_screw[1]/2])
-            rotate([-90]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
+            rotate([-90, 16]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
             translate([pcb_screw[0]/2, front_panel[1], pcb_screw[1]/2])
-            rotate([-90]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
+            rotate([-90, -16]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
 
             // PCB screw holes insert (back)
-            #translate([-pcb_screw[0]/2, front_panel[1] + inner_cyl_h - pcb_screw_insert[0], -pcb_screw[1]/2])
-            rotate([-90]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1]+0.5, $fn=6);
-            translate([pcb_screw[0]/2, front_panel[1], -pcb_screw[1]/2])
-            rotate([-90]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
-            translate([-pcb_screw[0]/2, front_panel[1], pcb_screw[1]/2])
-            rotate([-90]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
-            translate([pcb_screw[0]/2, front_panel[1], pcb_screw[1]/2])
-            rotate([-90]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
+            pcb_screw_hole_back_y = front_panel[1] + inner_cyl_h - pcb_screw_insert[0];
+            translate([-pcb_screw[0]/2, pcb_screw_hole_back_y, -pcb_screw[1]/2]) rotate([-90, -16]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1]+0.5, $fn=6);
+            translate([pcb_screw[0]/2, pcb_screw_hole_back_y, -pcb_screw[1]/2]) rotate([-90, 16]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
+            translate([-pcb_screw[0]/2, pcb_screw_hole_back_y, pcb_screw[1]/2]) rotate([-90, 16]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
+            translate([pcb_screw[0]/2, pcb_screw_hole_back_y, pcb_screw[1]/2]) rotate([-90, -16]) cylinder(h=pcb_screw_insert[0], d=pcb_screw_insert[1], $fn=6);
 
             // PCB screw holes
-            translate([-pcb_screw[0]/2, front_panel[1] - 0, -pcb_screw[1]/2])
-            rotate([-90]) cylinder(h=inner_cyl_h, d=pcb_screw[2]);
-            translate([pcb_screw[0]/2, front_panel[1], -pcb_screw[1]/2])
-            rotate([-90]) cylinder(h=inner_cyl_h, d=pcb_screw[2]);
-            translate([-pcb_screw[0]/2, front_panel[1], pcb_screw[1]/2])
-            rotate([-90]) cylinder(h=inner_cyl_h, d=pcb_screw[2]);
-            translate([pcb_screw[0]/2, front_panel[1], pcb_screw[1]/2])
-            rotate([-90]) cylinder(h=inner_cyl_h, d=pcb_screw[2]);
+            translate([-pcb_screw[0]/2, front_panel[1] - 0, -pcb_screw[1]/2]) rotate([-90]) cylinder(h=inner_cyl_h, d=pcb_screw[2]);
+            translate([pcb_screw[0]/2, front_panel[1], -pcb_screw[1]/2]) rotate([-90]) cylinder(h=inner_cyl_h, d=pcb_screw[2]);
+            translate([-pcb_screw[0]/2, front_panel[1], pcb_screw[1]/2]) rotate([-90]) cylinder(h=inner_cyl_h, d=pcb_screw[2]);
+            translate([pcb_screw[0]/2, front_panel[1], pcb_screw[1]/2]) rotate([-90]) cylinder(h=inner_cyl_h, d=pcb_screw[2]);
         }
     }
+
+    // Side support
+    inner_support_h = $case[1]-front_panel[1]-thickness;
+    inner_support_w = 2;
+    inner_support_d = 10;
+    inner_support_z = $case[2]/2-3;
+    translate([-inner_cyl_x, front_panel[1], -inner_support_z]) rotate([0, -45]) cube([inner_support_w, inner_support_h, inner_support_d]);
+    translate([inner_cyl_x, front_panel[1], inner_support_z]) rotate([0, 135]) cube([inner_support_w, inner_support_h, inner_support_d]);
+    translate([-inner_cyl_x+1, front_panel[1], inner_support_z-2]) rotate([0, -135]) cube([inner_support_w, inner_support_h, inner_support_d]);
+    translate([inner_cyl_x-1, front_panel[1], -inner_support_z+2]) rotate([0, 45]) cube([inner_support_w, inner_support_h, inner_support_d]);
 
     // Feet
     feets();
