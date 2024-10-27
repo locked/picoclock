@@ -8136,16 +8136,6 @@
 	)
 	(wire
 		(pts
-			(xy 135.89 110.49) (xy 134.62 110.49)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b6cd9a45-3a17-47d3-b288-53cef90d7fa0")
-	)
-	(wire
-		(pts
 			(xy 62.23 134.62) (xy 59.69 134.62)
 		)
 		(stroke
@@ -8898,7 +8888,7 @@
 			)
 		)
 	)
-	(global_label "GPIO{slash}led"
+	(global_label "GPE7{slash}led"
 		(shape output)
 		(at 135.89 125.73 0)
 		(fields_autoplaced yes)
@@ -8910,7 +8900,7 @@
 		)
 		(uuid "033254fb-33e0-4d3d-9b6c-97ef5a5e9af8")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 147.5838 125.73 0)
+			(at 148.007 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9074,7 +9064,7 @@
 			)
 		)
 	)
-	(global_label "GPIO{slash}led"
+	(global_label "GPE7{slash}led"
 		(shape input)
 		(at 157.48 19.05 270)
 		(fields_autoplaced yes)
@@ -9086,7 +9076,7 @@
 		)
 		(uuid "1dac57ad-6031-4d5e-97bb-686a368b753a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 157.48 30.7438 90)
+			(at 157.48 31.167 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10494,28 +10484,6 @@
 		(uuid "ee456920-38d9-4f27-8240-6a648067f7b3")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 141.2337 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "SHDN"
-		(shape output)
-		(at 135.89 110.49 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "f278a9e5-1782-4014-beb7-b2ff2e528f9d")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 144.0157 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
