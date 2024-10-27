@@ -3,6 +3,7 @@
 // C library
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 // OST common files
 #include "ost_hal.h"
@@ -28,59 +29,43 @@
 #include "ImageData.h"
 #include "EPD_2in13_V4.h"
 
+#include "mcp4652/mcp4652.h"
+#include "mcp9808/mcp9808.h"
+#include "mcp23009/mcp23009.h"
+
 
 // Audio (PIO)
-//#include "audio_player.h"
-//#include "pico_i2s.h"
-//#define PICO_AUDIO_I2S_DATA_PIN 16
-//#define PICO_AUDIO_I2S_CLOCK_PIN_BASE 17
-/*
+#include "audio_player.h"
+#include "pico_i2s.h"
 static __attribute__((aligned(8))) pio_i2s i2s;
 static volatile uint32_t msTicks = 0;
 static audio_ctx_t audio_ctx;
 static audio_i2s_config_t config = {
-    .freq = 44100,
+    .freq = 22050,
     .bps = 32,
-    .data_pin = PICO_AUDIO_I2S_DATA_PIN,
-    .clock_pin_base = PICO_AUDIO_I2S_CLOCK_PIN_BASE
+    .data_pin = I2S_DATA_PIN,
+    .clock_pin_base = I2S_CLOCK_PIN_BASE
 };
-*/
 
 // Audio (no PIO)
-//#include <stdio.h>
-//#include <math.h>
-//#include "hardware/structs/clocks.h"
-//#include "pico/audio_i2s.h"
-//#include "pico/binary_info.h"
-//bi_decl(bi_3pins_with_names(PICO_AUDIO_I2S_DATA_PIN, "I2S DIN", PICO_AUDIO_I2S_CLOCK_PIN_BASE, "I2S BCK", PICO_AUDIO_I2S_CLOCK_PIN_BASE+1, "I2S LRCK"));
-
+/*
+#include <math.h>
+#include "hardware/structs/clocks.h"
+#include "pico/audio_i2s.h"
+#include "pico/binary_info.h"
+bi_decl(bi_3pins_with_names(I2S_DATA_PIN, "I2S DIN", I2S_CLOCK_PIN_BASE, "I2S BCK", I2S_CLOCK_PIN_BASE+1, "I2S LRCK"));
+*/
 
 // ===========================================================================================================
 // CONSTANTS / DEFINES
 // ===========================================================================================================
 
-const uint8_t BUTTONS[] = {8, 9, 10, 19, 20, 21};
+const uint8_t BUTTONS[] = {BTN_1, BTN_2, BTN_3, BTN_4, BTN_5, BTN_6};
 uint8_t last_btn_values[6] = {1, 1, 1, 1, 1, 1};
-
-#define SDCARD_SCK 14
-#define SDCARD_MOSI 15
-#define SDCARD_MISO 12
-const uint8_t SD_CARD_CS = 13;
-const uint8_t SD_CARD_PRESENCE = 17;
-
-#define UART_ID uart0
-#define BAUD_RATE 115200
-#define UART_TX_PIN 0
-
-const uint LED_PIN = 25;
 
 // PICO alarm (RTOS uses Alarm 0 and IRQ 0)
 #define ALARM_NUM 1
 #define ALARM_IRQ TIMER_IRQ_1
-
-#define I2C_SDA 12
-#define I2C_SCL 13
-#define I2C_BAUD_RATE 400000
 
 // ===========================================================================================================
 // GLOBAL VARIABLES
@@ -104,7 +89,7 @@ static int new_value, delta, old_value = 0;
 // ===========================================================================================================
 extern void init_spi(void);
 void dma_init();
-//void __isr __time_critical_func(audio_i2s_dma_irq_handler)();
+void __isr __time_critical_func(audio_i2s_dma_irq_handler)();
 
 // ===========================================================================================================
 // OST HAL IMPLEMENTATION
@@ -165,12 +150,12 @@ static void alarm_in_us(uint32_t delay_us) {
     timer_hw->alarm[ALARM_NUM] = (uint32_t)target;
 }
 
-/*
-#define CLOCK_PICO_AUDIO_I2S_DATA_PIN 16
-#define CLOCK_PICO_AUDIO_I2S_CLOCK_PIN_BASE 17
 
+
+
+/*
 #define SINE_WAVE_TABLE_LEN 2048
-#define SAMPLES_PER_BUFFER 256
+#define SAMPLES_PER_BUFFER 512
 
 static int16_t sine_wave_table[SINE_WAVE_TABLE_LEN];
 
@@ -178,15 +163,14 @@ static int16_t sine_wave_table[SINE_WAVE_TABLE_LEN];
 struct audio_buffer_pool *init_audio() {
 
     static audio_format_t audio_format = {
-            .sample_freq = 44100,
-            //.sample_freq = 24000,
+            .sample_freq = 24000,
             .format = AUDIO_BUFFER_FORMAT_PCM_S16,
             .channel_count = 1,
     };
 
     static struct audio_buffer_format producer_format = {
             .format = &audio_format,
-            .sample_stride = 1
+            .sample_stride = 2
     };
 
     struct audio_buffer_pool *producer_pool = audio_new_producer_pool(&producer_format, 3,
@@ -194,8 +178,8 @@ struct audio_buffer_pool *init_audio() {
     bool __unused ok;
     const struct audio_format *output_format;
     struct audio_i2s_config config = {
-            .data_pin = CLOCK_PICO_AUDIO_I2S_DATA_PIN,
-            .clock_pin_base = CLOCK_PICO_AUDIO_I2S_CLOCK_PIN_BASE,
+            .data_pin = I2S_DATA_PIN,
+            .clock_pin_base = I2S_CLOCK_PIN_BASE,
             .dma_channel = 0,
             .pio_sm = 0,
     };
@@ -212,27 +196,20 @@ struct audio_buffer_pool *init_audio() {
 }
 
 void play_sine() {
-    puts("starting core 1");
+    printf("starting core 1\r\n");
     for (int i = 0; i < SINE_WAVE_TABLE_LEN; i++) {
         sine_wave_table[i] = 32767 * cosf(i * 2 * (float) (M_PI / SINE_WAVE_TABLE_LEN));
     }
 
     struct audio_buffer_pool *ap = init_audio();
-    puts("init_audio OK");
+    printf("init_audio OK [%d] [%d]\r\n", I2S_DATA_PIN, I2S_CLOCK_PIN_BASE);
     uint32_t step = 0x200000;
     uint32_t pos = 0;
     uint32_t pos_max = 0x10000 * SINE_WAVE_TABLE_LEN;
-    uint vol = 256;
+    uint vol = 70;
+    int wiper = 0;
+    int wiper_dir = 1;
     while (true) {
-        int c = getchar_timeout_us(0);
-        if (c >= 0) {
-            if (c == '-' && vol) vol -= 4;
-            if ((c == '=' || c == '+') && vol < 255) vol += 4;
-            if (c == '[' && step > 0x10000) step -= 0x10000;
-            if (c == ']' && step < (SINE_WAVE_TABLE_LEN / 16) * 0x20000) step += 0x10000;
-            if (c == 'q') break;
-            printf("vol = %d, step = %d      \r", vol, step >> 16);
-        }
         struct audio_buffer *buffer = take_audio_buffer(ap, true);
         int16_t *samples = (int16_t *) buffer->buffer->bytes;
         for (uint i = 0; i < buffer->max_sample_count; i++) {
@@ -241,16 +218,26 @@ void play_sine() {
             if (pos >= pos_max) pos -= pos_max;
         }
         buffer->sample_count = buffer->max_sample_count;
-        puts("give_audio_buffer..");
+        //printf("give_audio_buffer, wiper:[%d]..\r\n", wiper);
         give_audio_buffer(ap, buffer);
+        //sleep_ms(1);
+        wiper += wiper_dir;
+        if (wiper >= 0x100) {
+            wiper_dir = -1;
+        }
+        if (wiper == 0) {
+            wiper_dir = 1;
+        }
+        mcp4652_set_wiper(wiper);
     }
-    puts("\n");
+    printf("DONE\r\n");
 }
 */
 
 
+
 void init_i2c() {
-    i2c_init(i2c0, I2C_BAUD_RATE);
+    i2c_init(I2C_CHANNEL, I2C_BAUD_RATE);
 
     //printf("sensors: setting I2C pins: SDA=%d SCL=%d\n", SENSORS_SDA_PIN, SENSORS_SCL_PIN);
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
@@ -267,29 +254,43 @@ static void audio_callback(void) {
 
 void ost_system_initialize()
 {
+    stdio_init_all();
+
     set_sys_clock_khz(125000, true);
 
-    stdio_init_all();
-    sleep_ms(2000);
-    printf("START\r\n");
+    //stdio_init_all();
+    sleep_ms(500);
 
-    ////------------------- Init DEBUG LED
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
+    // Init DEBUG LED
+    //gpio_init(LED_PIN);
+    //gpio_set_dir(LED_PIN, GPIO_OUT);
 
-    //------------------- Init DEBUG PIN
+    // Init DEBUG PIN
     //gpio_init(DEBUG_PIN);
     //gpio_set_dir(DEBUG_PIN, GPIO_OUT);
 
-    //------------------- Init UART
-
+    // Init UART
     uart_init(UART_ID, BAUD_RATE);
     gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+    printf("START\r\n");
 
     // Init I2C
     init_i2c();
 
-    //------------------- Init time
+    // Init GPIO extender
+    mcp23009_set_i2c(I2C_CHANNEL);
+    bool mcp23009_status = mcp23009_is_connected();
+    mcp23009_set_direction(0b00100000);
+    printf("mcp23009_is_connected: [%d]\r\n", mcp23009_status);
+
+    // Init Sound
+    mcp4652_set_i2c(I2C_CHANNEL);
+    mcp4652_set_wiper(0x0);
+    i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
+    audio_init(&audio_ctx);
+    ost_audio_register_callback(audio_callback);
+
+    // Init time
     // Set time to known values to identify it needs to be updated
     rtc_init();
     datetime_t dt;
@@ -303,8 +304,8 @@ void ost_system_initialize()
     rtc_set_datetime(&dt);
 
     // Front panel LEDs
-    gpio_init(FRONT_PANEL_LED_PIN);
-    gpio_set_dir(FRONT_PANEL_LED_PIN, GPIO_OUT);
+    //gpio_init(FRONT_PANEL_LED_PIN);
+    //gpio_set_dir(FRONT_PANEL_LED_PIN, GPIO_OUT);
 
     //------------------- Init LCD
     printf("Init e-Paper module...\r\n");
@@ -339,8 +340,9 @@ void ost_system_initialize()
     gpio_put(SD_CARD_CS, 1);
     gpio_set_dir(SD_CARD_CS, GPIO_OUT);
 
-    gpio_init(SD_CARD_PRESENCE);
-    gpio_set_dir(SD_CARD_PRESENCE, GPIO_IN);
+    // Need to handle i2c extender
+    //gpio_init(SD_CARD_PRESENCE);
+    //gpio_set_dir(SD_CARD_PRESENCE, GPIO_IN);
 
     spi_init(spi1, 1000 * 1000); // slow clock
 
@@ -351,15 +353,7 @@ void ost_system_initialize()
     gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
 
 
-    //------------------- Init Sound
-    //play_sine();
-    /*
-    i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
-    audio_init(&audio_ctx);
-    ost_audio_register_callback(audio_callback);
-    */
-
-    gpio_set_function(GPIO_PWM, GPIO_FUNC_PWM);
+    //gpio_set_function(GPIO_PWM, GPIO_FUNC_PWM);
 
     // ------------ Everything is initialized, print stuff here
     printf("System Clock: %lu\n", clock_get_hz(clk_sys));
@@ -461,19 +455,23 @@ uint8_t ost_hal_sdcard_get_presence()
 // AUDIO HAL
 // ----------------------------------------------------------------------------
 
-/*
+/**/
 void ost_audio_play(const char *filename) {
+    debug_printf("audio_play... [%s]\r\n", filename);
     audio_play(&audio_ctx, filename);
     config.freq = audio_ctx.audio_info.sample_rate;
     config.channels = audio_ctx.audio_info.channels;
+    debug_printf("pico_i2s_set_frequency...\r\n");
     pico_i2s_set_frequency(&i2s, &config);
 
     i2s.buffer_index = 0;
 
     // On appelle une première fois le process pour récupérer et initialiser le premier buffer...
+    debug_printf("audio_process [1]\r\n");
     audio_process(&audio_ctx);
 
     // Puis le deuxième ... (pour avoir un buffer d'avance)
+    debug_printf("audio_process [2]\r\n");
     audio_process(&audio_ctx);
 
     // On lance les DMA
@@ -516,4 +514,4 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
         AudioCallBack();
     }
 }
-*/
+

@@ -25,6 +25,50 @@ extern "C"
 
 #define MAX_SCREEN_ID 3
 
+#define UART_ID uart0
+#define BAUD_RATE 115200
+#define UART_TX_PIN 0
+
+#ifdef PCBV1
+#define BTN_1 8
+#define BTN_2 9
+#define BTN_3 10
+#define BTN_4 19
+#define BTN_5 20
+#define BTN_6 21
+#else
+// PCBv2 OK
+#define BTN_1 8
+#define BTN_2 9
+#define BTN_3 10
+#define BTN_4 20
+#define BTN_5 21
+#define BTN_6 28
+#endif
+
+#ifdef PCBV1
+#define I2C_SDA 12
+#define I2C_SCL 13
+#define I2C_CHANNEL i2c0
+#else
+// PCBv2 OK
+#define I2C_SDA 18
+#define I2C_SCL 19
+#define I2C_CHANNEL i2c1
+#endif
+#define I2C_BAUD_RATE 400000
+
+// PCBv2 OK
+#define I2S_DATA_PIN 22
+#define I2S_CLOCK_PIN_BASE 26
+
+// PCBv2 OK
+#define SDCARD_SCK 14
+#define SDCARD_MOSI 15
+#define SDCARD_MISO 12
+#define SD_CARD_CS 13
+#define SD_CARD_PRESENCE 2 // On i2c extender
+
 
 	typedef struct
 	{

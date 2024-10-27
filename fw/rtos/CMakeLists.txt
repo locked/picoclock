@@ -35,6 +35,8 @@ set(OST_SRCS
     system/audio_player.c
     system/ui_task.c
     system/net_task.c
+    system/fs_task.c
+    system/audio_player.c
     system/ff/ff.c
     system/ff/ffsystem.c
     system/ff/ff_stubs.c
@@ -42,13 +44,15 @@ set(OST_SRCS
     library/tiny-json.c
     library/mcp9808/mcp9808.c
     library/pcf8563/pcf8563.c
+    library/mcp4652/mcp4652.c
+    library/mcp23009/mcp23009.c
     library/graphics.c
     library/tinyhttp/http.c
     library/tinyhttp/chunk.c
     library/tinyhttp/header.c
     #library/button_debounce.c
     library/flash_storage.c
-    #library/pico_i2s.c
+    library/pico_i2s.c
     platform/raspberry-pico-w/wifi.c
     platform/raspberry-pico-w/pwm_sound.c
     platform/raspberry-pico-w/pico_hal_wrapper.c
@@ -106,7 +110,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
 pico_add_extra_outputs(${PROJECT_NAME})
 
 
-#pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/library/pico_i2s.pio)
+pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/library/pico_i2s.pio)
 #pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/library/button_debounce.pio)
 
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
@@ -118,6 +122,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
     SERVER_IP=\"${SERVER_IP}\"
     SERVER_PORT=\"${SERVER_PORT}\"
+    PICO_AUDIO_I2S_MONO_INPUT=1
+	#PICO_AUDIO_I2S_DATA_PIN=16
+	#PICO_AUDIO_I2S_CLOCK_PIN_BASE=17
 )
 
 # ==========================

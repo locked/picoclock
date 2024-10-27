@@ -34,6 +34,7 @@
 #include "pcf8563/pcf8563.h"
 
 #include "net_task.h"
+#include "fs_task.h"
 
 #include "graphics.h"
 
@@ -42,6 +43,9 @@
 #include "flash_storage.h"
 
 #include "pwm_sound.h"
+
+#include "mcp23009/mcp23009.h"
+#include "mcp4652/mcp4652.h"
 
 
 uint32_t getTotalHeap(void) {
@@ -150,10 +154,26 @@ void UiTask(void *args) {
                     };
                     qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
                 } else {
+                    // Sound tests:
+                    char SoundFile[260] = "Tellement.wav";
+                    if (message->btn == 5) {
+                        fs_task_sound_start(SoundFile);
+                    } else if (message->btn == 4) {
+                        mcp23009_set(0, 0);
+                    } else if (message->btn == 3) {
+                        mcp23009_set(0, 1);
+                    }
+                    if (message->btn == 2) {
+                        mcp4652_set_wiper(0x100);
+                    } else if (message->btn == 1) {
+                        mcp4652_set_wiper(0x80);
+                    } else if (message->btn == 0) {
+                        mcp4652_set_wiper(0x0);
+                    }
                     // Normal mode
+                    /*
                     if (message->btn == 0) {
                         if (current_screen < 3) {
-                            // ost_audio_play("sinewave"); // for debugging
                             if (backlight_on) {
                                 gpio_put(FRONT_PANEL_LED_PIN, 0);
                                 backlight_on = false;
@@ -186,6 +206,7 @@ void UiTask(void *args) {
                         };
                         qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
                     }
+                    */
                 }
             }
 

@@ -42,14 +42,14 @@ float mcp9808_get_temperature(char *temp_str) {
     int result;
     uint8_t addr = MCP9808_TA_REGISTER_ADDR;
 
-    result = i2c_write_blocking(i2c0, MCP9808_I2C_ADDR, &addr, 1, false);
+    result = i2c_write_blocking(i2c1, MCP9808_I2C_ADDR, &addr, 1, false);
     if (result != 1) {
         printf("mcp9808: failed to write Ta register address\n");
         return result;
     }
 
     uint8_t measure_data[2];
-    result = i2c_read_blocking(i2c0, MCP9808_I2C_ADDR, measure_data, sizeof(measure_data), false);
+    result = i2c_read_blocking(i2c1, MCP9808_I2C_ADDR, measure_data, sizeof(measure_data), false);
     if (result != sizeof(measure_data)) {
         printf("mcp9808: failed to read measure data\n");
         return result;
