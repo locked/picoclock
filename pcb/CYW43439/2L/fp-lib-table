@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "CYW43439KUBGT")(type "KiCad")(uri "${KIPRJMOD}/CYW43439.pretty")(options "")(descr ""))
+)

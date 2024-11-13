@@ -1,0 +1,227 @@
+(footprint "Antenna_Switcher"
+	(version 20240108)
+	(generator "pcbnew")
+	(generator_version "8.0")
+	(layer "F.Cu")
+	(descr "SMD Solder 3-pad Jumper, 1x1.5mm Pads, 0.3mm gap, open")
+	(tags "solder jumper open")
+	(property "Reference" "JP1"
+		(at 1.7 1.6 0)
+		(layer "F.SilkS")
+		(uuid "bd8b3d6c-0868-4c9f-8bf5-4ec76be25149")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "SolderJumper_3_Open"
+		(at 0 2.3 0)
+		(layer "F.Fab")
+		(uuid "8c7ab5d4-dda9-40b1-bb96-5b0149dad694")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Footprint" "Jumper:SolderJumper-3_P1.3mm_Open_Pad1.0x1.5mm"
+		(at 0 -1.7 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "578dfd86-ef54-4cc9-b932-d5b745f6cf92")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "62a79f5b-77a5-4512-990a-f5af06ddb3d3")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" "Solder Jumper, 3-pole, open"
+		(at 0 -1.9 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "3f15c1be-7717-44fb-987c-4ea7dd40d65b")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(zone_connect 1)
+	(attr exclude_from_pos_files exclude_from_bom)
+	(fp_line
+		(start -1.8 -0.4)
+		(end 0.4 -0.4)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "641d2391-6d90-42f7-a5a5-e3192349e291")
+	)
+	(fp_line
+		(start -1.8 1.6)
+		(end -1.8 -0.4)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "27d8fc08-89ce-44ed-99e6-8083fac8471b")
+	)
+	(fp_line
+		(start 0.4 -0.4)
+		(end 0.4 1.6)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "5677c9cf-ed06-4ff2-8e71-1634cf29e5cf")
+	)
+	(fp_line
+		(start 0.4 1.6)
+		(end -1.8 1.6)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "0c036556-912f-4707-b48d-2baba16cca65")
+	)
+	(fp_line
+		(start 0.6 0)
+		(end 0.9 -0.3)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "b43463eb-7948-4343-b86c-85fa36697341")
+	)
+	(fp_line
+		(start 0.6 0)
+		(end 0.9 0.3)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "df031cfe-70b1-4180-95e9-27a29ff699c4")
+	)
+	(fp_line
+		(start 0.9 0.3)
+		(end 0.9 -0.3)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "012f7011-766a-4760-8843-c779261f4ad8")
+	)
+	(fp_line
+		(start -2 -0.6)
+		(end -2 1.8)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "6e8e4ee3-a0a8-42a0-8df6-e4e40435ed88")
+	)
+	(fp_line
+		(start -2 -0.6)
+		(end 0.6 -0.6)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "bb05a268-fd5f-4e06-8309-cdea4db82a76")
+	)
+	(fp_line
+		(start 0.6 1.8)
+		(end -2 1.8)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "4d776ba8-c5ff-4fb3-b6b4-20576bcf53b9")
+	)
+	(fp_line
+		(start 0.6 1.8)
+		(end 0.6 -0.6)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "3d464385-17e4-42e5-8eef-a08cc256e7bb")
+	)
+	(pad "1" smd rect
+		(at -0.1 0)
+		(size 0.5 0.5)
+		(layers "F.Cu" "F.Mask")
+		(uuid "840c64fa-dca4-4dfa-84d1-d267578a5dde")
+	)
+	(pad "2" smd rect
+		(at -1.3 0)
+		(size 0.5 0.5)
+		(layers "F.Cu" "F.Mask")
+		(uuid "8a5c1fc9-90cf-4680-a4a2-32aa49fb80ed")
+	)
+	(pad "3" smd rect
+		(at -1.3 1.2)
+		(size 0.5 0.5)
+		(layers "F.Cu" "F.Mask")
+		(uuid "fdcac957-8484-4882-a47a-77b3b8bb8279")
+	)
+	(zone
+		(net 0)
+		(net_name "")
+		(layer "F.Cu")
+		(uuid "8969b02b-8a68-4a95-8317-f5ea4da7fa97")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(filled_areas_thickness no)
+		(keepout
+			(tracks not_allowed)
+			(vias not_allowed)
+			(pads not_allowed)
+			(copperpour allowed)
+			(footprints allowed)
+		)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+		)
+		(polygon
+			(pts
+				(xy -1 -0.3) (xy -0.4 -0.3) (xy -0.4 0.3) (xy -1 0.3) (xy -1 0.9) (xy -1.6 0.9) (xy -1.6 0.3) (xy -1 0.3)
+			)
+		)
+	)
+)
