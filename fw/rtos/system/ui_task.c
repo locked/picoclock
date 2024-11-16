@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ost_hal.h"
 #include "debug.h"
@@ -83,7 +84,8 @@ static ost_context_t OstContext;
 
 // Externs
 extern qor_mbox_t NetMailBox;
-extern wakeup_alarm_struct wakeup_alarms[4];
+extern wakeup_alarm_struct wakeup_alarms[10];
+extern int wakup_alarms_count;
 extern weather_struct weather;
 extern int current_screen;
 
@@ -146,7 +148,11 @@ void UiTask(void *args) {
                 debug_printf("/!\\ Received event OST_SYS_BUTTON:[%d]\r\n", message->btn);
                 if (current_screen == SCREEN_ALARM) {
                     // In alarm
-                    stop_melody();
+                    // Stop sound
+                    ost_audio_stop();
+                    //stop_melody();
+
+                    // Set screen back to normal mode
                     current_screen = SCREEN_MAIN;
                     static ost_ui_event_t Ev = {
                         .ev = OST_SYS_REFRESH_SCREEN,
@@ -154,24 +160,7 @@ void UiTask(void *args) {
                     };
                     qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
                 } else {
-                    // Sound tests:
-                    char SoundFile[260] = "Tellement.wav";
-                    if (message->btn == 5) {
-                        fs_task_sound_start(SoundFile);
-                    } else if (message->btn == 4) {
-                        mcp23009_set(0, 0);
-                    } else if (message->btn == 3) {
-                        mcp23009_set(0, 1);
-                    }
-                    if (message->btn == 2) {
-                        mcp4652_set_wiper(0x100);
-                    } else if (message->btn == 1) {
-                        mcp4652_set_wiper(0x80);
-                    } else if (message->btn == 0) {
-                        mcp4652_set_wiper(0x0);
-                    }
                     // Normal mode
-                    /*
                     if (message->btn == 0) {
                         if (current_screen < 3) {
                             if (backlight_on) {
@@ -206,7 +195,11 @@ void UiTask(void *args) {
                         };
                         qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
                     }
-                    */
+                    if (message->btn == 4) {
+                        mcp4652_set_wiper(0x0);
+                    } else if (message->btn == 5) {
+                        mcp4652_set_wiper(0x100);
+                    }
                 }
             }
 
@@ -244,21 +237,89 @@ void UiTask(void *args) {
 
                     _y += Font24.Height + 1;
                     Paint_ClearWindows(screen_x, _y, screen_x + Font24.Width * 8, 40 + Font24.Height, WHITE);
-                    Paint_DrawTime(screen_x, 40, &sPaint_time, &Font24, WHITE, BLACK);
+                    Paint_DrawTime(screen_x, _y, &sPaint_time, &Font24, WHITE, BLACK);
 
                     mcp9808_get_temperature(temp2_str);
                     sprintf(temp_str, "Temp: %s C", temp2_str);
-                    _y += Font24.Height + 3;
+                    _y += Font24.Height + 2;
                     Paint_ClearWindows(screen_x + Font12.Width * 6, _y, screen_x + Font12.Width * 12, 80 + Font12.Height, WHITE);
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font12, WHITE, BLACK);
 
-                    //sprintf(temp_str, "Alarm: %02d:%02d (%d)", dt.alarm_hour, dt.alarm_min, dt.alarm_weekday);
-                    //Paint_ClearWindows(screen_x + Font12.Width * 7, 100, screen_x + Font12.Width * 17, 100 + Font12.Height, WHITE);
-                    //Paint_DrawString_EN(screen_x, 100, temp_str, &Font12, WHITE, BLACK);
-                    for (int i=0; i<4; i++) {
-                        sprintf(temp_str, "[%d] %d:%d (%d)", wakeup_alarms[i].isset, wakeup_alarms[i].hour, wakeup_alarms[i].min, wakeup_alarms[i].weekdays);
-                        Paint_DrawString_EN(screen_x + Font12.Width * 12, _y, temp_str, &Font12, WHITE, BLACK);
+                    // Next alarm
+                    wakeup_alarm_struct next_alarm;
+                    next_alarm.in_mins = 999999;
+                    for (int i=0; i<wakup_alarms_count; i++) {
+                        int in_mins = 0;
+                        if (wakeup_alarms[i].isset == 1) {
+                            debug_printf("check alarm:[%d]\r\n", i);
+                            for (int chk_weekday=0; chk_weekday<7; chk_weekday++) {
+                                if (wakeup_alarms[i].weekdays & (1 << (7 - chk_weekday))) {
+                                    int in_days;
+                                    if (dt.weekday == chk_weekday) {
+                                        in_days = 0;    // same day
+                                    } else if (dt.weekday > chk_weekday) {
+                                        in_days = (chk_weekday + 7 - dt.weekday);    // a week after
+                                    } else {
+                                        in_days = (chk_weekday - dt.weekday);
+                                    }
+                                    int alarm_min = wakeup_alarms[i].hour + wakeup_alarms[i].min;
+                                    int dt_min = dt.hour + dt.min;
+                                    int in_mins = 1440 * in_days;
+                                    if (alarm_min > dt_min) {
+                                        in_mins = alarm_min - dt_min;
+                                    } else if (alarm_min < dt_min) {
+                                        in_mins = 1440 + alarm_min - dt_min;
+                                    }
+                                    debug_printf("chk_weekday:[%d] in_days:[%d] in_mins:[%d]\r\n", chk_weekday, in_days, in_mins);
+                                    if (in_mins < next_alarm.in_mins) {
+                                        next_alarm = wakeup_alarms[i];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    _y += Font12.Height + 1;
+                    if (next_alarm.in_mins != 999999) {
+                        char weekdays_str[21] = "";
+                        for (int chk_weekday=0; chk_weekday<7; chk_weekday++) {
+                            if (next_alarm.weekdays & (1 << (7 - chk_weekday))) {
+                                if (chk_weekday == 0) {
+                                    strcat(weekdays_str, "Sun");
+                                } else if (chk_weekday == 1) {
+                                    strcat(weekdays_str, "Mon");
+                                } else if (chk_weekday == 2) {
+                                    strcat(weekdays_str, "Tue");
+                                } else if (chk_weekday == 3) {
+                                    strcat(weekdays_str, "Wed");
+                                } else if (chk_weekday == 4) {
+                                    strcat(weekdays_str, "Thu");
+                                } else if (chk_weekday == 5) {
+                                    strcat(weekdays_str, "Fri");
+                                } else if (chk_weekday == 6) {
+                                    strcat(weekdays_str, "Sat");
+                                }
+                            }
+                        }
+
+                        sprintf(temp_str, "Alarm: %02d:%02d (%s)", next_alarm.hour, next_alarm.min, weekdays_str);
+                        Paint_ClearWindows(screen_x + Font12.Width * 7, _y, screen_x + Font12.Width * 17, _y + Font12.Height, WHITE);
+                        Paint_DrawString_EN(screen_x, _y, temp_str, &Font12, WHITE, BLACK);
                         _y += Font12.Height + 1;
+                    }
+
+                    // All alarms
+                    int start_y = _y;
+                    int shift_x = 0;
+                    for (int i=0; i<wakup_alarms_count; i++) {
+                        if (wakeup_alarms[i].isset == 1) {
+                            sprintf(temp_str, "%d:%d (%d)", wakeup_alarms[i].hour, wakeup_alarms[i].min, wakeup_alarms[i].weekdays);
+                            Paint_DrawString_EN(screen_x + shift_x, _y, temp_str, &Font12, WHITE, BLACK);
+                            _y += Font12.Height;
+                        }
+                        if (_y > 120) {
+                            _y = start_y;
+                            shift_x = Font12.Width * 13;
+                        }
                     }
 
                     if (message->clear) {
@@ -302,10 +363,12 @@ void UiTask(void *args) {
                 } else if (current_screen == SCREEN_LIST_ALARMS) {
                     sprintf(temp_str, "Alarms");
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
-                    for (int i=0; i<4; i++) {
-                        _y += Font16.Height + 1;
-                        sprintf(temp_str, "[%d] %d:%d (%d)", wakeup_alarms[i].isset, wakeup_alarms[i].hour, wakeup_alarms[i].min, wakeup_alarms[i].weekdays);
-                        Paint_DrawString_EN(screen_x, _y + Font12.Height * 0, temp_str, &Font12, WHITE, BLACK);
+                    for (int i=0; i<wakup_alarms_count; i++) {
+                        if (wakeup_alarms[i].isset == 1) {
+                            _y += Font16.Height + 1;
+                            sprintf(temp_str, "[%d] %d:%d (%d)", wakeup_alarms[i].isset, wakeup_alarms[i].hour, wakeup_alarms[i].min, wakeup_alarms[i].weekdays);
+                            Paint_DrawString_EN(screen_x, _y + Font12.Height * 0, temp_str, &Font12, WHITE, BLACK);
+                        }
                     }
                     EPD_2in13_V4_Display_Base(BlackImage);
                     shutdown_screen = true;
@@ -360,18 +423,19 @@ void UiTask(void *args) {
         if (time_initialized) {
             if (dt.min != last_min) {
                 // Minute change
-                for (int i=0; i<4; i++) {
+                for (int i=0; i<wakup_alarms_count; i++) {
                     wakeup_alarm_struct alarm = wakeup_alarms[i];
                     debug_printf("Check alarm:[%d] [%d:%d] vs [%d:%d]\r\n", i, alarm.hour, alarm.min, dt.hour, dt.min);
                     if (alarm.isset == 1 && alarm.hour == dt.hour && alarm.min == dt.min) {
                         // Check weekday
                         if (alarm.weekdays & (1 << (7 - dt.weekday))) {
                             debug_printf("Trigger alarm dt.weekday:[%d] alarm.weekdays:[%d]\r\n", dt.weekday, alarm.weekdays);
-                            static ost_net_event_t NetEv = {
-                                .ev = OST_SYS_ALARM
-                            };
-                            qor_mbox_notify(&NetMailBox, (void **)&NetEv, QOR_MBOX_OPTION_SEND_BACK);
 
+                            // Start sound
+                            char SoundFile[260] = "Tellement.wav";
+                            fs_task_sound_start(SoundFile);
+
+                            // Set screen to alarm
                             current_screen = SCREEN_ALARM;
                             static ost_ui_event_t Ev = {
                                 .ev = OST_SYS_REFRESH_SCREEN,

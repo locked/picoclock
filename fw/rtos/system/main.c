@@ -20,7 +20,8 @@
 //
 // Globals
 //
-wakeup_alarm_struct wakeup_alarms[4];
+wakeup_alarm_struct wakeup_alarms[10];
+int wakup_alarms_count = 10;
 weather_struct weather = {"", "", "", ""};
 int current_screen = 0;
 

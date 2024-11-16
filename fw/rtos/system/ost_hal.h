@@ -93,6 +93,7 @@ extern "C"
 	  int weekdays;	// This is a bitmask
 	  int hour;
 	  int min;
+      int in_mins;
 	} wakeup_alarm_struct;
 
 	typedef struct {
@@ -176,13 +177,6 @@ extern "C"
     void ost_button_register_callback(ost_button_callback_t cb);
 
     // ----------------------------------------------------------------------------
-    // GPIO HAL
-    // ----------------------------------------------------------------------------
-
-    int ost_hal_gpio_get(ost_hal_gpio_t gpio);
-    void ost_hal_gpio_set(ost_hal_gpio_t gpio, int value);
-
-    // ----------------------------------------------------------------------------
     // SDCARD HAL
     // ----------------------------------------------------------------------------
 
@@ -215,19 +209,6 @@ extern "C"
      * @return uint8_t SD card is present or not
      */
     uint8_t ost_hal_sdcard_get_presence();
-
-    // ----------------------------------------------------------------------------
-    // DISPLAY HAL
-    // ----------------------------------------------------------------------------
-    void ost_display_initialize();
-    void ost_display_draw_h_line(uint16_t y, uint8_t *pixels, uint8_t *palette);
-    void ost_display_dc_high();
-    void ost_display_dc_low();
-    void ost_display_ss_high();
-    void ost_display_ss_low();
-    uint8_t ost_display_transfer_byte(uint8_t dat);
-    void ost_display_transfer_multi(uint8_t *buff, uint32_t btr);
-    void ost_display_draw_h_line_rgb888(uint16_t y, const color_t *data);
 
     // ----------------------------------------------------------------------------
     // AUDIO HAL

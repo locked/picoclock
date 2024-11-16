@@ -1,19 +1,8 @@
-/**
- * @file fs_task.c
- *
- * @author your name (you@domain.com)
- * @brief
- * @version 0.1
- * @date 2023-07-29
- *
- * @copyright Copyright (c) 2023
- *
- */
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "ost_hal.h"
 #include "debug.h"
@@ -21,7 +10,6 @@
 #include "audio_player.h"
 #include "filesystem.h"
 #include "system.h"
-//#include "vm_task.h"
 #include "fs_task.h"
 #include "sdcard.h"
 
@@ -33,8 +21,6 @@ typedef enum
     FS_NO_EVENT,
     FS_PLAY_SOUND,
     FS_DISPLAY_IMAGE,
-    FS_LOAD_INDEX,
-    FS_LOAD_STORY,
     FS_READ_SDCARD_BLOCK,
     FS_WRITE_SDCARD_BLOCK,
     FS_AUDIO_NEXT_SAMPLES
@@ -70,8 +56,6 @@ static int PacketCounter = 0;
 
 static char ScratchFile[260];
 
-static uint8_t LedState = 0;
-
 // ===========================================================================================================
 // FILE SYSTEM TASK
 // ===========================================================================================================
@@ -99,14 +83,10 @@ static void show_duration(uint32_t millisecondes)
 }
 
 static bool UsbConnected = false;
-
-void fs_task_usb_connected()
-{
+void fs_task_usb_connected() {
     UsbConnected = true;
 }
-
-void fs_task_usb_disconnected()
-{
+void fs_task_usb_disconnected() {
     UsbConnected = true;
 }
 
@@ -129,15 +109,11 @@ void FsTask(void *args)
             case FS_PLAY_SOUND:
                 //if (OstContext.sound != NULL)
                 //{
-                    ScratchFile[STORY_DIR_OFFSET] = 0;
-                    strcat(ScratchFile, ASSETS_DIR);
-                    strcat(ScratchFile, message->sound);
+                    sprintf(ScratchFile, "%s%s", ASSETS_DIR, message->sound);
 
                     debug_printf("\r\n-------------------------------------------------------\r\nPlaying: %s\r\n", ScratchFile);
 
-                    debug_printf("ost_system_stopwatch_start...\r\n");
                     ost_system_stopwatch_start();
-                    debug_printf("ost_audio_play...\r\n");
                     ost_audio_play(ScratchFile);
                     debug_printf("ost_audio_play...OK\r\n");
                     PacketCounter = 0;
@@ -148,47 +124,20 @@ void FsTask(void *args)
             case FS_AUDIO_NEXT_SAMPLES:
                 isPlaying = ost_audio_process();
                 PacketCounter++;
+                if (PacketCounter % 200 == 0) {
+                    debug_printf("isPlaying:%d Packets: %d\r\n", isPlaying, PacketCounter);
+                }
 
-                if (isPlaying == 0)
-                {
+                if (isPlaying == 0) {
+                    debug_printf("STOP AUDIO Packets: %d\r\n", PacketCounter);
                     uint32_t executionTime = ost_system_stopwatch_stop();
                     ost_audio_stop();
 
-                    debug_printf("\r\nPackets: %d\r\n", PacketCounter);
                     show_duration(executionTime);
                     //vm_task_sound_finished();
                 }
                 break;
 
-            /*
-            case FS_LOAD_INDEX:
-            {
-                bool success = false;
-                if (OstContext.number_of_stories > 0)
-                {
-                    filesystem_get_story_title(&OstContext);
-
-                    // Init current directory
-                    ScratchFile[0] = '/';
-                    memcpy(&ScratchFile[1], OstContext.uuid, UUID_SIZE);
-                    ScratchFile[STORY_DIR_OFFSET] = 0;
-                    success = true;
-                }
-
-                if (message->cb != NULL)
-                {
-                    message->cb(success);
-                }
-            }
-            break;
-            case FS_LOAD_STORY:
-                ScratchFile[STORY_DIR_OFFSET] = 0;
-                strcat(ScratchFile, "/story.c32");
-                filesystem_load_rom(message->mem, ScratchFile);
-                // ROM loaded, execute story
-                vm_task_start_story();
-                break;
-			*/
             case FS_READ_SDCARD_BLOCK:
                 sdcard_sector_read(message->addr, message->mem);
                 if (message->cb != NULL)
@@ -234,33 +183,6 @@ void fs_task_write_block(uint32_t addr, uint8_t *block, fs_result_cb_t cb)
     qor_mbox_notify(&FsMailBox, (void **)&WriteBlockEv, QOR_MBOX_OPTION_SEND_BACK);
 }
 
-void fs_task_scan_index(fs_result_cb_t cb)
-{
-    static ost_fs_event_t ScanIndexEv = {
-        .ev = FS_LOAD_INDEX,
-        .cb = NULL};
-    ScanIndexEv.cb = cb;
-    qor_mbox_notify(&FsMailBox, (void **)&ScanIndexEv, QOR_MBOX_OPTION_SEND_BACK);
-}
-
-/*
-void fs_task_play_index()
-{
-    fs_task_image_start(OstContext.image);
-    fs_task_sound_start(OstContext.sound);
-}
-
-void fs_task_load_story(uint8_t *mem)
-{
-    static ost_fs_event_t LoadRomxEv = {
-        .ev = FS_LOAD_STORY,
-        .cb = NULL};
-
-    LoadRomxEv.mem = mem;
-    qor_mbox_notify(&FsMailBox, (void **)&LoadRomxEv, QOR_MBOX_OPTION_SEND_BACK);
-}
-*/
-
 void fs_task_sound_start(char *sound)
 {
     static ost_fs_event_t MediaStartEv = {
@@ -272,19 +194,6 @@ void fs_task_sound_start(char *sound)
 	debug_printf("\r\nfs_task_sound_start notify:[%s]\r\n", sound);
     qor_mbox_notify(&FsMailBox, (void **)&MediaStartEv, QOR_MBOX_OPTION_SEND_BACK);
 }
-
-/*
-void fs_task_image_start(char *image)
-{
-    static ost_fs_event_t MediaStartEv = {
-        .ev = FS_DISPLAY_IMAGE,
-        .cb = NULL};
-
-    MediaStartEv.image = image;
-    MediaStartEv.sound = NULL;
-    qor_mbox_notify(&FsMailBox, (void **)&MediaStartEv, QOR_MBOX_OPTION_SEND_BACK);
-}
-*/
 
 void fs_task_initialize()
 {

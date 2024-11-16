@@ -283,9 +283,12 @@ void ost_system_initialize()
     mcp23009_set_direction(0b00100000);
     printf("mcp23009_is_connected: [%d]\r\n", mcp23009_status);
 
+    // Mute
+    mcp23009_set(0, 0);
+
     // Init Sound
     mcp4652_set_i2c(I2C_CHANNEL);
-    mcp4652_set_wiper(0x0);
+    mcp4652_set_wiper(0x100);
     i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
     audio_init(&audio_ctx);
     ost_audio_register_callback(audio_callback);
@@ -383,29 +386,6 @@ void ost_button_register_callback(ost_button_callback_t cb) {
     ButtonCallback = cb;
 }
 
-int ost_hal_gpio_get(ost_hal_gpio_t gpio) {
-    int value = 0;
-    switch (gpio) {
-        break;
-    default:
-        break;
-    }
-
-    return value;
-}
-
-void ost_hal_gpio_set(ost_hal_gpio_t gpio, int value) {
-    switch (gpio) {
-    case OST_GPIO_DEBUG_LED:
-
-        break;
-    case OST_GPIO_DEBUG_PIN:
-
-        break;
-    default:
-        break;
-    }
-}
 
 // ----------------------------------------------------------------------------
 // SDCARD HAL
@@ -457,6 +437,8 @@ uint8_t ost_hal_sdcard_get_presence()
 
 /**/
 void ost_audio_play(const char *filename) {
+    mcp23009_set(0, 1); // Unmute
+
     debug_printf("audio_play... [%s]\r\n", filename);
     audio_play(&audio_ctx, filename);
     config.freq = audio_ctx.audio_info.sample_rate;
@@ -467,11 +449,9 @@ void ost_audio_play(const char *filename) {
     i2s.buffer_index = 0;
 
     // On appelle une première fois le process pour récupérer et initialiser le premier buffer...
-    debug_printf("audio_process [1]\r\n");
     audio_process(&audio_ctx);
 
     // Puis le deuxième ... (pour avoir un buffer d'avance)
-    debug_printf("audio_process [2]\r\n");
     audio_process(&audio_ctx);
 
     // On lance les DMA
@@ -479,6 +459,9 @@ void ost_audio_play(const char *filename) {
 }
 
 void ost_audio_stop() {
+    mcp23009_set(0, 0); // Mute
+
+    debug_printf("audio stop\r\n");
     memset(i2s.out_ctrl_blocks[0], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
     memset(i2s.out_ctrl_blocks[1], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
     audio_stop(&audio_ctx);

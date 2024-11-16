@@ -234,8 +234,10 @@ static int get_audio_buf(audio_ctx_t *ctx, int32_t *buf_32b)
             index += 2;
         }
 
-buf_32b[i * 2] = buf_32b[i * 2] / 20;
-buf_32b[i * 2 + 1] = buf_32b[i * 2 + 1] / 20;
+        // Adjust volume
+        buf_32b[i * 2] = buf_32b[i * 2] / 20;
+        buf_32b[i * 2 + 1] = buf_32b[i * 2 + 1] / 20;
+
         // lvl_l += ((int32_t)buf_16b[i * 2 + 0] * buf_16b[i * 2 + 0]) / 32768;
         // lvl_r += ((int32_t)buf_16b[i * 2 + 1] * buf_16b[i * 2 + 1]) / 32768;
     }
