@@ -210,6 +210,9 @@ extern "C"
      */
     uint8_t ost_hal_sdcard_get_presence();
 
+	void getWeekdayStr(int weekday, char *weekdays_str);
+	void getWeekdaysStr(int weekdays, char *weekdays_str);
+
     // ----------------------------------------------------------------------------
     // AUDIO HAL
     // ----------------------------------------------------------------------------

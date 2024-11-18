@@ -90,6 +90,49 @@ extern weather_struct weather;
 extern int current_screen;
 
 
+void get_next_alarm(wakeup_alarm_struct *next_alarm, time_struct *dt) {
+    next_alarm = &wakeup_alarms[0];
+    next_alarm->in_mins = 999999;
+    for (int i=0; i<wakup_alarms_count; i++) {
+        int in_mins = 0;
+        if (wakeup_alarms[i].isset == 1) {
+            for (int chk_weekday=0; chk_weekday<7; chk_weekday++) {
+                if (wakeup_alarms[i].weekdays & (1 << (7 - chk_weekday))) {
+                    int alarm_min = wakeup_alarms[i].hour * 60 + wakeup_alarms[i].min;
+                    int dt_min = dt->hour * 60 + dt->min;
+                    if (dt->weekday == chk_weekday) {
+                        if (alarm_min > dt_min) {
+                            //printf("  alarm:[%d] alarm_min:[%d] > dt_min:[%d]\r\n", i, alarm_min, dt_min);
+                            in_mins = alarm_min - dt_min;
+                        } else if (alarm_min < dt_min) {
+                            //printf("  alarm:[%d] alarm_min:[%d] < dt_min:[%d]\r\n", i, alarm_min, dt_min);
+                            in_mins = 6 * 1440;
+                            in_mins += 1440 - dt_min;
+                            in_mins += alarm_min;
+                        }
+                    } else if (dt->weekday > chk_weekday) {
+                        in_mins = ((chk_weekday + 7 - dt->weekday) - 1) * 1440;    // a week after
+                        in_mins += 1440 - dt_min;
+                        in_mins += alarm_min;
+                    } else {
+                        in_mins = ((chk_weekday - dt->weekday) - 1) * 1440;
+                        in_mins += 1440 - dt_min;
+                        in_mins += alarm_min;
+                    }
+
+                    //printf("  alarm:[%d] chk_weekday:[%d] in_mins:[%d] next_alarm.in_mins:[%d]\r\n", i, chk_weekday, in_mins, next_alarm->in_mins);
+                    if (in_mins < next_alarm->in_mins) {
+                        //printf("  => OVERWRITE next_alarm with alarm:[%d]\r\n", i);
+                        next_alarm = &(wakeup_alarms[i]);
+                        next_alarm->in_mins = in_mins;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 // ===========================================================================================================
 // UI TASK (user interface, buttons manager, LCD)
 // ===========================================================================================================
@@ -106,10 +149,12 @@ void UiTask(void *args) {
     char temp_str[100];
     char temp2_str[10];
     char last_sync_str[9] = "";
-    int screen_x = 34;
+    int screen_x = 32;
     int icon_left_x = 0;
     int icon_right_x = 214;
     int last_sync = -1;
+    int ts_reset_alarm_screen = 0;
+    time_struct dt;
 
     // Create a new image cache
     UBYTE *BlackImage;
@@ -125,7 +170,7 @@ void UiTask(void *args) {
     Paint_DrawString_EN(10, 10, "Starting...", &Font20, WHITE, BLACK);
     EPD_2in13_V4_Display_Base(BlackImage);
 
-    time_struct dt = pcf8563_getDateTime();
+    dt = pcf8563_getDateTime();
     debug_printf("GET EXTERNAL RTC volt_low:[%d] year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.volt_low, dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
 
     bool time_initialized = !dt.volt_low;
@@ -152,13 +197,8 @@ void UiTask(void *args) {
                     ost_audio_stop();
                     //stop_melody();
 
-                    // Set screen back to normal mode
-                    current_screen = SCREEN_MAIN;
-                    static ost_ui_event_t Ev = {
-                        .ev = OST_SYS_REFRESH_SCREEN,
-                        .clear = true
-                    };
-                    qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
+                    dt = pcf8563_getDateTime();
+                    ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 2;  // Force reset in 2 s
                 } else {
                     // Normal mode
                     if (message->btn == 0) {
@@ -225,14 +265,16 @@ void UiTask(void *args) {
                     display_icon(icon_right_x, 10, ICON_LIGHT);
                     display_icon(icon_right_x, 50, ICON_WIFI);
 
-                    time_struct dt = pcf8563_getDateTime();
+                    dt = pcf8563_getDateTime();
                     sPaint_time.Year = dt.year;
                     sPaint_time.Month = dt.month;
                     sPaint_time.Day = dt.day;
                     sPaint_time.Hour = dt.hour;
                     sPaint_time.Min = dt.min;
                     sPaint_time.Sec = dt.sec;
-                    sprintf(temp_str, "%02d/%02d (%d)", dt.day, dt.month, dt.weekday);
+                    char weekday_str[3] = "";
+                    getWeekdayStr(dt.weekday, weekday_str);
+                    sprintf(temp_str, "%02d/%02d (%s)", dt.day, dt.month, weekday_str);
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font24, WHITE, BLACK);
 
                     _y += Font24.Height + 1;
@@ -246,62 +288,15 @@ void UiTask(void *args) {
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font12, WHITE, BLACK);
 
                     // Next alarm
-                    wakeup_alarm_struct next_alarm;
-                    next_alarm.in_mins = 999999;
-                    for (int i=0; i<wakup_alarms_count; i++) {
-                        int in_mins = 0;
-                        if (wakeup_alarms[i].isset == 1) {
-                            debug_printf("check alarm:[%d]\r\n", i);
-                            for (int chk_weekday=0; chk_weekday<7; chk_weekday++) {
-                                if (wakeup_alarms[i].weekdays & (1 << (7 - chk_weekday))) {
-                                    int in_days;
-                                    if (dt.weekday == chk_weekday) {
-                                        in_days = 0;    // same day
-                                    } else if (dt.weekday > chk_weekday) {
-                                        in_days = (chk_weekday + 7 - dt.weekday);    // a week after
-                                    } else {
-                                        in_days = (chk_weekday - dt.weekday);
-                                    }
-                                    int alarm_min = wakeup_alarms[i].hour + wakeup_alarms[i].min;
-                                    int dt_min = dt.hour + dt.min;
-                                    int in_mins = 1440 * in_days;
-                                    if (alarm_min > dt_min) {
-                                        in_mins = alarm_min - dt_min;
-                                    } else if (alarm_min < dt_min) {
-                                        in_mins = 1440 + alarm_min - dt_min;
-                                    }
-                                    debug_printf("chk_weekday:[%d] in_days:[%d] in_mins:[%d]\r\n", chk_weekday, in_days, in_mins);
-                                    if (in_mins < next_alarm.in_mins) {
-                                        next_alarm = wakeup_alarms[i];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    _y += Font12.Height + 1;
-                    if (next_alarm.in_mins != 999999) {
-                        char weekdays_str[21] = "";
-                        for (int chk_weekday=0; chk_weekday<7; chk_weekday++) {
-                            if (next_alarm.weekdays & (1 << (7 - chk_weekday))) {
-                                if (chk_weekday == 0) {
-                                    strcat(weekdays_str, "Sun");
-                                } else if (chk_weekday == 1) {
-                                    strcat(weekdays_str, "Mon");
-                                } else if (chk_weekday == 2) {
-                                    strcat(weekdays_str, "Tue");
-                                } else if (chk_weekday == 3) {
-                                    strcat(weekdays_str, "Wed");
-                                } else if (chk_weekday == 4) {
-                                    strcat(weekdays_str, "Thu");
-                                } else if (chk_weekday == 5) {
-                                    strcat(weekdays_str, "Fri");
-                                } else if (chk_weekday == 6) {
-                                    strcat(weekdays_str, "Sat");
-                                }
-                            }
-                        }
+                    wakeup_alarm_struct *next_alarm;
+                    get_next_alarm(next_alarm, &dt);
 
-                        sprintf(temp_str, "Alarm: %02d:%02d (%s)", next_alarm.hour, next_alarm.min, weekdays_str);
+                    _y += Font12.Height + 1;
+                    if (next_alarm->in_mins < 86400*7) {
+                        char weekdays_str[21] = "";
+                        getWeekdaysStr(next_alarm->weekdays, weekdays_str);
+
+                        sprintf(temp_str, "Alarm: %02d:%02d (%s)", next_alarm->hour, next_alarm->min, weekdays_str);
                         Paint_ClearWindows(screen_x + Font12.Width * 7, _y, screen_x + Font12.Width * 17, _y + Font12.Height, WHITE);
                         Paint_DrawString_EN(screen_x, _y, temp_str, &Font12, WHITE, BLACK);
                         _y += Font12.Height + 1;
@@ -312,7 +307,9 @@ void UiTask(void *args) {
                     int shift_x = 0;
                     for (int i=0; i<wakup_alarms_count; i++) {
                         if (wakeup_alarms[i].isset == 1) {
-                            sprintf(temp_str, "%d:%d (%d)", wakeup_alarms[i].hour, wakeup_alarms[i].min, wakeup_alarms[i].weekdays);
+                            char weekdays_str[21] = "";
+                            getWeekdaysStr(wakeup_alarms[i].weekdays, weekdays_str);
+                            sprintf(temp_str, "%d:%d(%s)", wakeup_alarms[i].hour, wakeup_alarms[i].min, weekdays_str);
                             Paint_DrawString_EN(screen_x + shift_x, _y, temp_str, &Font12, WHITE, BLACK);
                             _y += Font12.Height;
                         }
@@ -392,7 +389,7 @@ void UiTask(void *args) {
                     sprintf(temp_str, "ALARM");
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
 
-                    time_struct dt = pcf8563_getDateTime();
+                    dt = pcf8563_getDateTime();
                     _y += Font16.Height + 1;
                     sprintf(temp_str, "%02d:%02d", dt.hour, dt.min);
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font24, WHITE, BLACK);
@@ -416,7 +413,7 @@ void UiTask(void *args) {
         }
 
         //rtc_get_datetime(&dt);
-        time_struct dt = pcf8563_getDateTime();
+        dt = pcf8563_getDateTime();
         //debug_printf("GET EXTERNAL RTC volt_low:[%d] year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.volt_low, dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
 
         time_initialized = !dt.volt_low;
@@ -434,6 +431,8 @@ void UiTask(void *args) {
                             // Start sound
                             char SoundFile[260] = "Tellement.wav";
                             fs_task_sound_start(SoundFile);
+
+                            ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 300;  // To reset screen after a while
 
                             // Set screen to alarm
                             current_screen = SCREEN_ALARM;
@@ -461,13 +460,31 @@ void UiTask(void *args) {
                 // First run, initialize as if sync nearly 1 hour ago
                 last_sync = ts - 3600 + 10;
             }
+
+            //
+            // Period tasks
+            //
+            // Trigger server sync
             if (((ts - last_sync) > 3600) || ((ts - last_sync) < 0)) {
-                // Trigger server sync
                 printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
                 request_remote_sync();
                 last_sync = ts;
                 sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
                 printf("sync trigger done\r\n");
+            }
+
+            // Reset alarm screen after a while
+            if (ts_reset_alarm_screen > 0 && ts > ts_reset_alarm_screen) {
+                printf("ts:[%d] ts_reset_alarm_screen:[%d] => Reset alarm screen\r\n", ts, ts_reset_alarm_screen);
+                ts_reset_alarm_screen = 0;
+                // Set screen back to normal mode
+                current_screen = SCREEN_MAIN;
+                // And force refresh
+                static ost_ui_event_t Ev = {
+                    .ev = OST_SYS_REFRESH_SCREEN,
+                    .clear = true
+                };
+                qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
             }
         }
 
