@@ -85,52 +85,13 @@ static ost_context_t OstContext;
 // Externs
 extern qor_mbox_t NetMailBox;
 extern wakeup_alarm_struct wakeup_alarms[10];
-extern int wakup_alarms_count;
+extern int wakeup_alarms_count;
 extern weather_struct weather;
 extern int current_screen;
 
 
-void get_next_alarm(wakeup_alarm_struct *next_alarm, time_struct *dt) {
-    next_alarm = &wakeup_alarms[0];
-    next_alarm->in_mins = 999999;
-    for (int i=0; i<wakup_alarms_count; i++) {
-        int in_mins = 0;
-        if (wakeup_alarms[i].isset == 1) {
-            for (int chk_weekday=0; chk_weekday<7; chk_weekday++) {
-                if (wakeup_alarms[i].weekdays & (1 << (7 - chk_weekday))) {
-                    int alarm_min = wakeup_alarms[i].hour * 60 + wakeup_alarms[i].min;
-                    int dt_min = dt->hour * 60 + dt->min;
-                    if (dt->weekday == chk_weekday) {
-                        if (alarm_min > dt_min) {
-                            //printf("  alarm:[%d] alarm_min:[%d] > dt_min:[%d]\r\n", i, alarm_min, dt_min);
-                            in_mins = alarm_min - dt_min;
-                        } else if (alarm_min < dt_min) {
-                            //printf("  alarm:[%d] alarm_min:[%d] < dt_min:[%d]\r\n", i, alarm_min, dt_min);
-                            in_mins = 6 * 1440;
-                            in_mins += 1440 - dt_min;
-                            in_mins += alarm_min;
-                        }
-                    } else if (dt->weekday > chk_weekday) {
-                        in_mins = ((chk_weekday + 7 - dt->weekday) - 1) * 1440;    // a week after
-                        in_mins += 1440 - dt_min;
-                        in_mins += alarm_min;
-                    } else {
-                        in_mins = ((chk_weekday - dt->weekday) - 1) * 1440;
-                        in_mins += 1440 - dt_min;
-                        in_mins += alarm_min;
-                    }
-
-                    //printf("  alarm:[%d] chk_weekday:[%d] in_mins:[%d] next_alarm.in_mins:[%d]\r\n", i, chk_weekday, in_mins, next_alarm->in_mins);
-                    if (in_mins < next_alarm->in_mins) {
-                        //printf("  => OVERWRITE next_alarm with alarm:[%d]\r\n", i);
-                        next_alarm = &(wakeup_alarms[i]);
-                        next_alarm->in_mins = in_mins;
-                    }
-                }
-            }
-        }
-    }
-}
+//void get_next_alarm(wakeup_alarm_struct *next_alarm, time_struct *dt) {
+//}
 
 
 // ===========================================================================================================
@@ -289,10 +250,49 @@ void UiTask(void *args) {
 
                     // Next alarm
                     wakeup_alarm_struct *next_alarm;
-                    get_next_alarm(next_alarm, &dt);
+                    //get_next_alarm(next_alarm, &dt);
+                    next_alarm = &wakeup_alarms[0];
+                    next_alarm->in_mins = 999999;
+                    for (int i=0; i<wakeup_alarms_count; i++) {
+                        int in_mins = 0;
+                        if (wakeup_alarms[i].isset == 1) {
+                            for (int chk_weekday=0; chk_weekday<7; chk_weekday++) {
+                                if (wakeup_alarms[i].weekdays & (1 << (7 - chk_weekday))) {
+                                    int alarm_min = wakeup_alarms[i].hour * 60 + wakeup_alarms[i].min;
+                                    int dt_min = dt.hour * 60 + dt.min;
+                                    if (dt.weekday == chk_weekday) {
+                                        if (alarm_min > dt_min) {
+                                            //printf("  alarm:[%d] alarm_min:[%d] > dt_min:[%d]\r\n", i, alarm_min, dt_min);
+                                            in_mins = alarm_min - dt_min;
+                                        } else if (alarm_min < dt_min) {
+                                            //printf("  alarm:[%d] alarm_min:[%d] < dt_min:[%d]\r\n", i, alarm_min, dt_min);
+                                            in_mins = 6 * 1440;
+                                            in_mins += 1440 - dt_min;
+                                            in_mins += alarm_min;
+                                        }
+                                    } else if (dt.weekday > chk_weekday) {
+                                        in_mins = ((chk_weekday + 7 - dt.weekday) - 1) * 1440;    // a week after
+                                        in_mins += 1440 - dt_min;
+                                        in_mins += alarm_min;
+                                    } else {
+                                        in_mins = ((chk_weekday - dt.weekday) - 1) * 1440;
+                                        in_mins += 1440 - dt_min;
+                                        in_mins += alarm_min;
+                                    }
+
+                                    //printf("  alarm:[%d] chk_weekday:[%d] in_mins:[%d] next_alarm.in_mins:[%d]\r\n", i, chk_weekday, in_mins, next_alarm->in_mins);
+                                    if (in_mins < next_alarm->in_mins) {
+                                        //printf("  => OVERWRITE next_alarm with alarm:[%d]\r\n", i);
+                                        next_alarm = &(wakeup_alarms[i]);
+                                        next_alarm->in_mins = in_mins;
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     _y += Font12.Height + 1;
-                    if (next_alarm->in_mins < 86400*7) {
+                    if (next_alarm->in_mins != 999999) {
                         char weekdays_str[21] = "";
                         getWeekdaysStr(next_alarm->weekdays, weekdays_str);
 
@@ -305,7 +305,7 @@ void UiTask(void *args) {
                     // All alarms
                     int start_y = _y;
                     int shift_x = 0;
-                    for (int i=0; i<wakup_alarms_count; i++) {
+                    for (int i=0; i<wakeup_alarms_count; i++) {
                         if (wakeup_alarms[i].isset == 1) {
                             char weekdays_str[21] = "";
                             getWeekdaysStr(wakeup_alarms[i].weekdays, weekdays_str);
@@ -360,7 +360,7 @@ void UiTask(void *args) {
                 } else if (current_screen == SCREEN_LIST_ALARMS) {
                     sprintf(temp_str, "Alarms");
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
-                    for (int i=0; i<wakup_alarms_count; i++) {
+                    for (int i=0; i<wakeup_alarms_count; i++) {
                         if (wakeup_alarms[i].isset == 1) {
                             _y += Font16.Height + 1;
                             sprintf(temp_str, "[%d] %d:%d (%d)", wakeup_alarms[i].isset, wakeup_alarms[i].hour, wakeup_alarms[i].min, wakeup_alarms[i].weekdays);
@@ -420,7 +420,7 @@ void UiTask(void *args) {
         if (time_initialized) {
             if (dt.min != last_min) {
                 // Minute change
-                for (int i=0; i<wakup_alarms_count; i++) {
+                for (int i=0; i<wakeup_alarms_count; i++) {
                     wakeup_alarm_struct alarm = wakeup_alarms[i];
                     debug_printf("Check alarm:[%d] [%d:%d] vs [%d:%d]\r\n", i, alarm.hour, alarm.min, dt.hour, dt.min);
                     if (alarm.isset == 1 && alarm.hour == dt.hour && alarm.min == dt.min) {

@@ -39,7 +39,7 @@ extern qor_mbox_t NetMailBox;
 
 // Externs
 extern wakeup_alarm_struct wakeup_alarms[10];
-extern int wakup_alarms_count;
+extern int wakeup_alarms_count;
 extern weather_struct weather;
 
 
@@ -165,7 +165,7 @@ int parse_json_response(char *response) {
     int tmp;
     bool wakeup_alarms_changed = false;
     alarm_child = json_getChild(wakeup_alarms_elem);
-    for (int i=0; i<wakup_alarms_count; i++) {
+    for (int i=0; i<wakeup_alarms_count; i++) {
         if (alarm_child == NULL) {
             // Clear alarms
             if (wakeup_alarms[i].isset != 0 || wakeup_alarms[i].weekdays != 0 || wakeup_alarms[i].hour != 0 || wakeup_alarms[i].min != 0) {
