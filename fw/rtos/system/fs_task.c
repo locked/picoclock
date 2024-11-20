@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "ost_hal.h"
+#include "main.h"
 #include "debug.h"
 #include "qor.h"
 #include "audio_player.h"
@@ -111,7 +111,7 @@ void FsTask(void *args)
                 //{
                     sprintf(ScratchFile, "%s%s", ASSETS_DIR, message->sound);
 
-                    debug_printf("\r\n-------------------------------------------------------\r\nPlaying: %s\r\n", ScratchFile);
+                    debug_printf("--------------------------\r\nPlaying: %s\r\n", ScratchFile);
 
                     ost_system_stopwatch_start();
                     ost_audio_play(ScratchFile);
@@ -191,7 +191,7 @@ void fs_task_sound_start(char *sound)
 
     MediaStartEv.image = NULL;
     MediaStartEv.sound = sound;
-	debug_printf("\r\nfs_task_sound_start notify:[%s]\r\n", sound);
+	debug_printf("[fs_task] fs_task_sound_start notify:[%s]\r\n", sound);
     qor_mbox_notify(&FsMailBox, (void **)&MediaStartEv, QOR_MBOX_OPTION_SEND_BACK);
 }
 

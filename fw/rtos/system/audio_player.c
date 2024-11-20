@@ -7,7 +7,7 @@
 #include "debug.h"
 #include <string.h>
 
-#include "ost_hal.h"
+#include "main.h"
 #include "serializers.h"
 
 int32_t audio_buf[STEREO_BUFFER_SIZE]; // x2 because we store L+R

@@ -15,7 +15,7 @@
    Module Private Functions
 ---------------------------------------------------------------------------*/
 
-#include "ost_hal.h"
+#include "main.h"
 #include "debug.h"
 #include "sdcard.h"
 

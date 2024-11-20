@@ -157,7 +157,7 @@ extern "C"
     // HIGH LEVEL API
     // ----------------------------------------------------------------------------
     // System API
-    void ost_system_initialize();
+    void system_initialize();
     void system_putc(char ch);
     void ost_system_delay_ms(uint32_t delay);
     void ost_system_stopwatch_start();

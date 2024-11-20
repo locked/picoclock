@@ -1,22 +1,10 @@
-/**
- * @file ui_task.c
- *
- * @author your name (you@domain.com)
- * @brief
- * @version 0.1
- * @date 2023-07-29
- *
- * @copyright Copyright (c) 2023
- *
- */
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "ost_hal.h"
+#include "main.h"
 #include "debug.h"
 #include "qor.h"
 #include "system.h"
@@ -30,10 +18,6 @@
 #include "hardware/rtc.h"
 #include <hardware/sync.h>
 
-#include "mcp9808/mcp9808.h"
-
-#include "pcf8563/pcf8563.h"
-
 #include "net_task.h"
 #include "fs_task.h"
 
@@ -45,6 +29,8 @@
 
 #include "pwm_sound.h"
 
+#include "mcp9808/mcp9808.h"
+#include "pcf8563/pcf8563.h"
 #include "mcp23009/mcp23009.h"
 #include "mcp4652/mcp4652.h"
 

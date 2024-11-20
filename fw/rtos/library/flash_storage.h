@@ -1,7 +1,7 @@
 #ifndef _FLASH_STORAGE_H
 #define _FLASH_STORAGE_H
 
-#include "ost_hal.h"
+#include "main.h"
 
 
 int flash_store_alarms(wakeup_alarm_struct *wakeup_alarms);

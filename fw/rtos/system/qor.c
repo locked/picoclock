@@ -10,7 +10,7 @@
 
  */
 
-#include "ost_hal.h"
+#include "main.h"
 #include "debug.h"
 #include "qor.h"
 #include <stdlib.h>

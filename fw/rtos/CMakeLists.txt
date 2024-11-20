@@ -55,7 +55,7 @@ set(OST_SRCS
     library/pico_i2s.c
     platform/raspberry-pico-w/wifi.c
     platform/raspberry-pico-w/pwm_sound.c
-    platform/raspberry-pico-w/pico_hal_wrapper.c
+    #platform/raspberry-pico-w/pico_hal_wrapper.c
 )
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src

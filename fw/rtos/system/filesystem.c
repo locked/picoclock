@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <ff.h>
 #include "debug.h"
-#include "ost_hal.h"
+#include "main.h"
 
 #include "filesystem.h"
 #include "mini_qoi.h"
