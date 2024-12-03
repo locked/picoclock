@@ -3859,45 +3859,42 @@
 				)
 			)
 		)
-		(symbol "MCP23009-E_SO:MCP23009-SO"
+		(symbol "MCP23009:MCP23009-E_SS"
+			(pin_names
+				(offset 1.016)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "U"
-				(at -8.89 13.97 0)
+				(at -12.7 21.32 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left bottom)
 				)
 			)
-			(property "Value" "MCP23009-SO"
-				(at 8.89 13.97 0)
+			(property "Value" "MCP23009-E_SS"
+				(at -12.7 -24.32 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left bottom)
 				)
 			)
-			(property "Footprint" "Package_SO:SOIC-18W_7.5x11.6mm_P1.27mm"
-				(at 0 -26.67 0)
+			(property "Footprint" "MCP23009-E_SS:SOP65P780X200-20N"
+				(at 0 0 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(justify bottom)
 					(hide yes)
 				)
 			)
-			(property "Datasheet" "http://ww1.microchip.com/downloads/en/DeviceDoc/MCP23008-MCP23S08-Data-Sheet-20001919F.pdf"
-				(at 33.02 -30.48 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "8-bit I/O expander, I2C, interrupts, SOIC-18"
+			(property "Datasheet" ""
 				(at 0 0 0)
 				(effects
 					(font
@@ -3906,7 +3903,7 @@
 					(hide yes)
 				)
 			)
-			(property "ki_keywords" "I2C parallel port expander"
+			(property "Description" ""
 				(at 0 0 0)
 				(effects
 					(font
@@ -3915,295 +3912,494 @@
 					(hide yes)
 				)
 			)
-			(property "ki_fp_filters" "SOIC*7.5x11.6mm*P1.27mm*"
+			(property "MF" "Microchip"
 				(at 0 0 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(justify bottom)
 					(hide yes)
 				)
 			)
-			(symbol "MCP23009-SO_0_1"
+			(property "MAXIMUM_PACKAGE_HEIGHT" "2 mm"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Package" "SSOP-20 Microchip"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Price" "None"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Check_prices" "https://www.snapeda.com/parts/MCP23009-E/SS/Microchip/view-part/?ref=eda"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "STANDARD" "IPC 7351B"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "PARTREV" "C"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "SnapEDA_Link" "https://www.snapeda.com/parts/MCP23009-E/SS/Microchip/view-part/?ref=snap"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "MP" "MCP23009-E/SS"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Description_1" "\n                        \n                            Microchip MCP23009-E/SS, 8-channel 8bit I/O Expander 3.4MHz, I2C, 20-Pin SSOP | Microchip Technology Inc. MCP23009-E/SS\n                        \n"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "Availability" "In Stock"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(property "MANUFACTURER" "Microchip"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify bottom)
+					(hide yes)
+				)
+			)
+			(symbol "MCP23009-E_SS_0_0"
 				(rectangle
-					(start -10.16 12.7)
-					(end 10.16 -12.7)
+					(start -12.7 -20.32)
+					(end 12.7 20.32)
 					(stroke
-						(width 0.254)
+						(width 0.41)
 						(type default)
 					)
 					(fill
 						(type background)
 					)
 				)
-			)
-			(symbol "MCP23009-SO_1_1"
 				(pin power_in line
-					(at 0 15.24 270)
-					(length 2.54)
+					(at 17.78 17.78 180)
+					(length 5.08)
 					(name "VDD"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "1"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin bidirectional line
-					(at 12.7 5.08 180)
-					(length 2.54)
-					(name "GP2"
+					(at -17.78 -10.16 0)
+					(length 5.08)
+					(name "NC"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "10"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin bidirectional line
-					(at 12.7 2.54 180)
-					(length 2.54)
-					(name "GP3"
+					(at -17.78 -10.16 0)
+					(length 5.08)
+					(name "NC"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "11"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin bidirectional line
-					(at 12.7 0 180)
-					(length 2.54)
-					(name "GP4"
+					(at -17.78 -2.54 0)
+					(length 5.08)
+					(name "GP2"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "12"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin bidirectional line
-					(at 12.7 -2.54 180)
-					(length 2.54)
-					(name "GP5"
+					(at -17.78 -5.08 0)
+					(length 5.08)
+					(name "GP3"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "13"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin bidirectional line
-					(at 12.7 -5.08 180)
-					(length 2.54)
-					(name "GP6"
+					(at 17.78 2.54 180)
+					(length 5.08)
+					(name "GP4"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "14"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin bidirectional line
-					(at 12.7 -7.62 180)
-					(length 2.54)
-					(name "GP7"
+					(at 17.78 0 180)
+					(length 5.08)
+					(name "GP5"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "15"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
-				(pin power_in line
-					(at 0 -15.24 90)
-					(length 2.54)
-					(name "VSS"
+				(pin bidirectional line
+					(at 17.78 -2.54 180)
+					(length 5.08)
+					(name "GP6"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "16"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at 17.78 -5.08 180)
+					(length 5.08)
+					(name "GP7"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "17"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -17.78 -10.16 0)
+					(length 5.08)
+					(name "NC"
+						(effects
+							(font
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "18"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -17.78 -10.16 0)
+					(length 5.08)
+					(name "NC"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "19"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -17.78 -10.16 0)
+					(length 5.08)
+					(name "NC"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 17.78 -17.78 180)
+					(length 5.08)
+					(name "VSS"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "20"
+						(effects
+							(font
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin input line
-					(at -12.7 7.62 0)
-					(length 2.54)
+					(at -17.78 7.62 0)
+					(length 5.08)
 					(name "SCL"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "3"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin bidirectional line
-					(at -12.7 5.08 0)
-					(length 2.54)
+					(at -17.78 -15.24 0)
+					(length 5.08)
 					(name "SDA"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "4"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin input line
-					(at -12.7 -10.16 0)
-					(length 2.54)
+					(at -17.78 10.16 0)
+					(length 5.08)
 					(name "ADDR"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "5"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin input line
-					(at -12.7 10.16 0)
-					(length 2.54)
+					(at -17.78 12.7 0)
+					(length 5.08)
 					(name "~{RESET}"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "6"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin output line
-					(at -12.7 0 0)
-					(length 2.54)
+					(at 17.78 12.7 180)
+					(length 5.08)
 					(name "INT"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "7"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin bidirectional line
-					(at 12.7 10.16 180)
-					(length 2.54)
+					(at -17.78 2.54 0)
+					(length 5.08)
 					(name "GP0"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "8"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 				)
 				(pin bidirectional line
-					(at 12.7 7.62 180)
-					(length 2.54)
+					(at -17.78 0 0)
+					(length 5.08)
 					(name "GP1"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
 					(number "9"
 						(effects
 							(font
-								(size 1.27 1.27)
+								(size 1.016 1.016)
 							)
 						)
 					)
@@ -6567,6 +6763,12 @@
 		(uuid "0a250bd5-a008-4f6c-8498-934b2747b3d8")
 	)
 	(junction
+		(at 147.32 100.33)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "0e620e01-c40b-4f3c-9108-47b8e9c778fb")
+	)
+	(junction
 		(at 25.4 90.17)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6649,12 +6851,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "4ea63371-48be-409a-9c9c-879d1cad6424")
-	)
-	(junction
-		(at 106.68 107.95)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "5654739e-cf4b-4db7-aa42-d0bb5eb1232c")
 	)
 	(junction
 		(at 125.095 61.595)
@@ -6827,16 +7023,40 @@
 		(uuid "66b829cf-aba0-42bf-afa3-16fc2c959e20")
 	)
 	(no_connect
+		(at 140.97 120.65)
+		(uuid "69e6f539-77bb-4d0d-9ecb-5e122f1c465b")
+	)
+	(no_connect
 		(at 240.03 50.8)
 		(uuid "6aed3f64-9591-4f16-892c-345eae2dfbff")
+	)
+	(no_connect
+		(at 140.97 115.57)
+		(uuid "7bf0e605-dd2e-4e60-8f87-b42f26cb22de")
 	)
 	(no_connect
 		(at 240.03 63.5)
 		(uuid "80c15857-27d0-4218-81b8-c77ea62516fb")
 	)
+	(no_connect
+		(at 105.41 123.19)
+		(uuid "935e5fcd-4602-4c5c-ae01-21395191ddbf")
+	)
+	(no_connect
+		(at 105.41 128.27)
+		(uuid "93ea7507-4839-4e9f-a19e-b1ce3ee252b9")
+	)
+	(no_connect
+		(at 140.97 118.11)
+		(uuid "acaebfbd-af32-421e-ac47-3f1c10b7784c")
+	)
+	(no_connect
+		(at 105.41 120.65)
+		(uuid "eaea303f-c732-40d2-874a-a4e22c0c3733")
+	)
 	(wire
 		(pts
-			(xy 165.1 116.84) (xy 179.07 116.84)
+			(xy 167.64 116.84) (xy 179.07 116.84)
 		)
 		(stroke
 			(width 0)
@@ -7416,7 +7636,7 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 118.11) (xy 109.22 118.11)
+			(xy 143.51 105.41) (xy 140.97 105.41)
 		)
 		(stroke
 			(width 0)
@@ -7426,7 +7646,7 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 110.49) (xy 109.22 110.49)
+			(xy 102.87 110.49) (xy 105.41 110.49)
 		)
 		(stroke
 			(width 0)
@@ -7436,13 +7656,13 @@
 	)
 	(wire
 		(pts
-			(xy 135.89 113.03) (xy 134.62 113.03)
+			(xy 147.32 100.33) (xy 149.86 100.33)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "5d647009-4525-4152-8e3e-60a431477edf")
+		(uuid "5db4a03c-980d-4bb7-bb15-3f629cc10d2a")
 	)
 	(wire
 		(pts
@@ -7483,6 +7703,16 @@
 			(type default)
 		)
 		(uuid "600f0847-dc08-4229-b470-55f5d638a118")
+	)
+	(wire
+		(pts
+			(xy 102.87 118.11) (xy 105.41 118.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "61d9d09d-dbe5-4c49-aff0-21f116c0f410")
 	)
 	(wire
 		(pts
@@ -7556,7 +7786,7 @@
 	)
 	(wire
 		(pts
-			(xy 151.13 141.605) (xy 151.13 144.145)
+			(xy 151.13 143.51) (xy 151.13 144.145)
 		)
 		(stroke
 			(width 0)
@@ -7686,7 +7916,7 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 113.03) (xy 109.22 113.03)
+			(xy 102.87 133.35) (xy 105.41 133.35)
 		)
 		(stroke
 			(width 0)
@@ -7856,6 +8086,16 @@
 	)
 	(wire
 		(pts
+			(xy 104.14 107.95) (xy 105.41 107.95)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "98fee72c-ab96-4c6b-9ca4-2172ba2090e6")
+	)
+	(wire
+		(pts
 			(xy 274.32 80.01) (xy 274.32 78.74)
 		)
 		(stroke
@@ -7863,16 +8103,6 @@
 			(type default)
 		)
 		(uuid "9b9e0535-370c-4ff9-8f4a-388233ed2b1d")
-	)
-	(wire
-		(pts
-			(xy 135.89 125.73) (xy 134.62 125.73)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9f1f71f5-c3f9-422d-bfe5-3af2bfab8005")
 	)
 	(wire
 		(pts
@@ -8456,16 +8686,6 @@
 	)
 	(wire
 		(pts
-			(xy 100.33 107.95) (xy 106.68 107.95)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "dac01f7d-0619-45aa-a42d-c10174f20ad1")
-	)
-	(wire
-		(pts
 			(xy 160.02 73.025) (xy 158.75 73.025)
 		)
 		(stroke
@@ -8486,7 +8706,7 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 107.95) (xy 109.22 107.95)
+			(xy 140.97 100.33) (xy 147.32 100.33)
 		)
 		(stroke
 			(width 0)
@@ -8533,6 +8753,16 @@
 			(type default)
 		)
 		(uuid "e15a6c40-60d2-4ab7-bb8e-825ddff43f7b")
+	)
+	(wire
+		(pts
+			(xy 96.52 105.41) (xy 105.41 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e32d2fb5-00e3-410e-9a7b-529bc8b28e16")
 	)
 	(wire
 		(pts
@@ -8586,6 +8816,16 @@
 	)
 	(wire
 		(pts
+			(xy 142.24 123.19) (xy 140.97 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ec1df50c-0c59-4211-b58e-abde1e2e067d")
+	)
+	(wire
+		(pts
 			(xy 20.32 191.77) (xy 22.86 191.77)
 		)
 		(stroke
@@ -8636,7 +8876,7 @@
 	)
 	(wire
 		(pts
-			(xy 135.89 107.95) (xy 134.62 107.95)
+			(xy 102.87 115.57) (xy 105.41 115.57)
 		)
 		(stroke
 			(width 0)
@@ -8862,50 +9102,6 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "SD_DET"
-		(shape input)
-		(at 135.89 113.03 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "01fa20bf-c1ce-4ad4-9270-34bb72f5f6ec")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 145.7089 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "GPE7{slash}led"
-		(shape output)
-		(at 135.89 125.73 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "033254fb-33e0-4d3d-9b6c-97ef5a5e9af8")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 148.007 125.73 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
 				(hide yes)
 			)
 		)
@@ -9394,6 +9590,28 @@
 			)
 		)
 	)
+	(global_label "SD_DET"
+		(shape input)
+		(at 102.87 118.11 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "65228bbe-3a2f-4b4f-b38c-e17cc4ac3699")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 93.0511 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "GPIO1 SCREEN CS"
 		(shape input)
 		(at 204.47 53.34 180)
@@ -9561,6 +9779,28 @@
 		(uuid "734832ef-1656-40ca-8516-5ff610071739")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 243.84 137.9242 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "GPE7{slash}led"
+		(shape output)
+		(at 142.24 123.19 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "768b4c4d-a658-49b0-8823-893004f8418d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 154.357 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9791,22 +10031,22 @@
 	)
 	(global_label "GPIO11{slash}irq"
 		(shape output)
-		(at 106.68 118.11 180)
+		(at 143.51 105.41 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right)
+			(justify left)
 		)
 		(uuid "96686f8a-9a1d-44cb-aca3-8b9926bf2521")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 92.93 118.11 0)
+			(at 157.26 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
+				(justify left)
 				(hide yes)
 			)
 		)
@@ -10209,22 +10449,22 @@
 	)
 	(global_label "MUTE"
 		(shape output)
-		(at 135.89 107.95 0)
+		(at 102.87 115.57 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "c18a94db-083e-46e8-85ae-c2e2312462c7")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 143.7737 107.95 0)
+			(at 94.9863 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 				(hide yes)
 			)
 		)
@@ -10297,7 +10537,7 @@
 	)
 	(global_label "SDA"
 		(shape input)
-		(at 106.68 113.03 180)
+		(at 102.87 133.35 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10307,7 +10547,7 @@
 		)
 		(uuid "cc746e8d-b852-49c9-bc54-00f25079e8e4")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 100.1267 113.03 0)
+			(at 96.3167 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10319,7 +10559,7 @@
 	)
 	(global_label "SCL"
 		(shape input)
-		(at 106.68 110.49 180)
+		(at 102.87 110.49 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10329,7 +10569,7 @@
 		)
 		(uuid "d0316b5e-9a6c-44e5-ab84-902ef2ce9a4c")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 100.1872 110.49 0)
+			(at 96.3772 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10780,71 +11020,6 @@
 			(project "picoclock"
 				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9"
 					(reference "R8")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+3.3V")
-		(at 121.92 102.87 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "057ff5cc-d906-482c-933e-9af1b7673431")
-		(property "Reference" "#PWR076"
-			(at 121.92 106.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3.3V"
-			(at 122.555 99.06 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 121.92 102.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 121.92 102.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 121.92 102.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "df14a9e1-b7e8-42e0-b84d-1047dc3aebb3")
-		)
-		(instances
-			(project "picoclock"
-				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9"
-					(reference "#PWR076")
 					(unit 1)
 				)
 			)
@@ -12775,72 +12950,6 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 109.22 128.27 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "304b5ba9-7372-486c-868a-d323cd1370b9")
-		(property "Reference" "#PWR075"
-			(at 109.22 134.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 109.22 132.7134 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 109.22 128.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 109.22 128.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 109.22 128.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "7617fb91-7696-4a6a-b699-560dc9bd3a13")
-		)
-		(instances
-			(project "picoclock"
-				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9"
-					(reference "#PWR075")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
 		(at 49.53 139.7 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -13011,7 +13120,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Small")
-		(at 106.68 105.41 180)
+		(at 147.32 97.79 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -13019,7 +13128,7 @@
 		(dnp no)
 		(uuid "32ee3c95-7bac-405c-baa7-83c695355d5d")
 		(property "Reference" "C17"
-			(at 102.108 105.156 90)
+			(at 142.748 97.536 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13027,7 +13136,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 103.886 104.648 90)
+			(at 144.526 97.028 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13035,7 +13144,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 106.68 105.41 0)
+			(at 147.32 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13044,7 +13153,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 106.68 105.41 0)
+			(at 147.32 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13053,7 +13162,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 106.68 105.41 0)
+			(at 147.32 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13062,7 +13171,7 @@
 			)
 		)
 		(property "LCSC" "C1525"
-			(at 106.68 105.41 0)
+			(at 147.32 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13304,7 +13413,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 163.8808 122.047 0)
+			(at 163.576 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15425,8 +15534,8 @@
 		)
 	)
 	(symbol
-		(lib_id "MCP23009-E_SO:MCP23009-SO")
-		(at 121.92 118.11 0)
+		(lib_id "MCP23009:MCP23009-E_SS")
+		(at 123.19 118.11 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -15434,7 +15543,7 @@
 		(dnp no)
 		(uuid "78fea069-1560-4ac4-8579-15494ce6038b")
 		(property "Reference" "U6"
-			(at 120.65 93.98 0)
+			(at 121.92 93.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15443,7 +15552,7 @@
 			)
 		)
 		(property "Value" "MCP23009-SO"
-			(at 115.57 96.52 0)
+			(at 116.84 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15452,16 +15561,17 @@
 			)
 		)
 		(property "Footprint" "Package_SO:SSOP-20_5.3x7.2mm_P0.65mm"
-			(at 121.92 144.78 0)
+			(at 123.19 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
 		(property "Datasheet" "http://ww1.microchip.com/downloads/en/DeviceDoc/MCP23008-MCP23S08-Data-Sheet-20001919F.pdf"
-			(at 154.94 148.59 0)
+			(at 123.19 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15470,11 +15580,131 @@
 			)
 		)
 		(property "Description" ""
-			(at 121.92 118.11 0)
+			(at 123.19 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(hide yes)
+			)
+		)
+		(property "MF" "Microchip"
+			(at 123.19 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "MAXIMUM_PACKAGE_HEIGHT" "2 mm"
+			(at 123.19 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Package" "SSOP-20 Microchip"
+			(at 123.19 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Price" "None"
+			(at 123.19 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Check_prices" "https://www.snapeda.com/parts/MCP23009-E/SS/Microchip/view-part/?ref=eda"
+			(at 123.19 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "STANDARD" "IPC 7351B"
+			(at 123.19 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "PARTREV" "C"
+			(at 123.19 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "SnapEDA_Link" "https://www.snapeda.com/parts/MCP23009-E/SS/Microchip/view-part/?ref=snap"
+			(at 123.19 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "MP" "MCP23009-E/SS"
+			(at 123.19 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Description_1" "\n                        \n                            Microchip MCP23009-E/SS, 8-channel 8bit I/O Expander 3.4MHz, I2C, 20-Pin SSOP | Microchip Technology Inc. MCP23009-E/SS\n                        \n"
+			(at 123.19 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Availability" "In Stock"
+			(at 123.19 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "MANUFACTURER" "Microchip"
+			(at 123.19 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
 				(hide yes)
 			)
 		)
@@ -15522,6 +15752,21 @@
 		)
 		(pin "9"
 			(uuid "11e7c230-5be9-4e5d-b474-2f929c4b7188")
+		)
+		(pin "2"
+			(uuid "facab725-3231-477e-a0e5-c2af9951cf97")
+		)
+		(pin "16"
+			(uuid "63327f45-75cd-402c-8c60-07ab7f03346c")
+		)
+		(pin "19"
+			(uuid "cadd25bb-632c-426f-815d-37a6f7634b0b")
+		)
+		(pin "20"
+			(uuid "9d30955c-699e-4f64-93e4-10590a2b6042")
+		)
+		(pin "17"
+			(uuid "63452ab5-5f18-44cb-8ded-cf92fbdda1f9")
 		)
 		(instances
 			(project "picoclock"
@@ -17131,6 +17376,73 @@
 	)
 	(symbol
 		(lib_id "power:GND")
+		(at 104.14 107.95 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a00a17ac-7373-4a5e-a51a-520c09495ca8")
+		(property "Reference" "#PWR01"
+			(at 97.79 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 100.33 107.9499 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 104.14 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 104.14 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 104.14 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e63eacb0-a887-4bff-94ab-fd28be8f0f66")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9"
+					(reference "#PWR01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
 		(at 85.09 171.45 270)
 		(unit 1)
 		(exclude_from_sim no)
@@ -17733,7 +18045,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 165.1 116.84 90)
+		(at 167.64 116.84 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -17742,7 +18054,7 @@
 		(fields_autoplaced yes)
 		(uuid "ab7971ca-89a0-4ef7-a179-05ef6f41f2e7")
 		(property "Reference" "#PWR034"
-			(at 168.91 116.84 0)
+			(at 171.45 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17751,7 +18063,7 @@
 			)
 		)
 		(property "Value" "+3.3V"
-			(at 161.29 116.8399 90)
+			(at 163.83 116.8399 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17760,7 +18072,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 165.1 116.84 0)
+			(at 167.64 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17769,7 +18081,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 165.1 116.84 0)
+			(at 167.64 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17778,7 +18090,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 165.1 116.84 0)
+			(at 167.64 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17800,7 +18112,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 121.92 133.35 0)
+		(at 140.97 135.89 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -17809,7 +18121,7 @@
 		(fields_autoplaced yes)
 		(uuid "ae87e4e8-95e8-47bb-8ea2-8d03bd88b1ca")
 		(property "Reference" "#PWR077"
-			(at 121.92 139.7 0)
+			(at 147.32 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17818,15 +18130,16 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 121.92 137.7934 0)
+			(at 144.78 135.8899 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify right)
 			)
 		)
 		(property "Footprint" ""
-			(at 121.92 133.35 0)
+			(at 140.97 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17835,7 +18148,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 121.92 133.35 0)
+			(at 140.97 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17844,7 +18157,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 121.92 133.35 0)
+			(at 140.97 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17859,6 +18172,71 @@
 			(project "picoclock"
 				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9"
 					(reference "#PWR077")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3.3V")
+		(at 96.52 105.41 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "af82497e-3556-4d75-be42-fb6f37c3a5fd")
+		(property "Reference" "#PWR053"
+			(at 100.33 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 92.71 104.775 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 96.52 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 96.52 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 96.52 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f9021c5d-bfb1-4f9a-a404-4a59fb4abbc6")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9"
+					(reference "#PWR053")
 					(unit 1)
 				)
 			)
@@ -19431,7 +19809,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 151.13 141.605 0)
+		(at 151.13 143.51 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -19440,7 +19818,7 @@
 		(fields_autoplaced yes)
 		(uuid "de91f85b-526d-4cd2-ba0b-56108b5747da")
 		(property "Reference" "#PWR028"
-			(at 151.13 145.415 0)
+			(at 151.13 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19449,7 +19827,7 @@
 			)
 		)
 		(property "Value" "+3.3V"
-			(at 151.13 136.525 0)
+			(at 151.13 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19457,7 +19835,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 151.13 141.605 0)
+			(at 151.13 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19466,7 +19844,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 151.13 141.605 0)
+			(at 151.13 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19475,7 +19853,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 151.13 141.605 0)
+			(at 151.13 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19825,7 +20203,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 106.68 102.87 180)
+		(at 147.32 95.25 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -19834,7 +20212,7 @@
 		(fields_autoplaced yes)
 		(uuid "e5263bb1-e773-43a1-b22f-1c03cfe37020")
 		(property "Reference" "#PWR018"
-			(at 106.68 96.52 0)
+			(at 147.32 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19843,7 +20221,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 107.1138 99.695 90)
+			(at 147.7538 92.075 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19852,7 +20230,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 106.68 102.87 0)
+			(at 147.32 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19861,7 +20239,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 106.68 102.87 0)
+			(at 147.32 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19870,7 +20248,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 106.68 102.87 0)
+			(at 147.32 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20193,7 +20571,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 100.33 107.95 90)
+		(at 149.86 100.33 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -20201,7 +20579,7 @@
 		(dnp no)
 		(uuid "f18d2be3-7b6f-4046-a41a-b869f2885e23")
 		(property "Reference" "#PWR042"
-			(at 104.14 107.95 0)
+			(at 146.05 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20210,7 +20588,7 @@
 			)
 		)
 		(property "Value" "+3.3V"
-			(at 96.52 107.315 0)
+			(at 153.67 100.965 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20218,7 +20596,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 100.33 107.95 0)
+			(at 149.86 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20227,7 +20605,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 100.33 107.95 0)
+			(at 149.86 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20236,7 +20614,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 100.33 107.95 0)
+			(at 149.86 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
