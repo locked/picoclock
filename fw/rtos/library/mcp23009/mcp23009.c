@@ -1,6 +1,7 @@
 #include "mcp23009.h"
 
 #include "pico/stdlib.h"
+#include <stdio.h>
 
 // Global
 i2c_inst_t *mcp23009_i2c;

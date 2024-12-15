@@ -11,8 +11,6 @@ extern "C"
 
 #define OST_ID_SPI_FOR_SDCARD 0
 
-#define FRONT_PANEL_LED_PIN 11
-
 #define GPIO_PWM 16
 
 // normal screens
@@ -36,6 +34,7 @@ extern "C"
 #define BTN_4 19
 #define BTN_5 20
 #define BTN_6 21
+#define FRONT_PANEL_LED_PIN 11
 #else
 // PCBv2 OK
 #define BTN_1 8
@@ -44,6 +43,7 @@ extern "C"
 #define BTN_4 20
 #define BTN_5 21
 #define BTN_6 28
+#define FRONT_PANEL_LED_PIN 5	// on gpio extender
 #endif
 
 #ifdef PCBV1
@@ -67,7 +67,7 @@ extern "C"
 #define SDCARD_MOSI 15
 #define SDCARD_MISO 12
 #define SD_CARD_CS 13
-#define SD_CARD_PRESENCE 2 // On i2c extender
+#define SD_CARD_PRESENCE 2		// on gpio extender
 
 
 	typedef struct

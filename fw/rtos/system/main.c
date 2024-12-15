@@ -208,8 +208,9 @@ void system_initialize() {
     // Init GPIO extender
     mcp23009_set_i2c(I2C_CHANNEL);
     bool mcp23009_status = mcp23009_is_connected();
-    mcp23009_set_direction(0b00100000);
     printf("[picoclock] mcp23009_is_connected: [%d]\r\n", mcp23009_status);
+    //mcp23009_config(true, false, false, false);
+    mcp23009_set_direction(0b00100000);
 
     // Mute
     mcp23009_set(0, 0);

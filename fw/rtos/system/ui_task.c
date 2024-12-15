@@ -151,10 +151,18 @@ void UiTask(void *args) {
                     if (message->btn == 0) {
                         if (current_screen < 3) {
                             if (backlight_on) {
+#ifdef PCBV1
                                 gpio_put(FRONT_PANEL_LED_PIN, 0);
+#else
+                                mcp23009_set(FRONT_PANEL_LED_PIN, 0);
+#endif
                                 backlight_on = false;
                             } else {
+#ifdef PCBV1
                                 gpio_put(FRONT_PANEL_LED_PIN, 1);
+#else
+                                mcp23009_set(FRONT_PANEL_LED_PIN, 1);
+#endif
                                 backlight_on = true;
                             }
                         } else if (current_screen == 3) {
