@@ -6877,6 +6877,12 @@
 		(uuid "665e1413-b7ab-4c3a-b07a-1dfcb615339e")
 	)
 	(junction
+		(at 143.51 123.19)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "72fcdae4-78c0-4c26-bf05-da3d4f0af38f")
+	)
+	(junction
 		(at 177.165 151.13)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -7336,6 +7342,16 @@
 	)
 	(wire
 		(pts
+			(xy 143.51 123.19) (xy 146.05 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2eda62e5-55f6-45df-9bb0-983053c1f5a2")
+	)
+	(wire
+		(pts
 			(xy 21.59 186.69) (xy 22.86 186.69)
 		)
 		(stroke
@@ -7463,6 +7479,16 @@
 			(type default)
 		)
 		(uuid "3d7e18c3-9730-419c-a359-c1279c3bb46d")
+	)
+	(wire
+		(pts
+			(xy 143.51 123.19) (xy 140.97 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "42181c4e-6c6c-46c5-84ee-65a206f3e6ae")
 	)
 	(wire
 		(pts
@@ -7673,6 +7699,16 @@
 			(type default)
 		)
 		(uuid "5e053c60-e85f-4dce-aefa-910d48b6af1b")
+	)
+	(wire
+		(pts
+			(xy 144.78 132.08) (xy 143.51 132.08)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5e999fc3-3a36-419d-9daf-1344baead707")
 	)
 	(wire
 		(pts
@@ -8596,6 +8632,16 @@
 	)
 	(wire
 		(pts
+			(xy 143.51 132.08) (xy 143.51 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d598aa1f-999c-4647-b891-3a3ee1c01b27")
+	)
+	(wire
+		(pts
 			(xy 22.225 72.39) (xy 25.4 72.39)
 		)
 		(stroke
@@ -8813,16 +8859,6 @@
 			(type default)
 		)
 		(uuid "eba58578-ea2b-4100-a683-5372af7f7a64")
-	)
-	(wire
-		(pts
-			(xy 142.24 123.19) (xy 140.97 123.19)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ec1df50c-0c59-4211-b58e-abde1e2e067d")
 	)
 	(wire
 		(pts
@@ -9790,7 +9826,7 @@
 	)
 	(global_label "GPE7{slash}led"
 		(shape output)
-		(at 142.24 123.19 0)
+		(at 146.05 123.19 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9800,7 +9836,7 @@
 		)
 		(uuid "768b4c4d-a658-49b0-8823-893004f8418d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 154.357 123.19 0)
+			(at 158.167 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19275,6 +19311,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+3.3V")
+		(at 144.78 132.08 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "cddaa9b1-49f0-4540-8a3a-47822270f4eb")
+		(property "Reference" "#PWR075"
+			(at 140.97 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 149.86 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 144.78 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 144.78 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 144.78 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9edc6eb6-acb0-430c-bcf0-96d3c35db0d4")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9"
+					(reference "#PWR075")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Mechanical:MountingHole_Pad")
 		(at 22.86 40.64 0)
 		(unit 1)
@@ -20486,6 +20587,84 @@
 			(project "picoclock"
 				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9"
 					(reference "J3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 143.51 127 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ee2db61c-4a12-4119-ac91-3be3ed61c851")
+		(property "Reference" "R17"
+			(at 146.05 125.73 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10K"
+			(at 143.51 125.095 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 145.288 127 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 143.51 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 143.51 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25744"
+			(at 143.51 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "09a8d247-041b-4cef-8b4d-5b375bee7b03")
+		)
+		(pin "2"
+			(uuid "63281fe7-314e-4734-bd85-ad163988b098")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9"
+					(reference "R17")
 					(unit 1)
 				)
 			)
