@@ -10,6 +10,8 @@
 #include "main.h"
 #include "serializers.h"
 
+int audio_volume_factor = 25;
+
 int32_t audio_buf[STEREO_BUFFER_SIZE]; // x2 because we store L+R
 
 // Audio Buffer for File Read
@@ -235,8 +237,8 @@ static int get_audio_buf(audio_ctx_t *ctx, int32_t *buf_32b)
         }
 
         // Adjust volume
-        buf_32b[i * 2] = buf_32b[i * 2] / 20;
-        buf_32b[i * 2 + 1] = buf_32b[i * 2 + 1] / 20;
+        buf_32b[i * 2] = buf_32b[i * 2] / audio_volume_factor;
+        buf_32b[i * 2 + 1] = buf_32b[i * 2 + 1] / audio_volume_factor;
 
         // lvl_l += ((int32_t)buf_16b[i * 2 + 0] * buf_16b[i * 2 + 0]) / 32768;
         // lvl_r += ((int32_t)buf_16b[i * 2 + 1] * buf_16b[i * 2 + 1]) / 32768;
@@ -316,4 +318,8 @@ void audio_stop(audio_ctx_t *ctx)
         ctx->pausing = 0;
         f_close(&ctx->fil);
     }
+}
+
+int set_audio_volume_factor(int vol) {
+	audio_volume_factor = vol;
 }

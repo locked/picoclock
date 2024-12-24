@@ -19,7 +19,11 @@ uint8_t constrain(uint8_t x, uint8_t a, uint8_t b){
  * Wire abstraction
  */
 
-#define WIRE_I2C i2c1
+i2c_inst_t *pcf8563_i2c;
+
+void pcf8563_set_i2c(i2c_inst_t *i2c) {
+	pcf8563_i2c = i2c;
+}
 
 
 /* Private internal functions, but useful to look at if you need a similar func. */
@@ -52,7 +56,7 @@ void pcf8563_zeroClock() {
     txBuffer[usedTxBuffer++] = (uint8_t)SQW_32KHZ; //set SQW to default, see: setSquareWave
     txBuffer[usedTxBuffer++] = (uint8_t)0x0;     //timer off
 
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_zeroClock write error\n");
     }
 }
@@ -63,7 +67,7 @@ void pcf8563_clearStatus() {
     txBuffer[usedTxBuffer++] = (uint8_t)0x0;
     txBuffer[usedTxBuffer++] = (uint8_t)0x0;                 //control/status1
     txBuffer[usedTxBuffer++] = (uint8_t)0x0;                 //control/status2
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_clearStatus write error\n");
     }
 }
@@ -95,14 +99,16 @@ time_struct pcf8563_getDateTime(void) {
     uint8_t txBuffer[256];
     uint32_t usedTxBuffer;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_STAT1_ADDR;
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
-		printf("pcf8563_getDateTime write error\n");
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+		printf("pcf8563_getDateTime write error\r\n");
+		return t;
     }
 
     /* As per data sheet, have to read everything all in one operation */
     uint8_t readBuffer[16] = {0};
-	int ret = i2c_read_blocking(WIRE_I2C, RTCC_ADDR, readBuffer, 16, false);
+	int ret = i2c_read_blocking_until(pcf8563_i2c, RTCC_ADDR, readBuffer, 16, false, make_timeout_time_ms(1000));
 	if (ret == PICO_ERROR_GENERIC) {
+		printf("pcf8563_getDateTime read error\r\n");
 		return t;
 	}
     //for (uint8_t i=0; i < 16; i++)
@@ -202,7 +208,7 @@ void pcf8563_setDateTime(uint8_t day, uint8_t weekday, uint8_t month,
     txBuffer[usedTxBuffer++] = pcf8563_decToBcd(weekday);    //set weekday
     txBuffer[usedTxBuffer++] = month;                 //set month, century to 1
     txBuffer[usedTxBuffer++] = pcf8563_decToBcd(year);        //set year to 99
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_setDateTime write error\n");
     }
 }
@@ -243,7 +249,7 @@ void pcf8563_enableAlarm() {
     uint32_t usedTxBuffer = 0;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_STAT2_ADDR;
     txBuffer[usedTxBuffer++] = (uint8_t)t.status2;
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_enableAlarm write error\n");
     }
 }
@@ -298,7 +304,7 @@ void pcf8563_setAlarm(uint8_t min, uint8_t hour, uint8_t day, uint8_t weekday) {
     txBuffer[usedTxBuffer++] = (uint8_t)t.alarm_hour;
     txBuffer[usedTxBuffer++] = (uint8_t)t.alarm_day;
     txBuffer[usedTxBuffer++] = (uint8_t)t.alarm_weekday;
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_setAlarm write error\n");
     }
 
@@ -318,7 +324,7 @@ void pcf8563_clearAlarm() {
     uint32_t usedTxBuffer = 0;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_STAT2_ADDR;
     txBuffer[usedTxBuffer++] = (uint8_t)t.status2;
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_clearAlarm write error\n");
     }
 }
@@ -337,7 +343,7 @@ void pcf8563_resetAlarm() {
     uint32_t usedTxBuffer = 0;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_STAT2_ADDR;
     txBuffer[usedTxBuffer++] = (uint8_t)t.status2;
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_resetAlarm write error\n");
     }
 }
@@ -378,14 +384,14 @@ void pcf8563_enableTimer(void) {
     uint32_t usedTxBuffer = 0;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_STAT2_ADDR;
     txBuffer[usedTxBuffer++] = (uint8_t)t.status2;
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_enableTimer write error\n");
     }
 
     usedTxBuffer = 0;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_TIMER1_ADDR;
     txBuffer[usedTxBuffer++] = (uint8_t)t.timer_control;  // Timer starts ticking now!
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_enableTimer write error [2]\n");
     }
 }
@@ -407,14 +413,14 @@ void pcf8563_setTimer(uint8_t value, uint8_t frequency, bool is_pulsed) {
     uint32_t usedTxBuffer = 0;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_TIMER2_ADDR;
     txBuffer[usedTxBuffer++] = (uint8_t)t.timer_value;
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_setTimer write error\n");
     }
 
     usedTxBuffer = 0;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_TIMER1_ADDR;
     txBuffer[usedTxBuffer++] = (uint8_t)t.timer_control;
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_setTimer write error [2]\n");
     }
 
@@ -439,7 +445,7 @@ void pcf8563_clearTimer(void) {
     uint32_t usedTxBuffer = 0;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_TIMER1_ADDR;
     txBuffer[usedTxBuffer++] = (uint8_t)t.timer_control;
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_clearTimer write error\n");
     }
 
@@ -447,7 +453,7 @@ void pcf8563_clearTimer(void) {
     usedTxBuffer = 0;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_STAT2_ADDR;
     txBuffer[usedTxBuffer++] = (uint8_t)t.status2;
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_clearTimer write error [2]\n");
     }
 }
@@ -465,7 +471,7 @@ void pcf8563_resetTimer(void) {
     uint32_t usedTxBuffer = 0;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_STAT2_ADDR;
     txBuffer[usedTxBuffer++] = (uint8_t)t.status2;
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_resetTimer write error\n");
     }
 }
@@ -478,7 +484,7 @@ void pcf8563_setSquareWave(uint8_t frequency) {
     uint32_t usedTxBuffer = 0;
     txBuffer[usedTxBuffer++] = (uint8_t)RTCC_SQW_ADDR;
     txBuffer[usedTxBuffer++] = (uint8_t)frequency;
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_setSquareWave write error\n");
     }
 }
@@ -660,7 +666,7 @@ void pcf8563_initClock()
     txBuffer[usedTxBuffer++] = (uint8_t)0x80;    //weekday alarm value reset to 00
     txBuffer[usedTxBuffer++] = (uint8_t)0x0;     //set SQW, see: setSquareWave
     txBuffer[usedTxBuffer++] = (uint8_t)0x0;     //timer off
-    if (i2c_write_blocking_until(WIRE_I2C, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
+    if (i2c_write_blocking_until(pcf8563_i2c, RTCC_ADDR, txBuffer, usedTxBuffer, false, make_timeout_time_ms(1000)) == PICO_ERROR_GENERIC){
 		printf("pcf8563_initClock write error\n");
     }
 }

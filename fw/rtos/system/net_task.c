@@ -188,6 +188,7 @@ int parse_json_response(char *response) {
                 wakeup_alarms[i].weekdays = 0;
                 wakeup_alarms[i].hour = 0;
                 wakeup_alarms[i].min = 0;
+                strcpy(wakeup_alarms[i].chime, "");
             } else {
                 tmp = json_getInteger(json_getProperty(alarm_child, "isset"));
                 if (tmp != wakeup_alarms[i].isset) {
@@ -209,6 +210,12 @@ int parse_json_response(char *response) {
                     wakeup_alarms[i].min = tmp;
                     wakeup_alarms_changed = true;
                 }
+				char *tmp_str = json_getValue(json_getProperty(alarm_child, "chime"));
+				if (tmp_str != NULL) {
+					if (strcmp(tmp_str, wakeup_alarms[i].chime)) {
+						strncpy(wakeup_alarms[i].chime, tmp_str, 20);
+					}
+				}
 
                 alarm_child = json_getSibling(alarm_child);
             }
@@ -263,7 +270,7 @@ int parse_json_response(char *response) {
         }
     }
 
-	printf("STATUS FROM SERVER:[%d] year:[%d] day:[%d] weekday:[%d] month:[%d] hour:[%d] wakeup_alarm[0]:[%02d:%02d]\r\n", status, dt.year, dt.day, dt.dotw, dt.month, dt.hour, wakeup_alarms[0].hour, wakeup_alarms[0].min);
+	printf("STATUS FROM SERVER:[%d] year:[%d] day:[%d] weekday:[%d] month:[%d] hour:[%d] wakeup_alarm[0]:[%02d:%02d:%s]\r\n", status, dt.year, dt.day, dt.dotw, dt.month, dt.hour, wakeup_alarms[0].hour, wakeup_alarms[0].min, wakeup_alarms[0].chime);
 }
 
 // ===========================================================================================================

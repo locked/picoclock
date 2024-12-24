@@ -125,6 +125,8 @@ typedef struct {
 
 time_struct pcf8563_getDateTime();		// get date and time vals to local vars
 
+void pcf8563_set_i2c(i2c_inst_t *i2c);
+
 void pcf8563_zeroClock();				// Zero date/time, alarm / timer, default clkout
 void pcf8563_clearStatus();				// set both status bytes to zero
 uint8_t pcf8563_readStatus2();

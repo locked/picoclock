@@ -52,3 +52,4 @@ int audio_process(audio_ctx_t *ctx);
 int audio_play(audio_ctx_t *ctx, const char *fname_ptr);
 void audio_pause(audio_ctx_t *ctx);
 void audio_stop(audio_ctx_t *ctx);
+int set_audio_volume_factor(int vol);

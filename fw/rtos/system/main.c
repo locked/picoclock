@@ -40,6 +40,7 @@
 #include "mcp4652/mcp4652.h"
 #include "mcp9808/mcp9808.h"
 #include "mcp23009/mcp23009.h"
+#include "pcf8563/pcf8563.h"
 
 // Audio (PIO)
 #include "audio_player.h"
@@ -205,7 +206,10 @@ void system_initialize() {
     // Init I2C
     init_i2c();
 
+	pcf8563_set_i2c(I2C_CHANNEL);
+
     // Init GPIO extender
+#ifndef PCBV1
     mcp23009_set_i2c(I2C_CHANNEL);
     bool mcp23009_status = mcp23009_is_connected();
     printf("[picoclock] mcp23009_is_connected: [%d]\r\n", mcp23009_status);
@@ -214,10 +218,13 @@ void system_initialize() {
 
     // Mute
     mcp23009_set(0, 0);
+#endif
 
     // Init Sound
+#ifndef PCBV1
     mcp4652_set_i2c(I2C_CHANNEL);
     mcp4652_set_wiper(0x100);
+#endif
     i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
     audio_init(&audio_ctx);
     ost_audio_register_callback(audio_callback);

@@ -29,6 +29,8 @@
 
 #include "pwm_sound.h"
 
+#include "audio_player.h"
+
 #include "mcp9808/mcp9808.h"
 #include "pcf8563/pcf8563.h"
 #include "mcp23009/mcp23009.h"
@@ -117,8 +119,9 @@ void UiTask(void *args) {
     Paint_DrawString_EN(10, 10, "Starting...", &Font20, WHITE, BLACK);
     EPD_2in13_V4_Display_Base(BlackImage);
 
+    printf("calling pcf8563_getDateTime()\r\n");
     dt = pcf8563_getDateTime();
-    debug_printf("GET EXTERNAL RTC volt_low:[%d] year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.volt_low, dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
+    printf("GET EXTERNAL RTC volt_low:[%d] year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.volt_low, dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
 
     bool time_initialized = !dt.volt_low;
     if (!time_initialized) {
@@ -137,8 +140,8 @@ void UiTask(void *args) {
         if (res == QOR_MBOX_OK) {
             // Buttons click
             if (message->ev == OST_SYS_BUTTON) {
-                debug_printf("/!\\ Received event OST_SYS_BUTTON:[%d]\r\n", message->btn);
-                if (current_screen == SCREEN_ALARM) {
+                printf("/!\\ Received event OST_SYS_BUTTON:[%d]\r\n", message->btn);
+                if (current_screen == SCREEN_ALARM && message->btn < 4) {
                     // In alarm
                     // Stop sound
                     ost_audio_stop();
@@ -190,17 +193,19 @@ void UiTask(void *args) {
                         };
                         qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
                     }
-                    if (message->btn == 4) {
-                        mcp4652_set_wiper(0x0);
-                    } else if (message->btn == 5) {
-                        mcp4652_set_wiper(0x100);
-                    }
+                }
+                if (message->btn == 4) {
+                    mcp4652_set_wiper(0x100);
+                    set_audio_volume_factor(40);
+                } else if (message->btn == 5) {
+                    mcp4652_set_wiper(0x0);
+                    set_audio_volume_factor(30);
                 }
             }
 
             // Refresh screens
             if (message->ev == OST_SYS_REFRESH_SCREEN) {
-                debug_printf("/!\\ Received event OST_SYS_REFRESH_SCREEN:[%d] current_screen:[%d]\r\n", message->btn, current_screen);
+                printf("/!\\ Received event OST_SYS_REFRESH_SCREEN:[%d] current_screen:[%d]\r\n", message->btn, current_screen);
                 if (!module_initialized) {
                     EPD_2in13_V4_Init();
                     message->clear = true;
@@ -394,7 +399,7 @@ void UiTask(void *args) {
 
                 // Shutdown screen periodically
                 if (shutdown_screen) {
-                    debug_printf("Shutdown loop_count:[%d]\r\n", loop_count);
+                    printf("Shutdown loop_count:[%d]\r\n", loop_count);
                     loop_count = 0;
                     EPD_2in13_V4_Sleep();
                     DEV_Delay_ms(2000);//important, at least 2s
@@ -422,8 +427,15 @@ void UiTask(void *args) {
                         if (alarm.weekdays & (1 << (7 - dt.weekday))) {
                             debug_printf("Trigger alarm dt.weekday:[%d] alarm.weekdays:[%d]\r\n", dt.weekday, alarm.weekdays);
 
+                            // Set volume
+#ifndef PCBV1
+                            mcp4652_set_wiper(0x100);
+                            set_audio_volume_factor(40);
+#endif
+
                             // Start sound
-                            char SoundFile[260] = "Tellement.wav";
+                            char SoundFile[260]; // = "Tellement.wav";
+                            strncpy(SoundFile, alarm.chime, 20);
                             fs_task_sound_start(SoundFile);
 
                             ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 300;  // To reset screen after a while

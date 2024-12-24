@@ -27,6 +27,8 @@ extern "C"
 #define BAUD_RATE 115200
 #define UART_TX_PIN 0
 
+#define PCBV1 1
+
 #ifdef PCBV1
 #define BTN_1 8
 #define BTN_2 9
@@ -94,6 +96,7 @@ extern "C"
 	  int hour;
 	  int min;
       int in_mins;
+      char chime[20];
 	} wakeup_alarm_struct;
 
 	typedef struct {
