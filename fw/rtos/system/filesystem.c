@@ -21,6 +21,9 @@ typedef int FRESULT;
 #define F_OK
 #endif
 
+extern config_struct global_config;
+
+
 // SD_FAT_TYPE = 0 for SdFat/File as defined in SdFatConfig.h,
 // 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
 #define SD_FAT_TYPE 2
@@ -179,6 +182,17 @@ bool filesystem_read_config_file() {
 			} while (total_size > 0);
 
 			f_close(&ConfigFile);
+
+			// Set config values
+			// TODO: parse from ConfigBuf
+			/*
+			wifi_ssid=xxx
+			wifi_key=xxx
+			remote_host=x.x.x.x
+			*/
+			//strncpy(global_config.wifi_ssid, WIFI_SSID, 50);
+			//strncpy(global_config.wifi_key, WIFI_PASSWORD, 50);
+			//printf("Set config wifi_ssid:[%s] wifi_key:[%s]\r\n", global_config.wifi_ssid, global_config.wifi_key);
 
 			printf("Config:[%s]\n", ConfigBuf);
 		}

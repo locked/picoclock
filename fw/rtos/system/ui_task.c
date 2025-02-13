@@ -34,7 +34,7 @@
 #include "mcp9808/mcp9808.h"
 #include "pcf8563/pcf8563.h"
 #include "mcp23009/mcp23009.h"
-#include "mcp4652/mcp4652.h"
+#include "mcp46XX/mcp46XX.h"
 
 
 uint32_t getTotalHeap(void) {
@@ -124,11 +124,15 @@ void UiTask(void *args) {
     printf("GET EXTERNAL RTC volt_low:[%d] year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.volt_low, dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
 
     bool time_initialized = !dt.volt_low;
-    if (!time_initialized) {
+    if (!time_initialized || dt.year == 0) {
         Paint_DrawString_EN(10, 40, "Connecting...", &Font20, WHITE, BLACK);
         EPD_2in13_V4_Display_Base(BlackImage);
 
         request_remote_sync();
+
+        printf("[startup] calling pcf8563_getDateTime()\r\n");
+        dt = pcf8563_getDateTime();
+        printf("[startup] pcf8563_getDateTime() year:[%d]\r\n", dt.year);
     }
     Paint_Clear(WHITE);
 
@@ -189,17 +193,22 @@ void UiTask(void *args) {
                         }
                         static ost_ui_event_t Ev = {
                             .ev = OST_SYS_REFRESH_SCREEN,
-                            .clear = true
+                            .clear = false
                         };
                         qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
                     }
                 }
                 if (message->btn == 4) {
-                    mcp4652_set_wiper(0x100);
-                    set_audio_volume_factor(40);
+                    mcp4651_set_wiper(0x20);
+                    //set_audio_volume_factor(40);
+
+                    // Start sound
+                    char SoundFile[260] = "Tellement.wav";
+                    fs_task_sound_start(SoundFile);
                 } else if (message->btn == 5) {
-                    mcp4652_set_wiper(0x0);
-                    set_audio_volume_factor(30);
+                    //ost_audio_stop();
+                    mcp4651_set_wiper(0x80);
+                    //set_audio_volume_factor(30);
                 }
             }
 
@@ -225,7 +234,9 @@ void UiTask(void *args) {
                     display_icon(icon_right_x, 10, ICON_LIGHT);
                     display_icon(icon_right_x, 50, ICON_WIFI);
 
+                    printf("[in loop] calling pcf8563_getDateTime()\r\n");
                     dt = pcf8563_getDateTime();
+                    printf("[in loop] pcf8563_getDateTime() year:[%d]\r\n", dt.year);
                     sPaint_time.Year = dt.year;
                     sPaint_time.Month = dt.month;
                     sPaint_time.Day = dt.day;
@@ -324,7 +335,7 @@ void UiTask(void *args) {
                     } else {
                         EPD_2in13_V4_Display_Partial(BlackImage);
                     }
-                    shutdown_screen = loop_count++ > 10;
+                    //shutdown_screen = loop_count++ > 10;
                 } else if (current_screen == SCREEN_WEATHER) {
                     display_icon(icon_right_x, 10, ICON_LIGHT);
                     display_icon(icon_right_x, 50, ICON_WIFI);
@@ -333,9 +344,9 @@ void UiTask(void *args) {
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
                     _y += Font16.Height + 1;
 
-                    mcp9808_get_temperature(temp2_str);
-                    sprintf(temp_str, "Clock temp: %s C", temp2_str);
-                    Paint_DrawString_EN(screen_x, _y + Font12.Height * 0, temp_str, &Font12, WHITE, BLACK);
+                    //mcp9808_get_temperature(temp2_str);
+                    //sprintf(temp_str, "Clock temp: %s C", temp2_str);
+                    //Paint_DrawString_EN(screen_x, _y + Font12.Height * 0, temp_str, &Font12, WHITE, BLACK);
 
                     Paint_DrawString_EN(screen_x, _y + Font12.Height * 1, weather.code_desc, &Font12, WHITE, BLACK);
                     sprintf(temp_str, "Temp: %s", weather.temperature_2m);
@@ -355,7 +366,6 @@ void UiTask(void *args) {
                     Paint_DrawString_EN(screen_x, _y + Font12.Height * 7, temp_str, &Font12, WHITE, BLACK);
 
                     EPD_2in13_V4_Display_Base(BlackImage);
-                    shutdown_screen = loop_count++ > 10;
                 } else if (current_screen == SCREEN_LIST_ALARMS) {
                     sprintf(temp_str, "Alarms");
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
@@ -367,7 +377,7 @@ void UiTask(void *args) {
                         }
                     }
                     EPD_2in13_V4_Display_Base(BlackImage);
-                    shutdown_screen = true;
+                    //shutdown_screen = true;
                 } else if (current_screen == SCREEN_DEBUG) {
                     sprintf(temp_str, "Debug");
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
@@ -383,7 +393,7 @@ void UiTask(void *args) {
                     Paint_DrawString_EN(screen_x, _y + Font12.Height * 2, temp_str, &Font12, WHITE, BLACK);
 
                     EPD_2in13_V4_Display_Base(BlackImage);
-                    shutdown_screen = true;
+                    //shutdown_screen = true;
                 } else if (current_screen == SCREEN_ALARM) {
                     sprintf(temp_str, "ALARM");
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font16, WHITE, BLACK);
@@ -394,8 +404,9 @@ void UiTask(void *args) {
                     Paint_DrawString_EN(screen_x, _y, temp_str, &Font24, WHITE, BLACK);
 
                     EPD_2in13_V4_Display_Base(BlackImage);
-                    shutdown_screen = true;
+                    //shutdown_screen = true;
                 }
+                shutdown_screen = loop_count++ > 10;
 
                 // Shutdown screen periodically
                 if (shutdown_screen) {
@@ -429,7 +440,7 @@ void UiTask(void *args) {
 
                             // Set volume
 #ifndef PCBV1
-                            mcp4652_set_wiper(0x100);
+                            mcp4651_set_wiper(0x100);
                             set_audio_volume_factor(40);
 #endif
 
@@ -494,7 +505,7 @@ void UiTask(void *args) {
             }
         }
 
-        qor_sleep(500);
+        qor_sleep(200);
         //printf("[UI] task woke up\r\n");
     }
 }

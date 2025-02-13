@@ -38,13 +38,14 @@ extern qor_mbox_t NetMailBox;
 extern wakeup_alarm_struct wakeup_alarms[10];
 extern int wakeup_alarms_count;
 extern weather_struct weather;
+extern config_struct global_config;
 
 
 int get_response_from_server(char *response) {
 	//printf("Sleep a bit [0]...\r\n");
     qor_sleep(10);
-	//printf("Connecting to wifi...\r\n");
-	int ret = wifi_connect(WIFI_SSID, WIFI_PASSWORD);
+	printf("Connecting to wifi [%s][%s]...\r\n", global_config.wifi_ssid, global_config.wifi_key);
+	int ret = wifi_connect(global_config.wifi_ssid, global_config.wifi_key);
 	//printf("Sleep a bit [1]...\r\n");
     qor_sleep(10);
     if (ret == 0) {

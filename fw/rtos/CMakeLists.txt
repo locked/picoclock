@@ -44,7 +44,7 @@ set(OST_SRCS
     library/tiny-json.c
     library/mcp9808/mcp9808.c
     library/pcf8563/pcf8563.c
-    library/mcp4652/mcp4652.c
+    library/mcp46XX/mcp46XX.c
     library/mcp23009/mcp23009.c
     library/graphics.c
     library/tinyhttp/http.c

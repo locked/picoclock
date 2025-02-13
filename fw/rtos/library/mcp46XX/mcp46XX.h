@@ -1,12 +1,13 @@
-#ifndef MCP4652_H
-#define MCP4652_H
+#ifndef MCP46XX_H
+#define MCP46XX_H
 
 #include "hardware/i2c.h"
 #include <stdint.h>
 #include <stdio.h>
 
 // I2C Address of device
-#define MCP4652_DEFAULT_ADDRESS	0x2C	// A0:A1 are connected to GND
+#define MCP4652_DEFAULT_ADDRESS	0x2C	// ‘0101 1’b + A1:A0,  A0:A1 are connected to GND
+#define MCP4651_DEFAULT_ADDRESS	0x28	// ‘0101’b + A2:A1:A0  A0:A1:A2 are connected to GND
 
 // Command definitions (sent to WIPER register)
 #define MCP4652_CMD_WRITE	0x00 // (xxxx00xx)
@@ -35,7 +36,8 @@
 #define MCP4652_WIPER_A		0x100
 #define MCP4652_WIPER_B		0x000
 
-void mcp4652_set_i2c(i2c_inst_t *i2c);
+void mcp46XX_set_i2c(i2c_inst_t *i2c);
 void mcp4652_set_wiper(uint16_t value);
+void mcp4651_set_wiper(uint16_t value);
 
 #endif

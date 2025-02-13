@@ -37,7 +37,7 @@
 #include "ImageData.h"
 #include "EPD_2in13_V4.h"
 
-#include "mcp4652/mcp4652.h"
+#include "mcp46XX/mcp46XX.h"
 #include "mcp9808/mcp9808.h"
 #include "mcp23009/mcp23009.h"
 #include "pcf8563/pcf8563.h"
@@ -63,6 +63,7 @@ wakeup_alarm_struct wakeup_alarms[10];
 int wakeup_alarms_count = 10;
 weather_struct weather = {"", "", "", ""};
 int current_screen = 0;
+config_struct global_config;
 
 qor_mbox_t NetMailBox;
 
@@ -205,8 +206,10 @@ void system_initialize() {
 
     // Init I2C
     init_i2c();
+    printf("[picoclock] init_i2c OK\r\n");
 
 	pcf8563_set_i2c(I2C_CHANNEL);
+    printf("[picoclock] pcf8563_set_i2c OK\r\n");
 
     // Init GPIO extender
 #ifndef PCBV1
@@ -222,12 +225,13 @@ void system_initialize() {
 
     // Init Sound
 #ifndef PCBV1
-    mcp4652_set_i2c(I2C_CHANNEL);
-    mcp4652_set_wiper(0x100);
+    mcp46XX_set_i2c(I2C_CHANNEL);
+    mcp4651_set_wiper(0x100);
 #endif
     i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
     audio_init(&audio_ctx);
     ost_audio_register_callback(audio_callback);
+    printf("[picoclock] init sound OK\r\n");
 
     // Init time
     // Set time to known values to identify it needs to be updated
@@ -241,6 +245,7 @@ void system_initialize() {
     dt.min = 1;
     dt.sec = 1;
     rtc_set_datetime(&dt);
+    printf("[picoclock] Init rtc OK\r\n");
 
     // Front panel LEDs
     //gpio_init(FRONT_PANEL_LED_PIN);
@@ -290,6 +295,7 @@ void system_initialize() {
     gpio_set_function(SDCARD_SCK, GPIO_FUNC_SPI);
     gpio_set_function(SDCARD_MOSI, GPIO_FUNC_SPI);
     gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
+    printf("[picoclock] Init SD card OK\r\n");
 
     //gpio_set_function(GPIO_PWM, GPIO_FUNC_PWM);
 
@@ -470,6 +476,10 @@ int main() {
     filesystem_mount();
     // List files on sdcard (test)
     filesystem_read_config_file();
+
+	// Init config with default values
+	strncpy(global_config.wifi_ssid, WIFI_SSID, 50);
+	strncpy(global_config.wifi_key, WIFI_PASSWORD, 50);
 
     // 4. Initialize OS before all other OS calls
     printf("[picoclock] Initialize OS before all other OS calls\r\n");

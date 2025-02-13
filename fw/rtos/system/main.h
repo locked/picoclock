@@ -27,7 +27,7 @@ extern "C"
 #define BAUD_RATE 115200
 #define UART_TX_PIN 0
 
-#define PCBV1 1
+//#define PCBV1 1
 
 #ifdef PCBV1
 #define BTN_1 8
@@ -120,6 +120,11 @@ extern "C"
 		char day_2_sunrise[6];
 		char day_2_sunset[6];
 	} weather_struct;
+
+	typedef struct {
+		char wifi_ssid[50];
+		char wifi_key[50];
+	} config_struct;
 
     // ----------------------------------------------------------------------------
     // SHARED TYPES
