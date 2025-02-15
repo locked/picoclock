@@ -7,23 +7,24 @@
 #include "debug.h"
 #include "qor.h"
 #include "system.h"
+#include "alarms.h"
+#include "utils.h"
+#include "wifi.h"
+#include "flash_storage.h"
 
 #include "hardware/rtc.h"
 #include "hardware/clocks.h"
 
 #include "tiny-json.h"
 
-#include "wifi.h"
-
-#include "pwm_sound.h"
-#include "pwm_sound_melodies.h"
-
 #include "pcf8563/pcf8563.h"
 
 #include "tinyhttp/http.h"
 
-#include "flash_storage.h"
-
+#ifdef PWM_ENABLE
+#include "pwm_sound.h"
+#include "pwm_sound_melodies.h"
+#endif
 
 
 static qor_tcb_t NetTcb;
@@ -49,8 +50,11 @@ int get_response_from_server(char *response) {
 	//printf("Sleep a bit [1]...\r\n");
     qor_sleep(10);
     if (ret == 0) {
-        char query[100] = "GET /clock.php HTTP/1.0\r\nContent-Length: 0\r\n\r\n";
-        ret = send_tcp(SERVER_IP, atoi(SERVER_PORT), query, strlen(query), response);
+        char board_id[20];
+        get_uniq_id(board_id);
+        char query[100];
+        sprintf(query, "GET /clock.php?id=%s HTTP/1.0\r\nContent-Length: 0\r\n\r\n", board_id);
+        ret = send_tcp(global_config.remote_host, atoi(SERVER_PORT), query, strlen(query), response);
         qor_sleep(10);
         //debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\r\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
         if (ret == 0 && strlen(response) < 10) {
@@ -284,11 +288,6 @@ void NetTask(void *args) {
     while (1) {
         res = qor_mbox_wait(&NetMailBox, (void **)&message, 5);
         if (res == QOR_MBOX_OK) {
-            if (message->ev == OST_SYS_ALARM) {
-                printf("[NET] OST_SYS_ALARM\r\n");
-                play_melody(GPIO_PWM, HarryPotter, 200);
-            }
-
             if (message->ev == OST_SYS_UPDATE_TIME) {
                 printf("[NET] REMOTE SYNC\r\n");
                 char http_buffer[4096] = "";
@@ -300,6 +299,7 @@ void NetTask(void *args) {
                 }
             }
 
+            #ifdef PWM_ENABLE
             if (message->ev == OST_SYS_PLAY_SOUND) {
                 printf("[NET] OST_SYS_PLAY_SOUND\r\n");
                 if (message->song == 0) {
@@ -308,6 +308,7 @@ void NetTask(void *args) {
                     play_melody(GPIO_PWM, HappyBirday, 140);
                 }
             }
+            #endif
         }
 
         qor_sleep(500);

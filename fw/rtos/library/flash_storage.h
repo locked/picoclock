@@ -3,6 +3,8 @@
 
 #include "main.h"
 
+#include "alarms.h"
+
 
 int flash_store_alarms(wakeup_alarm_struct *wakeup_alarms);
 

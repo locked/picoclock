@@ -17,7 +17,17 @@ typedef struct {
   unsigned short size;
 } icon_struct;
 
-
 void display_icon(int x, int y, int icon_id);
+
+#define ICON_LEFT_X 0
+#define ICON_RIGHT_X 214
+#define SCREEN_X 32
+#define SCREEN_Y 8
+
+void display_screen_main();
+void display_screen_weather();
+void display_screen_alarms();
+void display_screen_debug(char *last_sync_str);
+void display_screen_alarm();
 
 #endif // GRAPHICS_LIB_H

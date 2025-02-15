@@ -9299,7 +9299,6 @@
 	)
 	(label "SQW"
 		(at 252.095 83.82 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -9310,7 +9309,6 @@
 	)
 	(label "D-"
 		(at 53.34 34.925 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -9321,7 +9319,6 @@
 	)
 	(label "D+"
 		(at 50.8 34.925 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -9332,7 +9329,6 @@
 	)
 	(label "RX"
 		(at 277.495 113.665 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -9343,7 +9339,6 @@
 	)
 	(label "SCL"
 		(at 259.08 76.2 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -9354,7 +9349,6 @@
 	)
 	(label "SDA"
 		(at 259.08 78.74 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -9365,7 +9359,6 @@
 	)
 	(label "TX"
 		(at 274.955 113.665 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11312,7 +11305,6 @@
 	(hierarchical_label "LRCK"
 		(shape input)
 		(at 138.43 151.13 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11324,7 +11316,6 @@
 	(hierarchical_label "DIN"
 		(shape input)
 		(at 138.43 153.67 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11336,7 +11327,6 @@
 	(hierarchical_label "BCK"
 		(shape input)
 		(at 138.43 156.21 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -16629,7 +16619,7 @@
 				)
 			)
 		)
-		(property "Value" "MCP4652-104E"
+		(property "Value" "MCP46X1-104E"
 			(at 95.25 194.31 0)
 			(effects
 				(font

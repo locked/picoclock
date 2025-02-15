@@ -59,8 +59,6 @@ static audio_i2s_config_t config = {
 //
 // Globals
 //
-wakeup_alarm_struct wakeup_alarms[10];
-int wakeup_alarms_count = 10;
 weather_struct weather = {"", "", "", ""};
 int current_screen = 0;
 config_struct global_config;
@@ -124,12 +122,6 @@ void ost_system_delay_ms(uint32_t delay) {
     busy_wait_ms(delay);
 }
 
-uint8_t get_uniq_id() {
-    pico_unique_board_id_t board_uid;
-    pico_get_unique_board_id(&board_uid);
-    return *(board_uid.id);
-}
-
 void check_buttons() {
     for (uint8_t btn=0; btn<6; btn++) {
         uint8_t btn_value = gpio_get(BUTTONS[btn]);
@@ -191,14 +183,6 @@ void system_initialize() {
     //stdio_init_all();
     sleep_ms(500);
 
-    // Init DEBUG LED
-    //gpio_init(LED_PIN);
-    //gpio_set_dir(LED_PIN, GPIO_OUT);
-
-    // Init DEBUG PIN
-    //gpio_init(DEBUG_PIN);
-    //gpio_set_dir(DEBUG_PIN, GPIO_OUT);
-
     // Init UART
     uart_init(UART_ID, BAUD_RATE);
     gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
@@ -217,10 +201,13 @@ void system_initialize() {
     bool mcp23009_status = mcp23009_is_connected();
     printf("[picoclock] mcp23009_is_connected: [%d]\r\n", mcp23009_status);
     //mcp23009_config(true, false, false, false);
-    mcp23009_set_direction(0b00100000);
+    // All output except GP1 (SD_DET)
+    mcp23009_set_direction(0b01000000);
 
     // Mute
     mcp23009_set(0, 0);
+    // Screen off
+    mcp23009_set(FRONT_PANEL_LED_PIN, 0);
 #endif
 
     // Init Sound
@@ -235,7 +222,7 @@ void system_initialize() {
 
     // Init time
     // Set time to known values to identify it needs to be updated
-    rtc_init();
+    /*rtc_init();
     datetime_t dt;
     dt.year = 1000;
     dt.month = 1;
@@ -245,11 +232,7 @@ void system_initialize() {
     dt.min = 1;
     dt.sec = 1;
     rtc_set_datetime(&dt);
-    printf("[picoclock] Init rtc OK\r\n");
-
-    // Front panel LEDs
-    //gpio_init(FRONT_PANEL_LED_PIN);
-    //gpio_set_dir(FRONT_PANEL_LED_PIN, GPIO_OUT);
+    printf("[picoclock] Init rtc OK\r\n");*/
 
     //------------------- Init LCD
     printf("[picoclock] Init e-Paper module...\r\n");
@@ -363,33 +346,6 @@ uint8_t ost_hal_sdcard_get_presence() {
   return 1; // not wired
 }
 
-void getWeekdayStr(int weekday, char *weekdays_str) {
-    if (weekday == 0) {
-        strcat(weekdays_str, "Sun");
-    } else if (weekday == 1) {
-        strcat(weekdays_str, "Mon");
-    } else if (weekday == 2) {
-        strcat(weekdays_str, "Tue");
-    } else if (weekday == 3) {
-        strcat(weekdays_str, "Wed");
-    } else if (weekday == 4) {
-        strcat(weekdays_str, "Thu");
-    } else if (weekday == 5) {
-        strcat(weekdays_str, "Fri");
-    } else if (weekday == 6) {
-        strcat(weekdays_str, "Sat");
-    }
-}
-
-void getWeekdaysStr(int weekdays, char *weekdays_str) {
-    sprintf(weekdays_str, "");
-    for (int chk_weekday=0; chk_weekday<7; chk_weekday++) {
-        if (weekdays & (1 << (7 - chk_weekday))) {
-            getWeekdayStr(chk_weekday, weekdays_str);
-        }
-    }
-}
-
 
 // ----------------------------------------------------------------------------
 // AUDIO HAL
@@ -471,15 +427,16 @@ int main() {
     // 2. Test the printf output
     printf("[picoclock] Starting: V%d.%d\r\n", 1, 0);
 
+	// Init config with default values
+	strncpy(global_config.wifi_ssid, WIFI_SSID, 50);
+	strncpy(global_config.wifi_key, WIFI_PASSWORD, 50);
+	strncpy(global_config.remote_host, SERVER_IP, 50);
+
     // 3. Filesystem / SDCard initialization
     printf("[picoclock] Check SD card\r\n");
     filesystem_mount();
     // List files on sdcard (test)
     filesystem_read_config_file();
-
-	// Init config with default values
-	strncpy(global_config.wifi_ssid, WIFI_SSID, 50);
-	strncpy(global_config.wifi_key, WIFI_PASSWORD, 50);
 
     // 4. Initialize OS before all other OS calls
     printf("[picoclock] Initialize OS before all other OS calls\r\n");

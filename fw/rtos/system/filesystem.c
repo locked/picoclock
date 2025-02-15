@@ -9,6 +9,8 @@
 #include "serializers.h"
 #include "sdcard.h"
 
+#include "ini.h"
+
 #ifdef OST_USE_FF_LIBRARY
 #include "ff.h"
 #include "diskio.h"
@@ -153,6 +155,31 @@ static const char *ConfigFileName = "config.ini";
 
 #define FS_MAX_SIZE_READ 256
 
+
+
+static int config_handler(void* user, const char* section, const char* name,
+                   const char* value)
+{
+    config_struct* pconfig = (config_struct*)user;
+
+    #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
+    if (MATCH("", "wifi_ssid")) {
+        printf("Set config wifi_ssid:[%s]\r\n", value);
+        strncpy(pconfig->wifi_ssid, value, 50);
+    } else if (MATCH("", "wifi_key")) {
+        printf("Set config wifi_key:[%s]\r\n", value);
+        strncpy(pconfig->wifi_key, value, 50);
+    } else if (MATCH("", "remote_host")) {
+        printf("Set config remote_host:[%s]\r\n", value);
+        strncpy(pconfig->remote_host, value, 50);
+    } else {
+        return 0;  /* unknown section/name, error */
+    }
+    return 1;
+}
+
+
+
 bool filesystem_read_config_file() {
     FILINFO fno;
     FRESULT fr = f_stat(ConfigFileName, &fno);
@@ -185,6 +212,7 @@ bool filesystem_read_config_file() {
 
 			// Set config values
 			// TODO: parse from ConfigBuf
+            ini_parse_string(ConfigBuf, config_handler, &global_config);
 			/*
 			wifi_ssid=xxx
 			wifi_key=xxx
@@ -192,9 +220,9 @@ bool filesystem_read_config_file() {
 			*/
 			//strncpy(global_config.wifi_ssid, WIFI_SSID, 50);
 			//strncpy(global_config.wifi_key, WIFI_PASSWORD, 50);
-			//printf("Set config wifi_ssid:[%s] wifi_key:[%s]\r\n", global_config.wifi_ssid, global_config.wifi_key);
+			printf("Set config wifi_ssid:[%s] wifi_key:[%s]\r\n", global_config.wifi_ssid, global_config.wifi_key);
 
-			printf("Config:[%s]\n", ConfigBuf);
+			printf("Config:[%s]\r\n", ConfigBuf);
 		}
 	} else {
 		printf("ERROR: config file not found\r\n");

@@ -25,6 +25,8 @@ endif()
 # ==========================
 set(OST_SRCS
     system/main.c
+    system/alarms.c
+    system/utils.c
     system/sdcard.c
     system/ff_diskio_sdcard.c
     system/debug.c
@@ -53,9 +55,9 @@ set(OST_SRCS
     #library/button_debounce.c
     library/flash_storage.c
     library/pico_i2s.c
+    library/ini.c
     platform/raspberry-pico-w/wifi.c
     platform/raspberry-pico-w/pwm_sound.c
-    #platform/raspberry-pico-w/pico_hal_wrapper.c
 )
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
