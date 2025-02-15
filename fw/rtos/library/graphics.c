@@ -29,6 +29,12 @@ void display_icon(int x, int y, int icon_id) {
 }
 
 
+void display_screen_nav() {
+	display_icon(ICON_LEFT_X, 90, ICON_LEFTARROW);
+	display_icon(ICON_RIGHT_X, 90, ICON_RIGHTARROW);
+}
+
+
 void display_screen_main() {
     time_struct dt;
     char temp_str[50];

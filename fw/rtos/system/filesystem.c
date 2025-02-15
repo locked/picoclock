@@ -211,15 +211,12 @@ bool filesystem_read_config_file() {
 			f_close(&ConfigFile);
 
 			// Set config values
-			// TODO: parse from ConfigBuf
             ini_parse_string(ConfigBuf, config_handler, &global_config);
 			/*
 			wifi_ssid=xxx
 			wifi_key=xxx
 			remote_host=x.x.x.x
 			*/
-			//strncpy(global_config.wifi_ssid, WIFI_SSID, 50);
-			//strncpy(global_config.wifi_key, WIFI_PASSWORD, 50);
 			printf("Set config wifi_ssid:[%s] wifi_key:[%s]\r\n", global_config.wifi_ssid, global_config.wifi_key);
 
 			printf("Config:[%s]\r\n", ConfigBuf);

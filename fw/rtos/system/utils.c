@@ -17,9 +17,6 @@ uint32_t getFreeHeap(void) {
 }
 
 void get_uniq_id(char *board_id) {
-    //pico_unique_board_id_t board_uid;
-    //pico_get_unique_board_id(&board_uid);
-    //return *(board_uid.id);
 	pico_get_unique_board_id_string(board_id, 20);
 }
 

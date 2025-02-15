@@ -10,6 +10,7 @@
 #include "system.h"
 #include "utils.h"
 #include "alarms.h"
+#include "graphics.h"
 
 // Screen
 #include "DEV_Config.h"
@@ -23,14 +24,9 @@
 #include "net_task.h"
 #include "fs_task.h"
 
-#include "graphics.h"
-
-#include "flash_storage.h"
-
 #include "pwm_sound.h"
 #include "audio_player.h"
 
-#include "mcp9808/mcp9808.h"
 #include "pcf8563/pcf8563.h"
 #include "mcp23009/mcp23009.h"
 #include "mcp46XX/mcp46XX.h"
@@ -59,8 +55,6 @@ static ost_context_t OstContext;
 
 // Externs
 extern qor_mbox_t NetMailBox;
-extern wakeup_alarm_struct wakeup_alarms[10];
-extern int wakeup_alarms_count;
 extern weather_struct weather;
 extern int current_screen;
 
@@ -74,18 +68,12 @@ void UiTask(void *args) {
     ost_ui_event_t *message = NULL;
     uint32_t res = 0;
 
-    PAINT_TIME sPaint_time;
     bool module_initialized = true;
     bool need_screen_clear = true;
     int loop_count = 0;
     int last_min = 0;
     bool backlight_on = false;
-    char temp_str[100];
-    char temp2_str[10];
     char last_sync_str[9] = "";
-    int screen_x = 32;
-    int icon_left_x = 0;
-    int icon_right_x = 214;
     int last_sync = -1;
     int ts_reset_alarm_screen = 0;
     time_struct dt;
@@ -120,9 +108,6 @@ void UiTask(void *args) {
         printf("[startup] pcf8563_getDateTime() year:[%d]\r\n", dt.year);
     }
     Paint_Clear(WHITE);
-
-    // Load alarms
-    //flash_read_alarms(wakeup_alarms);
 
     while (1) {
         res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
@@ -204,9 +189,7 @@ void UiTask(void *args) {
 
                 // Display screen X
                 bool shutdown_screen = false;
-                int _y = 8;
-                display_icon(icon_left_x, 90, ICON_LEFTARROW);
-                display_icon(icon_right_x, 90, ICON_RIGHTARROW);
+                display_screen_nav();
                 if (current_screen == SCREEN_MAIN) {
                     display_screen_main();
                 } else if (current_screen == SCREEN_WEATHER) {

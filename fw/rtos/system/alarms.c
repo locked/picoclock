@@ -63,8 +63,6 @@ void ring_alarm(wakeup_alarm_struct *alarm) {
 	set_audio_volume_factor(50);
 
 	// Start sound
-	//char SoundFile[260];
-	//strncpy(SoundFile, alarm->chime, 20);
 	fs_task_sound_start(alarm->chime);
 }
 

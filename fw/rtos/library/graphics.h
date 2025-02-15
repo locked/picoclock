@@ -24,6 +24,7 @@ void display_icon(int x, int y, int icon_id);
 #define SCREEN_X 32
 #define SCREEN_Y 8
 
+void display_screen_nav();
 void display_screen_main();
 void display_screen_weather();
 void display_screen_alarms();
