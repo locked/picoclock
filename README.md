@@ -5,8 +5,7 @@
 This repo is an attempt at building a Pico based alarm clock. It was created for my kids and features:
 
 - date/time (obviously)
-- alarm
-- basic sounds based on PWM
+- alarm (plays wav file on sdcard)
 - weather (current and forecast)
 - epaper screen
 - 3d printable case
@@ -21,3 +20,7 @@ The configuration is done remotely, and the clock synchronize from time to time 
   - the main PCB receiving the RP2040 board
   - the front PCB with the backlight leds
 - **api**: remote api basic php script
+
+## Pictures
+
+![case](https://github.com/user-attachments/assets/271e02c0-0fdb-4c54-b3e2-e96bcef8c645)
