@@ -21,3 +21,12 @@ The configuration is done remotely, and the clock synchronize from time to time 
   - the main PCB receiving the RP2040 board
   - the front PCB with the backlight leds
 - **api**: remote api basic php script
+
+## Build
+
+```
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+make
+```
