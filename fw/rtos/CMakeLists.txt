@@ -4,6 +4,8 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_COLOR_MAKEFILE ON)
 set(PROJECT_NAME picoclock)
 
+set(PICO_BOARD pico_w)
+
 # ==========================
 # DEFAULT VARIABLES OPTIONS
 # ==========================

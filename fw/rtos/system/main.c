@@ -38,7 +38,6 @@
 #include "EPD_2in13_V4.h"
 
 #include "mcp46XX/mcp46XX.h"
-#include "mcp9808/mcp9808.h"
 #include "mcp23009/mcp23009.h"
 #include "pcf8563/pcf8563.h"
 
@@ -198,16 +197,18 @@ void system_initialize() {
     // Init GPIO extender
 #ifndef PCBV1
     mcp23009_set_i2c(I2C_CHANNEL);
-    bool mcp23009_status = mcp23009_is_connected();
-    printf("[picoclock] mcp23009_is_connected: [%d]\r\n", mcp23009_status);
-    //mcp23009_config(true, false, false, false);
-    // All output except GP1 (SD_DET)
-    mcp23009_set_direction(0b01000000);
+    bool mcp23009_enabled = mcp23009_is_connected();
+    printf("[picoclock] mcp23009_is_connected: [%d]\r\n", mcp23009_enabled);
+    if (mcp23009_enabled) {
+        //mcp23009_config(true, false, false, false);
+        // All output except GP1 (SD_DET)
+        mcp23009_set_direction(0b01000000);
 
-    // Mute
-    mcp23009_set(0, 0);
-    // Screen off
-    mcp23009_set(FRONT_PANEL_LED_PIN, 0);
+        // Mute
+        mcp23009_set(0, 0);
+        // Screen off
+        mcp23009_set(FRONT_PANEL_LED_PIN, 0);
+    }
 #endif
 
     // Init Sound
