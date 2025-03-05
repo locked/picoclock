@@ -355,22 +355,24 @@ uint8_t ost_hal_sdcard_get_presence() {
 void ost_audio_play(const char *filename) {
     mcp23009_set(0, 1); // Unmute
 
-    debug_printf("audio_play... [%s]\r\n", filename);
+    printf("audio_play... [%s]\r\n", filename);
     audio_play(&audio_ctx, filename);
     config.freq = audio_ctx.audio_info.sample_rate;
     config.channels = audio_ctx.audio_info.channels;
-    debug_printf("pico_i2s_set_frequency...\r\n");
+    printf("pico_i2s_set_frequency...\r\n");
     pico_i2s_set_frequency(&i2s, &config);
 
     i2s.buffer_index = 0;
 
     // On appelle une première fois le process pour récupérer et initialiser le premier buffer...
+    printf("audio_process 1st buffer...\r\n");
     audio_process(&audio_ctx);
 
     // Puis le deuxième ... (pour avoir un buffer d'avance)
     audio_process(&audio_ctx);
 
     // On lance les DMA
+    printf("i2s_start...\r\n");
     i2s_start(&i2s);
 }
 

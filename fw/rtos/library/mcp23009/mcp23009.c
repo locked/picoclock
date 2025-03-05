@@ -10,7 +10,8 @@ void mcp23009_set_i2c(i2c_inst_t *i2c) {
 	mcp23009_i2c = i2c;
 }
 
-uint8_t mcp23009_read_register(uint8_t reg) {
+/*
+uint8_t mcp23009_read_register_retry(uint8_t reg) {
     uint8_t buffer[2] = { reg, 0 };
 
     int rc = 0;
@@ -29,6 +30,21 @@ uint8_t mcp23009_read_register(uint8_t reg) {
 
     return buffer[1];
 }
+*/
+
+uint8_t mcp23009_read_register(uint8_t reg) {
+    uint8_t buffer[2] = { reg, 0 };
+
+    int rc = 0;
+    rc += i2c_write_timeout_us(mcp23009_i2c, MCP23009_DEFAULT_ADDRESS, buffer, 1, false, 50000);
+    rc += i2c_read_timeout_us(mcp23009_i2c, MCP23009_DEFAULT_ADDRESS, buffer + 1, 1, false, 50000);
+    if (rc != 2) {
+        printf("[mcp23009] Error reading register\r\n");
+        return 0;
+    }
+
+    return buffer[1];
+}
 
 bool mcp23009_write_register(uint8_t reg, uint8_t value) {
     uint8_t buffer[2] = { reg, value };
@@ -36,7 +52,7 @@ bool mcp23009_write_register(uint8_t reg, uint8_t value) {
     if (rc == sizeof(buffer)) {
         return true;
     } else {
-        panic("MCP23009: failed to write register %d", reg);
+        printf("MCP23009: failed to write register %d\r\n", reg);
         return false;
     }
 }

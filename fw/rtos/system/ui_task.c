@@ -162,7 +162,7 @@ void UiTask(void *args) {
                 }
                 if (message->btn == 4) {
                     mcp4651_set_wiper(0x20);
-                    //set_audio_volume_factor(40);
+                    //set_audio_volume_factor(1);
 
                     // Start sound
                     char SoundFile[260] = "Tellement.wav";
