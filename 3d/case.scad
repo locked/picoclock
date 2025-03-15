@@ -106,12 +106,21 @@ module case($case) {
 
     // pcb additional support
     pcb_support_length = $case[0] - 24;
-    translate([-pcb_support_length/2, front_panel[1], -$case[2]/2 + 2]) cube([pcb_support_length, 5, 2]);
-    translate([-pcb_support_length/2, front_panel[1], $case[2]/2 - thickness - 2]) cube([pcb_support_length, 5, 2]);
+    difference() {
+        color("Yellow") {
+            translate([-pcb_support_length/2, front_panel[1], -$case[2]/2 + 2]) cube([pcb_support_length, 5, 2]);
+            translate([-pcb_support_length/2, front_panel[1], $case[2]/2 - thickness - 2]) cube([pcb_support_length, 5, 2]);
+        }
+        color("Purple") {
+            // remove support from 50 => 60 for screws
+            for (n = [0:4]) {
+                $x = n < 2 ? -front_panel[0]/2 + 50 : front_panel[0]/2 - 60;
+                $z = n == 0 || n == 2 ? -$case[2]/2 + 2 : $case[2]/2 - thickness - 2;
+                translate([$x, front_panel[1], $z]) cube([10, 5, 2]);
+            }
+        }
+    }
 
-    inner_cyl_x = $case[0]/2-inner_cyl_shift-0.5;
-    inner_cyl_z = $case[2]/2-inner_cyl_shift+0.1;
-    inner_cyl_h = 18;
     difference() {
         color("Green") {
             translate([-inner_cyl_x, front_panel[1], -inner_cyl_z])
@@ -168,29 +177,6 @@ module case($case) {
     speaker_support();
     //translate([0, (case[1]+front_panel[1])/2, -front_panel[2]/2-2])
     //cylinder(h=speaker[2], r1=speaker[0]/2, r2=speaker[1]/2);
-
-    /*
-    // Front Panel
-    color([0.2, 0.2, 0.9, 0.5]) {
-        translate([-front_panel[0]/2, 0, -front_panel[2]/2])
-        difference() {
-            // pcb
-            roundedcube([front_panel[0], front_panel[2]/2, front_panel[2]], false, front_panel[2]/4, "y");
-            translate([0, front_panel[1], 0]) cube([front_panel[0], front_panel[2]/2 - front_panel[1], front_panel[2]]);
-            
-            // screen
-            translate([front_panel[0]/2 - screen[0]/2, 0, front_panel[2]/2 - screen[2]/2])
-            cube([screen[0], screen[1]+front_panel[1], screen[2]]);
-        }
-    }*/
 }
 
 case(case);
-
-/*
-rotate([-90])
-translate([-case[0]/2-2,-case[1]/2-43,0])
-linear_extrude(height=2, scale=1)
-  offset(r=0, $fn=5)
-    import(file = pcb, dpi = 300);
-*/

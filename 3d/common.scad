@@ -5,6 +5,9 @@ thickness = 2;
 
 inner_cyl_radius = 6.5;
 inner_cyl_shift = 10; //$case[2]/5;
+inner_cyl_x = case[0]/2-inner_cyl_shift-0.5;
+inner_cyl_z = case[2]/2-inner_cyl_shift+0.1;
+inner_cyl_h = 18;
 
 screen = [60, 3, 30];
 
