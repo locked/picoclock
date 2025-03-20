@@ -8,8 +8,6 @@ button_x = 47.85;
 button_y = 16;
 button_radius = 3;
 
-support_diam = pcb_screw[2] * 3;
-
 module outline() {
     translate([-case[0]/2 + thickness, 0, -case[2]/2 + thickness])
 
@@ -33,7 +31,7 @@ module screws_support() {
     for (i=[0:3]) {
         x = (i < 2 ? 1 : -1) * pcb_screw[0]/2;
         z = (i == 0 || i == 2 ? 1 : -1) * pcb_screw[1]/2;
-        translate([x, panel_thickness, z]) rotate([-90]) cylinder(h=support_depth, d=support_diam);
+        translate([x, panel_thickness, z]) rotate([-90]) cylinder(h=support_depth, d=pcb_screw[2] * 2);
     }
 }
 module screws() {
@@ -42,12 +40,6 @@ module screws() {
         x = (i < 2 ? 1 : -1) * pcb_screw[0]/2;
         z = (i == 0 || i == 2 ? 1 : -1) * pcb_screw[1]/2;
         translate([x, 0, z]) rotate([-90]) cylinder(h=inner_cyl_h, d=pcb_screw[2]);
-    }
-
-    for (i=[0:3]) {
-        x = (i < 2 ? 1 : -1) * pcb_screw[0]/2;
-        z = (i == 0 || i == 2 ? 1 : -1) * pcb_screw[1]/2;
-        translate([x, 0, z]) rotate([-90]) cylinder(h=3, d=pcb_screw[2]*2);
     }
 }
 module buttons() {

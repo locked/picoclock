@@ -10,9 +10,7 @@ pcb = "picoclock-Edge_Cuts.svg";
 screen_holder_screw_rad = 2;
 screen_holder_out = [screen_holder_screw_rad*3, 63, 3];
 screen_holder_in = [70.4, 39.2, 4];
-screen_size = [59.3, 29.3, 1.5];
 screen_size_toborder = 7.1;
-screen_visible_size = [52, 27, 3];
 
 module support() {
     cube(screen_holder_in, center=true);
