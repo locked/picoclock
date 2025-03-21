@@ -7,11 +7,6 @@ pcb = "picoclock-Edge_Cuts.svg";
 //  offset(r=0, $fn=5)
 //    import(file = pcb, dpi = 300);
 
-screen_holder_screw_rad = 2;
-screen_holder_out = [screen_holder_screw_rad*3, 63, 3];
-screen_holder_in = [70.4, 39.2, 4];
-screen_size_toborder = 7.1;
-
 module support() {
     cube(screen_holder_in, center=true);
 

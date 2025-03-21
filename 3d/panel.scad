@@ -2,7 +2,7 @@ include <common.scad>;
 include <roundedcube.scad>;
 
 panel_thickness = 3;
-support_depth = pcb_interspace - 2;
+support_depth = pcb_interspace - 1.5;
 
 button_x = 47.85;
 button_y = 16;
@@ -27,6 +27,12 @@ module screen() {
 
     translate([front_panel[0]/2 - screen_visible_size[0]/2, 0, front_panel[1]/2 + screen_visible_size[1]/2 - thickness])
     cube([screen_visible_size[0], screen_visible_size[2]+front_panel[1], screen_visible_size[1]]);
+}
+module screen_reflector() {
+    translate([-case[0]/2 + thickness, 0, -case[2]/2 + thickness])
+
+    translate([front_panel[0]/2 - screen_holder_in[0]/2, 2, front_panel[1]/2 - thickness/2])
+    cube([screen_holder_in[0], screen_visible_size[2]+front_panel[1], screen_holder_out[1] - 10]);
 }
 module screws_support() {
     // PCB screw holes
@@ -65,5 +71,6 @@ color([0.2, 0.2, 0.9, 0.5]) {
         screen();
         screws();
         buttons();
+        screen_reflector();
     }
 }

@@ -32,3 +32,8 @@ pcb_interspace = pin_header_height + pin_socket_height;
 pcb_thickness = 1.6;
 
 front_panel = [case[0] - thickness * 2, pcb_thickness * 2 + pcb_interspace, case[2] - thickness * 2];
+
+screen_holder_screw_rad = 2;
+screen_holder_out = [screen_holder_screw_rad*3, 63, 3];
+screen_holder_in = [70.4, 39.2, 4];
+screen_size_toborder = 7.1;
