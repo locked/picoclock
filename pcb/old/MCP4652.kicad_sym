@@ -7,7 +7,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(property "Reference" "U7"
-			(at 0 -15.24 0)
+			(at 0.254 -7.366 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15,7 +15,7 @@
 			)
 		)
 		(property "Value" "MCP4551T-104E"
-			(at 0 -17.78 0)
+			(at 0.254 -9.906 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23,7 +23,7 @@
 			)
 		)
 		(property "Footprint" "Package_SO:TSSOP-14_4.4x5mm_P0.65mm"
-			(at -0.254 -14.478 0)
+			(at 0 -6.604 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -41,7 +41,7 @@
 			)
 		)
 		(property "Description" "100k digital pot"
-			(at 0 -25.4 0)
+			(at 0.508 -12.192 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -79,17 +79,6 @@
 					(type none)
 				)
 			)
-			(rectangle
-				(start 0 -6.35)
-				(end 1.016 -8.89)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
 			(polyline
 				(pts
 					(xy 2.032 0.508) (xy 1.016 0) (xy 2.032 -0.508) (xy 2.032 0.508)
@@ -116,30 +105,6 @@
 			)
 			(polyline
 				(pts
-					(xy 2.032 -7.112) (xy 1.016 -7.62) (xy 2.032 -8.128) (xy 2.032 -7.112)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
-					(xy 2.032 -7.62) (xy 2.794 -7.62)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
 					(xy 2.794 2.54) (xy 0.508 2.54) (xy 0.508 1.27)
 				)
 				(stroke
@@ -152,31 +117,7 @@
 			)
 			(polyline
 				(pts
-					(xy 2.794 -5.08) (xy 0.508 -5.08) (xy 0.508 -6.35)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
 					(xy 3.048 -2.54) (xy 0.508 -2.54) (xy 0.508 -1.27)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
-					(xy 3.048 -10.16) (xy 0.508 -10.16) (xy 0.508 -8.89)
 				)
 				(stroke
 					(width 0)
@@ -260,44 +201,8 @@
 					)
 				)
 			)
-			(pin input line
-				(at -10.16 -5.08 0)
-				(length 2.54)
-				(name "A1"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "13"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin input line
-				(at -10.16 -7.62 0)
-				(length 2.54)
-				(name "A2"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "12"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
 			(pin power_in line
-				(at 0 10.16 270)
+				(at 10.16 5.08 180)
 				(length 2.54)
 				(name "V_{DD}"
 					(effects
@@ -306,25 +211,7 @@
 						)
 					)
 				)
-				(number "14"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin output line
-				(at 10.16 5.08 180)
-				(length 2.54)
-				(name "NC"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "11"
+				(number "8"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -342,7 +229,7 @@
 						)
 					)
 				)
-				(number "10"
+				(number "7"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -360,7 +247,7 @@
 						)
 					)
 				)
-				(number "9"
+				(number "6"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -378,61 +265,7 @@
 						)
 					)
 				)
-				(number "8"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 10.16 -5.08 180)
-				(length 2.54)
-				(name "P1B"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
 				(number "5"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 10.16 -7.62 180)
-				(length 2.54)
-				(name "P1W"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "6"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 10.16 -10.16 180)
-				(length 2.54)
-				(name "P1A"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "7"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -444,7 +277,7 @@
 		(symbol "MCP4551T_1_1"
 			(rectangle
 				(start -7.62 7.62)
-				(end 7.62 -12.7)
+				(end 7.62 -4.826)
 				(stroke
 					(width 0.254)
 					(type default)
