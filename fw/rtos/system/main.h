@@ -116,6 +116,7 @@ typedef struct {
 	char wifi_ssid[50];
 	char wifi_key[50];
 	char remote_host[50];
+	char screen[2];
 } config_struct;
 
 // ----------------------------------------------------------------------------

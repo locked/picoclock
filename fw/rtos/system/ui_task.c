@@ -17,9 +17,12 @@
 #include "GUI_Paint.h"
 #include "ImageData.h"
 #include "EPD_2in13_V4.h"
+//#include "EPD_2in13bc.h"
+#include "EPD_2in13b_V4.h"
 
 #include "hardware/rtc.h"
 #include <hardware/sync.h>
+#include "hardware/watchdog.h"
 
 #include "net_task.h"
 #include "fs_task.h"
@@ -57,7 +60,8 @@ static ost_context_t OstContext;
 extern qor_mbox_t NetMailBox;
 extern weather_struct weather;
 extern int current_screen;
-
+extern config_struct global_config;
+extern int reboot_requested;
 
 
 
@@ -90,7 +94,11 @@ void UiTask(void *args) {
     Paint_Clear(WHITE);
     Paint_SetRotate(270);
     Paint_DrawString_EN(10, 10, "Starting...", &Font20, WHITE, BLACK);
-    EPD_2in13_V4_Display_Partial(BlackImage);
+    if (strcmp(global_config.screen, "B") == 0) {
+        EPD_2IN13B_V4_DisplayNoColor(BlackImage);
+    } else {
+        EPD_2in13_V4_Display_Partial(BlackImage);
+    }
 
     printf("calling pcf8563_getDateTime()\r\n");
     dt = pcf8563_getDateTime();
@@ -99,7 +107,11 @@ void UiTask(void *args) {
     bool time_initialized = !dt.volt_low;
     if (!time_initialized || dt.year == 0) {
         Paint_DrawString_EN(10, 40, "Connecting...", &Font20, WHITE, BLACK);
-        EPD_2in13_V4_Display_Partial(BlackImage);
+        if (strcmp(global_config.screen, "B") == 0) {
+            EPD_2IN13B_V4_DisplayNoColor(BlackImage);
+        } else {
+            EPD_2in13_V4_Display_Partial(BlackImage);
+        }
 
         request_remote_sync();
 
@@ -109,6 +121,7 @@ void UiTask(void *args) {
     }
     Paint_Clear(WHITE);
 
+    int reboot_at[2] = {-1, -1};
     while (1) {
         res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
         if (res == QOR_MBOX_OK) {
@@ -119,7 +132,6 @@ void UiTask(void *args) {
                     // In alarm
                     // Stop sound
                     ost_audio_stop();
-                    //stop_melody();
 
                     dt = pcf8563_getDateTime();
                     ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 2;  // Force reset in 2 s
@@ -128,9 +140,11 @@ void UiTask(void *args) {
                     if (message->btn == 0) {
                         if (current_screen < 3) {
                             if (backlight_on) {
+                                printf("Backlight OFF\r\n");
                                 mcp23009_set(FRONT_PANEL_LED_PIN, 0);
                                 backlight_on = false;
                             } else {
+                                printf("Backlight ON\r\n");
                                 mcp23009_set(FRONT_PANEL_LED_PIN, 1);
                                 backlight_on = true;
                             }
@@ -178,12 +192,20 @@ void UiTask(void *args) {
             if (message->ev == OST_SYS_REFRESH_SCREEN) {
                 printf("/!\\ Received event OST_SYS_REFRESH_SCREEN:[%d] current_screen:[%d]\r\n", message->btn, current_screen);
                 if (!module_initialized) {
-                    EPD_2in13_V4_Init();
+                    if (strcmp(global_config.screen, "B") == 0) {
+                        EPD_2IN13B_V4_Init();
+                    } else {
+                        EPD_2in13_V4_Init();
+                    }
                     message->clear = true;
                     module_initialized = true;
                 }
                 if (message->clear) {
-                    EPD_2in13_V4_Clear();
+                    if (strcmp(global_config.screen, "B") == 0) {
+                        EPD_2IN13B_V4_Clear();
+                    } else {
+                        EPD_2in13_V4_Clear();
+                    }
                 }
                 Paint_Clear(WHITE);
 
@@ -202,10 +224,18 @@ void UiTask(void *args) {
                     display_screen_alarm();
                 }
                 if (message->clear) {
-                    EPD_2in13_V4_Display_Base(BlackImage);
+                    if (strcmp(global_config.screen, "B") == 0) {
+                        EPD_2IN13B_V4_DisplayNoColor(BlackImage);
+                    } else {
+                        EPD_2in13_V4_Display_Base(BlackImage);
+                    }
                     message->clear = false;
                 } else {
-                    EPD_2in13_V4_Display_Partial(BlackImage);
+                    if (strcmp(global_config.screen, "B") == 0) {
+                        EPD_2IN13B_V4_DisplayNoColor(BlackImage);
+                    } else {
+                        EPD_2in13_V4_Display_Partial(BlackImage);
+                    }
                 }
                 shutdown_screen = loop_count++ > 10;
 
@@ -213,7 +243,11 @@ void UiTask(void *args) {
                 if (shutdown_screen) {
                     printf("Shutdown loop_count:[%d]\r\n", loop_count);
                     loop_count = 0;
-                    EPD_2in13_V4_Sleep();
+                    if (strcmp(global_config.screen, "B") == 0) {
+                        EPD_2IN13B_V4_Sleep();
+                    } else {
+                        EPD_2in13_V4_Sleep();
+                    }
                     DEV_Delay_ms(2000);//important, at least 2s
                     DEV_Module_Exit();
                     module_initialized = false;
@@ -255,6 +289,16 @@ void UiTask(void *args) {
                 last_sync = ts - 3600 + 10;
             }
 
+            if (dt.hour == 21 && dt.min == 0) {
+                // Set reboot time (to avoid reboot loop)
+                reboot_at[0] = dt.hour;
+                reboot_at[1] = dt.min + 1;
+            }
+            if (dt.hour == reboot_at[0] && dt.min == reboot_at[1]) {
+                printf("Request reboot\r\n");
+                reboot_requested = 1;
+            }
+
             //
             // Period tasks
             //
@@ -283,6 +327,10 @@ void UiTask(void *args) {
         }
 
         qor_sleep(200);
+
+        if (!reboot_requested) {
+            watchdog_update();
+        }
     }
 }
 

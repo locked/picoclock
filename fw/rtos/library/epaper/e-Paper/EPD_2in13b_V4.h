@@ -40,6 +40,7 @@
 void EPD_2IN13B_V4_Init(void);
 void EPD_2IN13B_V4_Clear(void);
 void EPD_2IN13B_V4_Display(const UBYTE *blackImage, const UBYTE *redImage);
+void EPD_2IN13B_V4_DisplayNoColor(const UBYTE *blackImage);
 void EPD_2IN13B_V4_Sleep(void);
 
 #endif

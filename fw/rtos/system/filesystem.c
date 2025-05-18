@@ -172,6 +172,9 @@ static int config_handler(void* user, const char* section, const char* name,
     } else if (MATCH("", "remote_host")) {
         printf("Set config remote_host:[%s]\r\n", value);
         strncpy(pconfig->remote_host, value, 50);
+    } else if (MATCH("", "screen")) {
+        printf("Set config screen:[%s]\r\n", value);
+        strncpy(pconfig->screen, value, 2);
     } else {
         return 0;  /* unknown section/name, error */
     }

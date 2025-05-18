@@ -216,6 +216,22 @@ void EPD_2IN13B_V4_Display(const UBYTE *blackImage, const UBYTE *redImage)
 	EPD_2IN13B_V4_TurnOnDisplay();	
 }
 
+
+void EPD_2IN13B_V4_DisplayNoColor(const UBYTE *blackImage)
+{
+	UWORD Width, Height;
+    Width = (EPD_2IN13B_V4_WIDTH % 8 == 0)? (EPD_2IN13B_V4_WIDTH / 8 ): (EPD_2IN13B_V4_WIDTH / 8 + 1);
+    Height = EPD_2IN13B_V4_HEIGHT;
+
+    EPD_2IN13B_V4_SendCommand(0x24);
+    for (UWORD j = 0; j < Height; j++) {
+        for (UWORD i = 0; i < Width; i++) {
+            EPD_2IN13B_V4_SendData(blackImage[i + j * Width]);
+        }
+    }
+	EPD_2IN13B_V4_TurnOnDisplay();
+}
+
 /******************************************************************************
 function :	Enter sleep mode
 parameter:

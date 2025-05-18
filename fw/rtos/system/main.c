@@ -28,6 +28,7 @@
 #include "hardware/clocks.h"
 #include "hardware/rtc.h"
 #include "hardware/i2c.h"
+#include "hardware/watchdog.h"
 #include "pico/unique_id.h"
 #include "pico.h"
 
@@ -36,6 +37,7 @@
 #include "GUI_Paint.h"
 #include "ImageData.h"
 #include "EPD_2in13_V4.h"
+#include "EPD_2in13b_V4.h"
 
 #include "mcp46XX/mcp46XX.h"
 #include "mcp23009/mcp23009.h"
@@ -61,6 +63,7 @@ static audio_i2s_config_t config = {
 weather_struct weather = {"", "", "", ""};
 int current_screen = 0;
 config_struct global_config;
+int reboot_requested = 0;
 
 qor_mbox_t NetMailBox;
 
@@ -235,14 +238,6 @@ void system_initialize() {
     rtc_set_datetime(&dt);
     printf("[picoclock] Init rtc OK\r\n");*/
 
-    //------------------- Init LCD
-    printf("[picoclock] Init e-Paper module...\r\n");
-    if(DEV_Module_Init()!=0){
-        return;
-    }
-    EPD_2in13_V4_Init();
-    EPD_2in13_V4_Clear();
-
     //------------------- Buttons init
     for (uint8_t btn=0; btn<6; btn++) {
         gpio_init(BUTTONS[btn]);
@@ -353,8 +348,6 @@ uint8_t ost_hal_sdcard_get_presence() {
 // ----------------------------------------------------------------------------
 
 void ost_audio_play(const char *filename) {
-    mcp23009_set(0, 1); // Unmute
-
     printf("audio_play... [%s]\r\n", filename);
     audio_play(&audio_ctx, filename);
     config.freq = audio_ctx.audio_info.sample_rate;
@@ -371,6 +364,7 @@ void ost_audio_play(const char *filename) {
     // Puis le deuxième ... (pour avoir un buffer d'avance)
     audio_process(&audio_ctx);
 
+    mcp23009_set(0, 1); // Unmute
     // On lance les DMA
     printf("i2s_start...\r\n");
     i2s_start(&i2s);
@@ -424,28 +418,51 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
 // MAIN ENTRY POINT
 // ===========================================================================================================
 int main() {
-    // 1. Call the platform initialization
+    // Call the platform initialization
     system_initialize();
 
-    // 2. Test the printf output
+    // Test the printf output
     printf("[picoclock] Starting: V%d.%d\r\n", 1, 0);
 
 	// Init config with default values
 	strncpy(global_config.wifi_ssid, WIFI_SSID, 50);
 	strncpy(global_config.wifi_key, WIFI_PASSWORD, 50);
 	strncpy(global_config.remote_host, SERVER_IP, 50);
+	strncpy(global_config.screen, "4", 2);
 
-    // 3. Filesystem / SDCard initialization
+    // Filesystem / SDCard initialization
     printf("[picoclock] Check SD card\r\n");
     filesystem_mount();
     // List files on sdcard (test)
     filesystem_read_config_file();
 
-    // 4. Initialize OS before all other OS calls
+    // Init screen
+    //------------------- Init LCD
+    printf("[picoclock] Init e-Paper module...\r\n");
+    if (DEV_Module_Init() == 0) {
+        if (strcmp(global_config.screen, "B") == 0) {
+            printf("[picoclock] e-Paper module: B\r\n");
+            //EPD_2IN13BC_Init();
+            EPD_2IN13B_V4_Init();
+            printf("[picoclock] e-Paper module: B init OK\r\n");
+            //EPD_2IN13BC_Clear();
+            EPD_2IN13B_V4_Clear();
+            printf("[picoclock] e-Paper module: B clear OK\r\n");
+            DEV_Delay_ms(500);
+        } else {
+            printf("[picoclock] e-Paper module: V4\r\n");
+            EPD_2in13_V4_Init();
+            printf("[picoclock] e-Paper module: V4 init OK\r\n");
+            EPD_2in13_V4_Clear();
+            printf("[picoclock] e-Paper module: V4 clear OK\r\n");
+        }
+    }
+
+    // Initialize OS before all other OS calls
     printf("[picoclock] Initialize OS before all other OS calls\r\n");
     qor_init(125000000UL);
 
-    // 5. Initialize the tasks
+    // Initialize the tasks
     printf("[picoclock] Initialize NET tasks\r\n");
     net_task_initialize();
     printf("[picoclock] Initialize UI tasks\r\n");
@@ -453,7 +470,9 @@ int main() {
     printf("[picoclock] Initialize FS tasks\r\n");
     fs_task_initialize();
 
-    // 6. Start the operating system!
+    watchdog_enable(8200, false);
+
+    // Start the operating system!
     printf("[picoclock] Start OS\r\n");
     qor_start(&IdleTcb, IdleTask, IdleStack, 1024);
 
