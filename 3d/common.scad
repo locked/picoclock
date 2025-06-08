@@ -23,7 +23,8 @@ vent = 50;
 pcb_screw = [157, 48, 3.5]; // width, height, diam
 pcb_screw_insert = [3, 7.9]; // height, diam
 usb = [11, 3.5];
-usb_from_middle = 2;
+usba = [15.6, 5];
+usb_from_middle = 3.8;
 sdcard = [15, 3];
 
 pin_header_height = 8;

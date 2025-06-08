@@ -78,6 +78,16 @@ module vents() {
     }
 }
 
+module usb() {
+    // USB-C
+    translate([0, front_panel[1], $case[2]/2-usb[0]-usb_from_middle])
+        cube([thickness*2, usb[1], usb[0]]);
+
+    // USB-A
+    translate([0, front_panel[1], $case[2]/2])
+        cube([thickness*2, usba[1], usba[0]]);
+}
+
 module case($case) {
     translate([-$case[0]/2, 0, -$case[2]/2])
 
@@ -95,7 +105,7 @@ module case($case) {
         speaker_vents();
 
         // USB
-        translate([0, front_panel[1], $case[2]/2-usb[0]-usb_from_middle]) cube([thickness*2, usb[1], usb[0]]);
+        usb();
 
         // Thermal vents
         vents();
