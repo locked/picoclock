@@ -1,0 +1,7 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "clock")(type "KiCad")(uri "${KIPRJMOD}/clock.pretty")(options "")(descr ""))
+  (lib (name "cell")(type "KiCad")(uri "${KIPRJMOD}/cell.pretty")(options "")(descr ""))
+  (lib (name "MCP23009")(type "KiCad")(uri "${KIPRJMOD}/mcp23009.pretty")(options "")(descr ""))
+  (lib (name "RP2350_80QFN_minimal")(type "KiCad")(uri "${KIPRJMOD}/RP2350_80QFN_minimal.pretty")(options "")(descr ""))
+)
