@@ -5,6 +5,169 @@
 	(uuid "f2a83d27-5e7e-44e2-a1c5-c81082b00568")
 	(paper "A4")
 	(lib_symbols
+		(symbol "Connector:Conn_01x02_Pin"
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "J"
+				(at 0 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x02_Pin"
+				(at 0 -5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Generic connector, single row, 01x02, script generated"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_locked" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Conn_01x02_Pin_1_1"
+				(rectangle
+					(start 0.8636 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 0) (xy 0.8636 0)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -2.54) (xy 0.8636 -2.54)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin passive line
+					(at 5.08 0 180)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 -2.54 180)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Device:C"
 			(pin_numbers
 				(hide yes)
@@ -1172,6 +1335,12 @@
 		(uuid "c458d89d-3813-438f-9404-408024c2d1d3")
 	)
 	(junction
+		(at 170.18 44.45)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d137c045-dc5c-48fe-8357-74c25ba0eba4")
+	)
+	(junction
 		(at 125.73 48.26)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1182,6 +1351,76 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "fea2625f-6a08-4cba-bd4f-4c2def651872")
+	)
+	(no_connect
+		(at 158.75 100.33)
+		(uuid "07d1c42d-1f57-4c49-a86f-2f7ce9f4ac40")
+	)
+	(no_connect
+		(at 92.71 92.71)
+		(uuid "437e6e28-67ca-41d4-90f0-54f310be81f0")
+	)
+	(no_connect
+		(at 92.71 74.93)
+		(uuid "4d9adfc3-36b9-43ea-8829-2b7bf03c6c2e")
+	)
+	(no_connect
+		(at 92.71 82.55)
+		(uuid "54e16bd1-9cfd-40f5-bb39-041f8da3f680")
+	)
+	(no_connect
+		(at 158.75 97.79)
+		(uuid "87493002-456c-4809-ad89-41da6e30fdbe")
+	)
+	(no_connect
+		(at 158.75 107.95)
+		(uuid "8de6b86a-f6a0-4815-a12c-63146a49982e")
+	)
+	(no_connect
+		(at 92.71 87.63)
+		(uuid "ac7a458c-ce6e-4d47-8421-e9184ff8a1c6")
+	)
+	(no_connect
+		(at 92.71 95.25)
+		(uuid "d1f5d185-be3f-4655-b47b-60073a80b89e")
+	)
+	(no_connect
+		(at 92.71 100.33)
+		(uuid "dac73b2e-7757-4b26-a246-3cccafa10e9e")
+	)
+	(no_connect
+		(at 92.71 80.01)
+		(uuid "dc8a738c-1843-4316-afb6-5f18e184b830")
+	)
+	(no_connect
+		(at 92.71 97.79)
+		(uuid "e7f2659a-046a-4472-800f-6117771ce464")
+	)
+	(no_connect
+		(at 158.75 95.25)
+		(uuid "e8de38df-09a1-4fc3-bfe5-dd5b08d59aae")
+	)
+	(no_connect
+		(at 158.75 92.71)
+		(uuid "f2b5c63a-b412-45e5-abfd-d244a8a5157e")
+	)
+	(no_connect
+		(at 92.71 85.09)
+		(uuid "f49b0e13-b3a1-45dc-95b6-4334aa33a4f4")
+	)
+	(no_connect
+		(at 92.71 72.39)
+		(uuid "fb297fab-bc3e-4aa9-ae21-77197650fb92")
+	)
+	(wire
+		(pts
+			(xy 170.18 44.45) (xy 175.26 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1bf82ee3-2fd1-448f-bdb1-cc86327681f6")
 	)
 	(wire
 		(pts
@@ -1385,6 +1624,26 @@
 	)
 	(wire
 		(pts
+			(xy 177.8 44.45) (xy 185.42 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c262a3f2-3c85-4975-a2e3-3fc47f4858f9")
+	)
+	(wire
+		(pts
+			(xy 167.64 44.45) (xy 170.18 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c5c5d381-c177-4e69-bd85-a0fc6aee016d")
+	)
+	(wire
+		(pts
 			(xy 91.44 67.31) (xy 92.71 67.31)
 		)
 		(stroke
@@ -1415,6 +1674,16 @@
 	)
 	(wire
 		(pts
+			(xy 170.18 45.72) (xy 170.18 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e23ad1bb-05de-41e5-8ba9-9593688f22bf")
+	)
+	(wire
+		(pts
 			(xy 161.29 85.09) (xy 158.75 85.09)
 		)
 		(stroke
@@ -1422,6 +1691,16 @@
 			(type default)
 		)
 		(uuid "e9543686-0175-4584-8cbc-0daeb28b4a81")
+	)
+	(wire
+		(pts
+			(xy 170.18 55.88) (xy 170.18 53.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ea8096a8-2cf9-4972-932a-92e1df0b1692")
 	)
 	(wire
 		(pts
@@ -1452,6 +1731,28 @@
 			(type default)
 		)
 		(uuid "fb2afb94-0970-44e1-a86d-0defc04a7e6e")
+	)
+	(global_label "ESP32_IO0"
+		(shape input)
+		(at 167.64 44.45 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "34be2691-2b69-4967-a280-4f0924f9aa1c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 154.4949 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
 	)
 	(global_label "ESP32_UART0_RX"
 		(shape input)
@@ -1956,6 +2257,76 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:Conn_01x02_Pin")
+		(at 175.26 49.53 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "65f1f20d-004a-4bd8-b547-49d907d2acdc")
+		(property "Reference" "J13"
+			(at 179.07 47.6249 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "ESP32_IO0"
+			(at 179.07 50.1649 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+			(at 175.26 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 175.26 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 175.26 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5a63ec0f-98a1-4f26-85e7-a619708baa14")
+		)
+		(pin "2"
+			(uuid "a76ae3c7-1fad-40d3-8257-17af2826cd62")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9/1300d4ba-b6e1-492a-b576-039297edc301"
+					(reference "J13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 186.69 87.63 0)
 		(unit 1)
@@ -2176,6 +2547,148 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 185.42 44.45 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "be986f6a-ab60-4400-9971-947f058ab891")
+		(property "Reference" "#PWR0106"
+			(at 191.77 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 190.5 44.45 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 185.42 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 185.42 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 185.42 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1d51e9e7-c19b-44f3-97b0-5249cf3360d1")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9/1300d4ba-b6e1-492a-b576-039297edc301"
+					(reference "#PWR0106")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 170.18 49.53 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c5df13e0-6ba4-4f1c-a710-dda3b92a8744")
+		(property "Reference" "R31"
+			(at 167.64 50.8 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10K"
+			(at 170.18 51.435 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 168.402 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 170.18 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 170.18 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25744"
+			(at 170.18 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1b68b3bb-5121-49eb-aed6-e0948720b96e")
+		)
+		(pin "2"
+			(uuid "3f488ee3-4d9f-4427-9291-49c0882396b6")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9/1300d4ba-b6e1-492a-b576-039297edc301"
+					(reference "R31")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "PCM_Espressif:ESP32-WROOM-E")
 		(at 125.73 87.63 0)
 		(unit 1)
@@ -2330,6 +2843,70 @@
 			(project "picoclock"
 				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9/1300d4ba-b6e1-492a-b576-039297edc301"
 					(reference "U9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 170.18 55.88 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "d16d0bc3-3689-4268-8ca3-98e68fc4aa74")
+		(property "Reference" "#PWR0108"
+			(at 170.18 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 169.799 60.2742 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 170.18 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 170.18 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 170.18 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3c2618a7-bb8e-4321-b213-4eef5aaaf027")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9/1300d4ba-b6e1-492a-b576-039297edc301"
+					(reference "#PWR0108")
 					(unit 1)
 				)
 			)

@@ -3256,6 +3256,12 @@
 		(uuid "cbc92953-eaa3-4e49-bac7-1e99a80e19c3")
 	)
 	(junction
+		(at 271.78 128.27)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "cfa7ffea-5281-4eeb-a94e-7243f37ec0d6")
+	)
+	(junction
 		(at 316.23 57.15)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3306,6 +3312,16 @@
 	(no_connect
 		(at 242.57 148.59)
 		(uuid "3e9467c1-1c71-48cc-b74e-babe42be45e8")
+	)
+	(wire
+		(pts
+			(xy 242.57 128.27) (xy 271.78 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "018dc857-1628-43be-b842-69233368ebb3")
 	)
 	(wire
 		(pts
@@ -4459,7 +4475,7 @@
 	)
 	(wire
 		(pts
-			(xy 279.4 184.15) (xy 278.13 184.15)
+			(xy 273.05 137.16) (xy 271.78 137.16)
 		)
 		(stroke
 			(width 0)
@@ -4899,7 +4915,7 @@
 	)
 	(wire
 		(pts
-			(xy 278.13 175.26) (xy 280.67 175.26)
+			(xy 271.78 128.27) (xy 274.32 128.27)
 		)
 		(stroke
 			(width 0)
@@ -5089,7 +5105,7 @@
 	)
 	(wire
 		(pts
-			(xy 278.13 184.15) (xy 278.13 182.88)
+			(xy 271.78 137.16) (xy 271.78 135.89)
 		)
 		(stroke
 			(width 0)
@@ -6239,7 +6255,7 @@
 	)
 	(global_label "SCREEN_LED"
 		(shape output)
-		(at 280.67 175.26 0)
+		(at 274.32 128.27 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6249,7 +6265,7 @@
 		)
 		(uuid "a39fe08f-07b9-40db-b11c-9e9d7a532c96")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 295.4479 175.26 0)
+			(at 289.0979 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6591,7 +6607,7 @@
 	)
 	(symbol
 		(lib_id "power:+3V3")
-		(at 279.4 184.15 270)
+		(at 273.05 137.16 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6599,7 +6615,7 @@
 		(dnp no)
 		(uuid "127b436f-4b90-4dc1-be30-1e579d249064")
 		(property "Reference" "#PWR06"
-			(at 275.59 184.15 0)
+			(at 269.24 137.16 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6608,7 +6624,7 @@
 			)
 		)
 		(property "Value" "+3V3"
-			(at 283.7942 184.531 0)
+			(at 277.4442 137.541 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6616,7 +6632,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 279.4 184.15 0)
+			(at 273.05 137.16 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6625,7 +6641,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 279.4 184.15 0)
+			(at 273.05 137.16 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6634,7 +6650,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 279.4 184.15 0)
+			(at 273.05 137.16 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10133,7 +10149,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 278.13 179.07 180)
+		(at 271.78 132.08 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10141,7 +10157,7 @@
 		(dnp no)
 		(uuid "ee2db61c-4a12-4119-ac91-3be3ed61c851")
 		(property "Reference" "R17"
-			(at 280.67 177.8 90)
+			(at 274.32 130.81 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10150,7 +10166,7 @@
 			)
 		)
 		(property "Value" "10K"
-			(at 278.13 177.165 90)
+			(at 271.78 130.175 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10159,7 +10175,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 279.908 179.07 90)
+			(at 273.558 132.08 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10168,7 +10184,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 278.13 179.07 0)
+			(at 271.78 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10177,7 +10193,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 278.13 179.07 0)
+			(at 271.78 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10186,7 +10202,7 @@
 			)
 		)
 		(property "LCSC" "C25744"
-			(at 278.13 179.07 0)
+			(at 271.78 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
