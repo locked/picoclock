@@ -144,6 +144,130 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Device:R"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "R"
+				(at 2.032 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "R"
+				(at 0 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Resistor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "R res resistor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "R_0_1"
+				(rectangle
+					(start -1.016 -2.54)
+					(end 1.016 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "R_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "PCM_Espressif:ESP32-WROOM-E"
 			(pin_names
 				(offset 1.016)
@@ -1030,6 +1154,30 @@
 		)
 	)
 	(junction
+		(at 186.69 77.47)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "075661ae-cac8-4473-b6f5-8beed7f78c29")
+	)
+	(junction
+		(at 91.44 67.31)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "3f657348-8b45-4a55-a8dd-5a9302a6a696")
+	)
+	(junction
+		(at 111.76 48.26)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "c458d89d-3813-438f-9404-408024c2d1d3")
+	)
+	(junction
+		(at 125.73 48.26)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f3d9f595-7318-4a1c-ac4e-5e4401241fc0")
+	)
+	(junction
 		(at 128.27 114.3)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1037,13 +1185,123 @@
 	)
 	(wire
 		(pts
-			(xy 125.73 45.72) (xy 125.73 62.23)
+			(xy 91.44 58.42) (xy 91.44 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "234fbda6-626e-4bfd-a105-caf84e4500a0")
+	)
+	(wire
+		(pts
+			(xy 161.29 102.87) (xy 158.75 102.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "236efdb2-3901-4097-bbb0-f24e65c8b36b")
+	)
+	(wire
+		(pts
+			(xy 161.29 67.31) (xy 158.75 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2716f19d-eb58-4dac-ad99-97d129125c42")
+	)
+	(wire
+		(pts
+			(xy 186.69 77.47) (xy 189.23 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2a13678b-c048-42c6-bc5b-6021cd17db7c")
+	)
+	(wire
+		(pts
+			(xy 91.44 66.04) (xy 91.44 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2dbf8ef9-c425-4be4-8de5-538bb652677c")
+	)
+	(wire
+		(pts
+			(xy 90.17 67.31) (xy 91.44 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "39d4e309-5fb4-4b72-8242-3b24f1fed74b")
+	)
+	(wire
+		(pts
+			(xy 91.44 48.26) (xy 111.76 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3bd43c3c-4c2c-4917-9a4e-e02813c15560")
+	)
+	(wire
+		(pts
+			(xy 111.76 58.42) (xy 111.76 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "428dda6f-b5a4-4c83-80f7-d1580e862021")
+	)
+	(wire
+		(pts
+			(xy 161.29 82.55) (xy 158.75 82.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "449e2401-3e7c-464a-8d4d-edccb0bb2cd7")
+	)
+	(wire
+		(pts
+			(xy 125.73 45.72) (xy 125.73 48.26)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "5572ad40-123c-4e49-91db-3777bc9688c7")
+	)
+	(wire
+		(pts
+			(xy 111.76 48.26) (xy 111.76 50.8)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5901a5cb-06a7-4949-886b-4e59450ff048")
+	)
+	(wire
+		(pts
+			(xy 161.29 90.17) (xy 158.75 90.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "62ccda04-6137-4b76-9db1-a3b81bc767bb")
 	)
 	(wire
 		(pts
@@ -1054,6 +1312,26 @@
 			(type default)
 		)
 		(uuid "68bc9109-9d84-4e49-a2f7-e04fecbad528")
+	)
+	(wire
+		(pts
+			(xy 161.29 69.85) (xy 158.75 69.85)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6ac61ac4-de5e-4bd7-bf3b-b748aa688769")
+	)
+	(wire
+		(pts
+			(xy 161.29 105.41) (xy 158.75 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7ffcb73a-11f6-42ca-ae13-30dc7ddd7f1a")
 	)
 	(wire
 		(pts
@@ -1077,6 +1355,76 @@
 	)
 	(wire
 		(pts
+			(xy 125.73 48.26) (xy 125.73 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9f2910ea-1e59-4c0c-ae8a-49dbe35e44c7")
+	)
+	(wire
+		(pts
+			(xy 186.69 87.63) (xy 186.69 86.36)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "af8605bd-e36f-4a75-9fff-6655e09a5511")
+	)
+	(wire
+		(pts
+			(xy 161.29 74.93) (xy 158.75 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ba26028d-9e63-46f3-bfba-bd4bfa527f0c")
+	)
+	(wire
+		(pts
+			(xy 91.44 67.31) (xy 92.71 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d69b7af6-076e-4640-ba7e-ef3b1d7c2310")
+	)
+	(wire
+		(pts
+			(xy 186.69 78.74) (xy 186.69 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dc2998f4-8677-41fa-9865-28f85460c04d")
+	)
+	(wire
+		(pts
+			(xy 158.75 77.47) (xy 186.69 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "df3d1790-a104-4f7a-a3d8-08bc9df8a074")
+	)
+	(wire
+		(pts
+			(xy 161.29 85.09) (xy 158.75 85.09)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e9543686-0175-4584-8cbc-0daeb28b4a81")
+	)
+	(wire
+		(pts
 			(xy 125.73 114.3) (xy 128.27 114.3)
 		)
 		(stroke
@@ -1084,6 +1432,268 @@
 			(type default)
 		)
 		(uuid "f04d63be-8478-4a9e-a0c8-e2fcccfcc406")
+	)
+	(wire
+		(pts
+			(xy 161.29 87.63) (xy 158.75 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f62f4b47-dbf4-4e4b-ba53-36bc9854b156")
+	)
+	(wire
+		(pts
+			(xy 111.76 48.26) (xy 125.73 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fb2afb94-0970-44e1-a86d-0defc04a7e6e")
+	)
+	(global_label "ESP32_UART0_RX"
+		(shape input)
+		(at 161.29 69.85 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "3755bc22-0b0f-4ea1-9bc6-082e1960f25a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 180.6036 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "ESP32_EN"
+		(shape input)
+		(at 90.17 67.31 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "4d1e0e17-4ae1-4c84-bdf7-df38a9ed6f86")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 77.6902 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "ESP32_UART1_RX"
+		(shape input)
+		(at 161.29 85.09 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "6449654d-2d00-4e78-8ae4-54f5f72367b6")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 180.6036 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "BT_I2S_LRCK"
+		(shape input)
+		(at 161.29 102.87 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "75a6dc2a-3468-4b29-907a-47505e914bc4")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 176.3099 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "ESP32_UART0_TX"
+		(shape input)
+		(at 161.29 67.31 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9570b7bc-7a84-44a0-b453-a8540f1bcfd4")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 180.3012 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "ESP32_IO2"
+		(shape input)
+		(at 189.23 77.47 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "99d25213-947e-46ef-862e-69d09f553597")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 202.3751 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "ESP32_UART1_TX"
+		(shape input)
+		(at 161.29 87.63 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a71a0592-45e8-4758-82e0-b4bf3ca6060a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 180.3012 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "BT_I2S_SCK"
+		(shape input)
+		(at 161.29 82.55 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "bf0cb5f8-0ce0-4baf-ae01-de77a13394e3")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 175.2213 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "GPIO34_ESP32_COM"
+		(shape input)
+		(at 161.29 90.17 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c3dd3371-d7c6-444a-ac3d-49ea17384640")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 183.2041 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "ESP32_IO0"
+		(shape input)
+		(at 161.29 74.93 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e62ad168-f823-477b-943e-e82ac332ef50")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 174.4351 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "BT_I2S_SDATA"
+		(shape input)
+		(at 161.29 105.41 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "f1e0132e-5756-49f9-848b-476e517ad695")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 177.0961 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -1214,6 +1824,70 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 111.76 59.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4b98c568-8527-444f-acd2-4c1e0145694b")
+		(property "Reference" "#PWR021"
+			(at 111.76 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 107.95 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 111.76 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 111.76 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 111.76 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "b6e34f34-83d4-42d9-a0c0-d8cea962f7f5")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9/1300d4ba-b6e1-492a-b576-039297edc301"
+					(reference "#PWR021")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 111.76 54.61 0)
 		(unit 1)
@@ -1276,6 +1950,226 @@
 			(project "picoclock"
 				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9/1300d4ba-b6e1-492a-b576-039297edc301"
 					(reference "C48")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 186.69 87.63 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "793be307-c139-417e-b19e-7d24a582d02f")
+		(property "Reference" "#PWR047"
+			(at 186.69 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 186.69 91.948 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 186.69 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 186.69 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 186.69 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "7c382725-c2cc-4e40-b77a-a4d22be15339")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9/1300d4ba-b6e1-492a-b576-039297edc301"
+					(reference "#PWR047")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 186.69 82.55 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "90e4d2df-2cd1-45bd-8030-fdd246e527ab")
+		(property "Reference" "R28"
+			(at 184.15 83.82 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10K"
+			(at 186.69 84.455 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 184.912 82.55 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 186.69 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 186.69 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25744"
+			(at 186.69 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3ae83aed-302d-461a-afb8-58b3aee44392")
+		)
+		(pin "2"
+			(uuid "c7e9ca38-8f99-40a3-a192-b223b1c649c5")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9/1300d4ba-b6e1-492a-b576-039297edc301"
+					(reference "R28")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 91.44 62.23 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ba492a8e-b006-4625-9f4d-223239522341")
+		(property "Reference" "R29"
+			(at 89.408 64.262 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10K"
+			(at 91.44 64.135 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 89.662 62.23 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 91.44 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 91.44 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25744"
+			(at 91.44 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "cd37727c-51bb-4743-b0a8-3564045472d3")
+		)
+		(pin "2"
+			(uuid "fdb12356-2644-4e3d-9563-5ece13ce085c")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9/1300d4ba-b6e1-492a-b576-039297edc301"
+					(reference "R29")
 					(unit 1)
 				)
 			)

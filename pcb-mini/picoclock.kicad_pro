@@ -60,14 +60,6 @@
       ],
       "drc_exclusions": [
         [
-          "copper_edge_clearance|59520000|103370000|63f1f2e1-b444-45af-b9f8-8240540a04a0|e0c17a21-44a1-400b-9540-b6ea7573554c",
-          ""
-        ],
-        [
-          "copper_edge_clearance|59520000|112010000|63f1f2e1-b444-45af-b9f8-8240540a04a0|f411bb68-8ebf-496a-8f45-3bc5124c3c91",
-          ""
-        ],
-        [
           "hole_clearance|64250000|104640000|3624f83a-394d-4a12-80a9-1f66b8e4a94d|ae652722-9fb4-4b7d-94dd-7bdf938907c1",
           ""
         ],
@@ -214,7 +206,9 @@
       ],
       "track_widths": [
         0.0,
-        0.3
+        0.1,
+        0.3,
+        0.8
       ],
       "tuning_pattern_settings": {
         "diff_pair_defaults": {
@@ -654,6 +648,10 @@
     [
       "1300d4ba-b6e1-492a-b576-039297edc301",
       "ESP32"
+    ],
+    [
+      "ad1ed941-0e9a-4bf2-bfb1-d99777c79344",
+      "RM2"
     ]
   ],
   "text_variables": {}
