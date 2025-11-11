@@ -31,6 +31,7 @@ module front_screw() {
 }
 module front() {
     front_inner = [pcb[0], pcb[1], front[2] - t];
+
     rotate([90]) difference() {
         cube(front);
         translate([t, t]) cube(front_inner);
@@ -39,6 +40,9 @@ module front() {
         buttons();
         io();
     }
+
+    rotate([90]) translate([front[0]/2, front[1]/2, front[2]+2.7]) screen_holder_pins();
+
     // add PCB support (cannot do it earlier
     // since it overlap with main body and
     // difference does not handle that well)
@@ -107,6 +111,22 @@ module buttons() {
         x = (i < 3 ? 1 : -1) * button_x;
         y = (i % 3) * button_y - button_y;
         translate([front[0]/2 + x, front[1]/2 + y, front[2] - t]) cylinder(h=t, d=button_radius*2);
+    }
+}
+
+module screen_holder_pins() {
+    // Pins toward PCB
+    for (x = [0:1]) {
+        for (y = [0:1]) {
+            cyl_x = (x == 0 ? 1 : -1) * screen_holder_in[0]/2 + (x == 0 ? -1 : 1) * screen_holder_out[0]/2;
+            cyl_y = (y == 0 ? 1 : -1) * screen_holder_out[1]/2 + (y == 0 ? -1 : 1) * screen_holder_screw_rad + (y == 0 ? -1 : 1) * 1;
+            echo(cyl_x, cyl_y);
+            translate([
+                cyl_x,
+                cyl_y,
+                -5-1.5])
+            cylinder(h=2, d=2, $fn=20);
+        }
     }
 }
 

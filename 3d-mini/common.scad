@@ -28,5 +28,16 @@ sd_pos = 0;
 
 screen_holder_screw_rad = 2;
 screen_holder_out = [screen_holder_screw_rad*3, pcb[1], 3];
-screen_holder_in = [70.4, 39.2, 4];
+//screen_holder_in = [70.4, 39.2, 4];
+screen_holder_in = [68.4, 39.2, 4];
 screen_size_toborder = 7.1;
+
+
+// pin position:
+// 32.2 / 24
+// center: 144 / 2, 58 / 2
+// => 72 +/- 31.2 => 40.8 / 103.2
+// => 29 +- 24 => 5 / 53
+// +80:
+// 120.8 / 183.2
+// 85 / 133
