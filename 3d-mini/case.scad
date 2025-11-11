@@ -10,6 +10,21 @@ module pcb() {
                 translate([pcb_screw_pos[0] + x * (pcb[0]-pcb_screw_pos[0]*2), pcb_screw_pos[0] + y * (pcb[1]-pcb_screw_pos[1]*2)]) cylinder(pcb[2], pcb_screw_diam/2, pcb_screw_diam/2, $fn=15);
             }
         }
+
+        // Pins holes
+        for (x = [0:1]) {
+            for (y = [0:1]) {
+                cyl_x = (x == 0 ? 1 : -1) * screen_holder_in[0]/2 + (x == 0 ? -1 : 1) * screen_holder_out[0]/2;
+                cyl_y = (y == 0 ? 1 : -1) * screen_holder_out[1]/2 + (y == 0 ? -1 : 1) * screen_holder_screw_rad + (y == 0 ? -1 : 1) * 1;
+                echo(cyl_x, cyl_y);
+                translate([
+                    cyl_x - t,
+                    cyl_y - t,
+                    -15])
+                translate([front[0]/2, front[1]/2, front[2]+2.7])
+                cylinder(h=3, d=2.1, $fn=20);
+            }
+        }
     }
 }
 
@@ -139,6 +154,6 @@ front();
 
 rotate([90]) translate([front[0]/2, front[1]/2, 6]) screen_holder();
 
-back();
+//back();
 
 //rotate([90]) translate([t, t]) color("red") surface(file=pcb_image, convexity = 1);
