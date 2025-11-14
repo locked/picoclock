@@ -8,6 +8,7 @@ pcb_image = "picoclock_scaled.png";
 t = 2;
 
 front = [pcb[0] + t * 2, pcb[1] + t * 2, 12];
+back = [pcb[0] + t * 2, pcb[1] + t * 2, 50];
 
 pcb_support = [pcb_screw_pos[0]*2, front[2] - t - pcb[2], front[2] - pcb[2] - t];
 

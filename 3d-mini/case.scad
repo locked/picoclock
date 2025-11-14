@@ -48,7 +48,22 @@ module front() {
     front_inner = [pcb[0], pcb[1], front[2] - t];
 
     rotate([90]) difference() {
-        cube(front);
+        union(){
+            cube(front);
+            // front/back joint
+            for (i = [0:1]) {
+                translate([
+                    0,
+                    i * (front[1] - 1),
+                    -1]) cube([front[0],1,1]);
+            }
+            for (i = [0:1]) {
+                translate([
+                    i * (front[0] - 1),
+                    0,
+                    -1]) cube([1,front[1],1]);
+            }
+        }
         translate([t, t]) cube(front_inner);
         front_screw();
         screen();
@@ -74,38 +89,38 @@ module front() {
     }
 }
 
-module io() {
+module io(forback=false) {
     // usb-c
     translate([
         0,
         front[1]/2 - usbc_pos - usbc[1] / 2,
-        pcb[2],
+        -usbc[0],
     ]) cube([
         t,
         usbc[1],
-        usbc[0]
+        usbc[0] + (forback ? 1 : 0)
     ]);
 
     // usb-a
     translate([
         0,
         front[1]/2 + usba_pos - usba[1] / 2,
-        pcb[2],
+        -usba[0],
     ]) cube([
         t,
         usba[1],
-        usba[0]
+        usba[0] + (forback ? 1 : 0)
     ]);
 
     // SD card
     translate([
         front[0] - t,
         front[1]/2 - sd[1]/2,
-        pcb[2],
+        -sd[0],
     ]) cube([
         t,
         sd[1],
-        sd[0]
+        sd[0] + (forback ? 1 : 0)
     ]);
 }
 
@@ -131,7 +146,7 @@ module buttons() {
 
 module screen_holder_pins() {
     // Pins toward PCB
-    for (x = [0:1]) {
+    for (x = [0:1])  {
         for (y = [0:1]) {
             cyl_x = (x == 0 ? 1 : -1) * screen_holder_in[0]/2 + (x == 0 ? -1 : 1) * screen_holder_out[0]/2;
             cyl_y = (y == 0 ? 1 : -1) * screen_holder_out[1]/2 + (y == 0 ? -1 : 1) * screen_holder_screw_rad + (y == 0 ? -1 : 1) * 1;
@@ -146,6 +161,27 @@ module screen_holder_pins() {
 }
 
 module back() {
+    back_inner = [pcb[0], pcb[1], back[2] - t];
+    rotate([90]) difference() {
+        union(){
+            translate([0, 0, -back[2]]) cube(back);
+            // front/back joint
+            for (i = [0:1]) {
+                translate([
+                    1,
+                    i * (front[1] - 3) + 1,
+                    0]) cube([front[0]-2,1,1]);
+            }
+            for (i = [0:1]) {
+                translate([
+                    i * (front[0] - 3) + 1,
+                    1,
+                    0]) cube([1,front[1]-2,1]);
+            }
+        }
+        translate([t, t, -back[2] + t]) cube(back_inner);
+        io(true);
+    }
 }
 
 //pcb();
@@ -154,6 +190,6 @@ front();
 
 rotate([90]) translate([front[0]/2, front[1]/2, 6]) screen_holder();
 
-//back();
+back();
 
 //rotate([90]) translate([t, t]) color("red") surface(file=pcb_image, convexity = 1);
