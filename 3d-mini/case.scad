@@ -26,6 +26,8 @@ module pcb() {
             }
         }
     }
+
+    rotate([90]) io();
 }
 
 module front_screw() {
@@ -34,13 +36,12 @@ module front_screw() {
         for (y = [0:1]) {
             translate([
                 t + pcb_screw_pos[0] + x * (pcb[0] - pcb_screw_pos[0] - t*2),
-                t + pcb_screw_pos[1] + y * (pcb[1] - pcb_screw_pos[1] - t*2)],
-                pcb[2]) cylinder(front[2], pcb_screw_diam/2, pcb_screw_diam/2, $fn=15);
+                t + pcb_screw_pos[1] + y * (pcb[1] - pcb_screw_pos[1] - t*2)]) cylinder(front[2], pcb_screw_diam/2, pcb_screw_diam/2, $fn=15);
 
             translate([
                 t + pcb_screw_pos[0] + x * (pcb[0] - pcb_screw_pos[0] - t*2),
                 t + pcb_screw_pos[1] + y * (pcb[1] - pcb_screw_pos[1] - t*2),
-                front[2] - 3]) cylinder(3, 3, 3, $fn=6);
+                front[2] - pcb_bolt_depth]) cylinder(h=pcb_bolt_depth, r=pcb_bolt_diam/2, $fn=15);
         }
     }
 }
@@ -95,33 +96,21 @@ module io(forback=false) {
         0,
         front[1]/2 - usbc_pos - usbc[1] / 2,
         -usbc[0],
-    ]) cube([
-        t,
-        usbc[1],
-        usbc[0] + (forback ? 1 : 0)
-    ]);
+    ]) cube([usbc[2], usbc[1], usbc[0] + (forback ? 1 : 0)]);
 
     // usb-a
     translate([
         0,
         front[1]/2 + usba_pos - usba[1] / 2,
         -usba[0],
-    ]) cube([
-        t,
-        usba[1],
-        usba[0] + (forback ? 1 : 0)
-    ]);
+    ]) cube([usba[2], usba[1], usba[0] + (forback ? 1 : 0)]);
 
     // SD card
     translate([
-        front[0] - t,
+        front[0] - sd[2],
         front[1]/2 - sd[1]/2,
         -sd[0],
-    ]) cube([
-        t,
-        sd[1],
-        sd[0] + (forback ? 1 : 0)
-    ]);
+    ]) cube([sd[2], sd[1], sd[0] + (forback ? 1 : 0)]);
 }
 
 module screen() {
@@ -160,6 +149,74 @@ module screen_holder_pins() {
     }
 }
 
+
+
+module back_screw() {
+    // PCB support screw
+    for (x = [0:1]) {
+        for (y = [0:1]) {
+            translate([
+                t + pcb_screw_pos[0] + x * (pcb[0] - pcb_screw_pos[0] - t*2),
+                t + pcb_screw_pos[1] + y * (pcb[1] - pcb_screw_pos[1] - t*2),
+                -back[2]-t])
+            cylinder(h=back[2]+t, r=pcb_screw_diam/2, $fn=15);
+
+            // bolt
+            translate([
+                t + pcb_screw_pos[0] + x * (pcb[0] - pcb_screw_pos[0] - t*2),
+                t + pcb_screw_pos[1] + y * (pcb[1] - pcb_screw_pos[1] - t*2),
+                -back[2] - pcb_bolt_depth])
+            cylinder(h=pcb_bolt_back_depth, r=pcb_bolt_diam/2, $fn=6);
+        }
+    }
+}
+module speaker() {
+    cube(speaker);
+    translate([-(speaker_plate[0]-speaker[0])/2, 0, -(speaker_plate[2]-speaker[2])])
+    cube(speaker_plate);
+}
+module speaker_grid() {
+    startx = (back[0]-speaker[0])/2;
+    endx = startx + speaker[0];
+    starty = (back[1]-speaker[1])/2 + speaker[1] * 0.15;
+    endy = starty + speaker[1] * 0.8;
+    step = 5;
+    for (x = [startx:step:endx]) {
+        for (y = [starty:step:endy]) {
+            translate([x, y, -back[2]])
+            cube([2,2,t]);
+        }
+    }
+}
+module speaker_supports_holes() {
+    rotate([90]) translate([
+        pcb_support[0]+t+3,
+        -back[2]+speaker[2]+t-10,
+        -speaker_support[1]-t
+    ]) cylinder(h=speaker_support[1]+t, r=3);
+    rotate([90]) translate([
+        back[0]-pcb_support[0]-t-5,
+        -back[2]+speaker[2]+t-10,
+        -speaker_support[1]-t
+    ]) cylinder(h=speaker_support[1]+t, r=3);
+}
+module speaker_supports() {
+    rotate([90]) difference() {
+        union() {
+            translate([
+                pcb_support[0]+t,
+                t,
+                -back[2]-(speaker_plate[2]-speaker[2])
+            ]) cube(speaker_support);
+            translate([
+                back[0]-pcb_support[0]-t-speaker_support[0],
+                t,
+                -back[2]-(speaker_plate[2]-speaker[2])
+            ]) cube(speaker_support);
+        }
+        speaker_supports_holes();
+    }
+}
 module back() {
     back_inner = [pcb[0], pcb[1], back[2] - t];
     rotate([90]) difference() {
@@ -181,15 +238,37 @@ module back() {
         }
         translate([t, t, -back[2] + t]) cube(back_inner);
         io(true);
+        back_screw();
+        speaker_grid();
+        speaker_supports_holes();
     }
+
+    // add PCB support (cannot do it earlier
+    // since it overlap with main body and
+    // difference does not handle that well)
+    rotate([90]) difference() {
+        for (x = [0:1]) {
+            for (y = [0:1]) {
+                translate([
+                    t + x * (front[0] - pcb_support[0] - t*2),
+                    t + y * (front[1] - pcb_support[2] - t*2),
+                    -back[2]])
+                cube([pcb_support[0], pcb_support[1], back[2]]);
+            }
+        }
+        back_screw();
+    }
+
+    //rotate([90]) translate([(back[0]-speaker[0])/2, pcb_support[0] + t, -back[2]]) speaker();
+    speaker_supports();
 }
 
 //pcb();
 
 front();
 
-rotate([90]) translate([front[0]/2, front[1]/2, 6]) screen_holder();
+//rotate([90]) translate([front[0]/2, front[1]/2, 6]) screen_holder();
 
-back();
+//back();
 
 //rotate([90]) translate([t, t]) color("red") surface(file=pcb_image, convexity = 1);

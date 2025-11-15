@@ -2,6 +2,9 @@
 pcb = [140, 54, 1.6];
 pcb_screw_diam = 3.2;
 pcb_screw_pos = [4, 4];
+pcb_bolt_diam = 6.5;
+pcb_bolt_depth = 3.2;
+pcb_bolt_length = 40;
 pcb_image = "picoclock_scaled.png";
 
 // general thickness
@@ -9,23 +12,27 @@ t = 2;
 
 front = [pcb[0] + t * 2, pcb[1] + t * 2, 12];
 back = [pcb[0] + t * 2, pcb[1] + t * 2, 50];
+pcb_bolt_back_depth = back[2] - pcb_bolt_length + t + pcb_bolt_depth;
 
 pcb_support = [pcb_screw_pos[0]*2, front[2] - t - pcb[2], front[2] - pcb[2] - t];
 
-screen_size = [59.3, 29.3, 1.5];
-screen_visible_size = [52, 27, 3];
+screen_size = [59.3, 29.6, 1.5];
+screen_visible_size = [52, 27.4, 3];
 
 button_x = 50;
 button_y = 13;
 button_radius = 3;
 
-usbc = [4, 10.7];
-usba = [6, 15.5];
-sd = [3, 15.7];
+usbc = [4, 10.7, 10.3];
+usba = [6, 15.5, 16.3];
+sd = [3, 15.7, 19.7];
 usbc_pos = 9.6;  // from center
 usba_pos = 8.14; // from center
 sd_pos = 0;
 
+speaker_plate = [132, 10, 19];
+speaker = [100, 36, 28];
+speaker_support = [12, pcb_support[1], 19];
 
 screen_holder_screw_rad = 2;
 screen_holder_out = [screen_holder_screw_rad*3, pcb[1], 3];
