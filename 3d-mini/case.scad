@@ -108,9 +108,17 @@ module io(forback=false) {
     // SD card
     translate([
         front[0] - sd[2],
-        front[1]/2 - sd[1]/2,
+        front[1]/2 + sd_pos - sd[1]/2,
         -sd[0],
     ]) cube([sd[2], sd[1], sd[0] + (forback ? 1 : 0)]);
+
+    //echo(front[1]/2, front[1]/2 - jack_pos, front[1]/2 - jack_pos - jack[1]/2);
+    // Jack
+    translate([
+        front[0] - jack[2],
+        front[1]/2 - jack_pos - jack[1]/2,
+        -jack[0],
+    ]) cube([jack[2], jack[1], jack[0] + (forback ? 1 : 0)]);
 }
 
 module screen() {
