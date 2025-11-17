@@ -14,7 +14,6 @@ module support() {
     translate([$x, $y, $z]) cube([screen_holder_out[0], screen_holder_out[0], screen_holder_out[2]], center=true);
     $y2 = screen_holder_out[1]/2-screen_holder_out[0]/2;
     translate([$x, $y2, $z]) cube([screen_holder_out[0], screen_holder_out[0], screen_holder_out[2]], center=true);
-
     translate([-screen_holder_in[0]/2+screen_holder_out[0]/2, -screen_holder_out[1]/2+screen_holder_out[0]/2, -screen_holder_out[2]])
     cube([screen_holder_out[0], screen_holder_out[0], screen_holder_out[2]], center=true);
     translate([-screen_holder_in[0]/2+screen_holder_out[0]/2, screen_holder_out[1]/2-screen_holder_out[0]/2, -screen_holder_out[2]])
@@ -58,7 +57,7 @@ module support() {
                 (x == 0 ? 1 : -1) * screen_holder_in[0]/2 + (x == 0 ? -1 : 1) * screen_holder_out[0]/2,
                 (y == 0 ? 1 : -1) * screen_holder_out[1]/2 + (y == 0 ? -1 : 1) * screen_holder_screw_rad + (y == 0 ? -1 : 1) * 1,
                 -5-1.5])
-            cylinder(h=2, d=2, $fn=20);
+            cylinder(h=2, d=1.9, $fn=20);
         }
     }
 
@@ -81,7 +80,7 @@ module support() {
                     (x == 0 ? 1 : -1) * screen_holder_in[0]/2 + (x == 0 ? -1 : 1) * screen_holder_out[0]/2,
                     (y == 0 ? 1 : -1) * screen_holder_out[1]/2 + (y == 0 ? -1 : 1) * screen_holder_screw_rad + (y == 0 ? -1 : 1) * 1,
                     0])
-                cylinder(h=4, d=2.1, $fn=20);
+                cylinder(h=4, d=2.2, $fn=20);
             }
         }
     }
@@ -91,8 +90,13 @@ module screen_holder() {
     difference() {
         support();
 
-        translate([-screen_size_toborder/2, 0, 0]) cube([screen_size[0]+screen_size_toborder, screen_size[1], screen_size[2]], center=true);
+        translate([-screen_size_toborder/2-2, 0, 0]) cube([
+			screen_size[0]+screen_size_toborder,
+			screen_size[1],
+			screen_size[2]
+		], center=true);
 
+		// Opening to slide the screen
         translate([-screen_size[0]/2-screen_size_toborder/2, 0, -2]) cube([screen_size_toborder, screen_size[1], 4], center=true);
 
         // Visible screen size

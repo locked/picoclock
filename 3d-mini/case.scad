@@ -72,7 +72,17 @@ module front() {
         io();
     }
 
-    rotate([90]) translate([front[0]/2, front[1]/2, front[2]+2.7]) screen_holder_pins();
+    rotate([90]) translate([
+        front[0]/2,
+        front[1]/2,
+        front[2]-t
+    ]) screen_holder_pins();
+
+    rotate([90]) translate([
+        front[0]/2 - screen_holder_out[1]/2 - 8.6,
+        16,
+        front[2]-t-5])
+    cube([3,3,5]);
 
     // add PCB support (cannot do it earlier
     // since it overlap with main body and
@@ -143,16 +153,17 @@ module buttons() {
 
 module screen_holder_pins() {
     // Pins toward PCB
+    pin_height = 1.6;
     for (x = [0:1])  {
         for (y = [0:1]) {
             cyl_x = (x == 0 ? 1 : -1) * screen_holder_in[0]/2 + (x == 0 ? -1 : 1) * screen_holder_out[0]/2;
             cyl_y = (y == 0 ? 1 : -1) * screen_holder_out[1]/2 + (y == 0 ? -1 : 1) * screen_holder_screw_rad + (y == 0 ? -1 : 1) * 1;
-            echo(cyl_x, cyl_y);
+            //echo(cyl_x, cyl_y);
             translate([
                 cyl_x,
                 cyl_y,
-                -5-1.5])
-            cylinder(h=2, d=2, $fn=20);
+                -pin_height])
+            cylinder(h=pin_height, d1=1.8, d2=2, $fn=20);
         }
     }
 }
@@ -227,21 +238,24 @@ module speaker_supports() {
 }
 module back() {
     back_inner = [pcb[0], pcb[1], back[2] - t];
+    joint_margin = 0.2;
     rotate([90]) difference() {
         union(){
             translate([0, 0, -back[2]]) cube(back);
             // front/back joint
             for (i = [0:1]) {
+                // horizontal
                 translate([
-                    1,
-                    i * (front[1] - 3) + 1,
-                    0]) cube([front[0]-2,1,1]);
+                    1 + joint_margin,
+                    i * (front[1] - 3) + 1 + (i == 0 ? 1 : 0) * joint_margin,
+                    0]) cube([front[0]-t-joint_margin*2,1-joint_margin,1]);
             }
             for (i = [0:1]) {
+                // vertical
                 translate([
-                    i * (front[0] - 3) + 1,
-                    1,
-                    0]) cube([1,front[1]-2,1]);
+                    i * (front[0] - 3) + 1 + (i == 0 ? 1 : 0) * joint_margin,
+                    1 + joint_margin,
+                    0]) cube([1-joint_margin,front[1]-t-joint_margin*2,1]);
             }
         }
         translate([t, t, -back[2] + t]) cube(back_inner);
