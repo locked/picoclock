@@ -178,7 +178,7 @@ module back_screw() {
                 t + pcb_screw_pos[0] + x * (pcb[0] - pcb_screw_pos[0] - t*2),
                 t + pcb_screw_pos[1] + y * (pcb[1] - pcb_screw_pos[1] - t*2),
                 -back[2]-t])
-            cylinder(h=back[2]+t, r=pcb_screw_diam/2, $fn=15);
+            cylinder(h=back[2]+t+1, r=pcb_screw_diam/2, $fn=15);
 
             // bolt
             translate([
@@ -248,14 +248,14 @@ module back() {
                 translate([
                     1 + joint_margin,
                     i * (front[1] - 3) + 1 + (i == 0 ? 1 : 0) * joint_margin,
-                    0]) cube([front[0]-t-joint_margin*2,1-joint_margin,1]);
+                    0]) cube([front[0]-t-joint_margin*2,1-joint_margin,0.8]);
             }
             for (i = [0:1]) {
                 // vertical
                 translate([
                     i * (front[0] - 3) + 1 + (i == 0 ? 1 : 0) * joint_margin,
                     1 + joint_margin,
-                    0]) cube([1-joint_margin,front[1]-t-joint_margin*2,1]);
+                    0]) cube([1-joint_margin,front[1]-t-joint_margin*2,0.8]);
             }
         }
         translate([t, t, -back[2] + t]) cube(back_inner);
@@ -275,7 +275,7 @@ module back() {
                     t + x * (front[0] - pcb_support[0] - t*2),
                     t + y * (front[1] - pcb_support[2] - t*2),
                     -back[2]])
-                cube([pcb_support[0], pcb_support[1], back[2]]);
+                cube([pcb_support[0], pcb_support[1], back[2]+0.8]);
             }
         }
         back_screw();
@@ -287,10 +287,10 @@ module back() {
 
 //pcb();
 
-front();
+//front();
 
 //rotate([90]) translate([front[0]/2, front[1]/2, 6]) screen_holder();
 
-//back();
+back();
 
 //rotate([90]) translate([t, t]) color("red") surface(file=pcb_image, convexity = 1);
