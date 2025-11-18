@@ -22,7 +22,7 @@ module pcb() {
                     cyl_y - t,
                     -15])
                 translate([front[0]/2, front[1]/2, front[2]+2.7])
-                cylinder(h=3, d=2.1, $fn=20);
+                cylinder(h=3, d=2.5, $fn=20);
             }
         }
     }
