@@ -1,8 +1,8 @@
 // PCB size
 pcb = [140, 54, 1.6];
-pcb_screw_diam = 3.2;
+pcb_screw_diam = 3.6;
 pcb_screw_pos = [4, 4];
-pcb_bolt_diam = 6.5;
+pcb_bolt_diam = 7.5;
 pcb_bolt_depth = 3.2;
 pcb_bolt_length = 40;
 pcb_image = "picoclock_scaled.png";
@@ -12,7 +12,7 @@ t = 2;
 
 front = [pcb[0] + t * 2, pcb[1] + t * 2, 12];
 back = [pcb[0] + t * 2, pcb[1] + t * 2, 50];
-pcb_bolt_back_depth = back[2] - pcb_bolt_length + t + pcb_bolt_depth;
+pcb_bolt_back_depth = back[2] - pcb_bolt_length + t + pcb_bolt_depth + front[2];
 
 pcb_support = [pcb_screw_pos[0]*2, front[2] - t - pcb[2], front[2] - pcb[2] - t];
 
@@ -34,7 +34,7 @@ jack_pos = 9.85;
 
 speaker_plate = [132, 10, 19];
 speaker = [100, 36, 28];
-speaker_support = [12, pcb_support[1], 19];
+speaker_support = [11, pcb_support[1], 22];
 
 screen_holder_screw_rad = 2;
 screen_holder_out = [screen_holder_screw_rad*3, pcb[1] - 0.2, 3];

@@ -209,28 +209,39 @@ module speaker_grid() {
 }
 module speaker_supports_holes() {
     rotate([90]) translate([
-        pcb_support[0]+t+3,
-        -back[2]+speaker[2]+t-10,
+        pcb_support[0]+t+3+1,
+        -back[2]+speaker[2]+t-10-4,
         -speaker_support[1]-t
     ]) cylinder(h=speaker_support[1]+t, r=3);
     rotate([90]) translate([
-        back[0]-pcb_support[0]-t-5,
-        -back[2]+speaker[2]+t-10,
+        back[0]-pcb_support[0]-t-5+1,
+        -back[2]+speaker[2]+t-10-4,
         -speaker_support[1]-t
     ]) cylinder(h=speaker_support[1]+t, r=3);
+
+    rotate([90]) translate([
+        pcb_support[0]+t+3+1,
+        -back[2]+speaker[2]+t-10-4,
+        -speaker_support[1]-t+6
+    ]) cylinder(h=5, r=6);
+    rotate([90]) translate([
+        back[0]-pcb_support[0]-t-5+1,
+        -back[2]+speaker[2]+t-10-4,
+        -speaker_support[1]-t+6
+    ]) cylinder(h=5, r=6);
 }
 module speaker_supports() {
     rotate([90]) difference() {
         union() {
             translate([
-                pcb_support[0]+t,
+                pcb_support[0]+2,
                 t,
-                -back[2]-(speaker_plate[2]-speaker[2])
+                -back[2]-(speaker_plate[2]-speaker[2])-7
             ]) cube(speaker_support);
             translate([
                 back[0]-pcb_support[0]-t-speaker_support[0],
                 t,
-                -back[2]-(speaker_plate[2]-speaker[2])
+                -back[2]-(speaker_plate[2]-speaker[2])-7
             ]) cube(speaker_support);
         }
         speaker_supports_holes();
@@ -279,6 +290,7 @@ module back() {
             }
         }
         back_screw();
+        speaker_supports_holes();
     }
 
     //rotate([90]) translate([(back[0]-speaker[0])/2, pcb_support[0] + t, -back[2]]) speaker();
