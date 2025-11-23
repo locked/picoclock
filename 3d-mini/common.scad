@@ -2,13 +2,13 @@
 pcb = [140, 54, 1.6];
 pcb_screw_diam = 3.6;
 pcb_screw_pos = [4, 4];
-pcb_bolt_diam = 7.5;
+pcb_bolt_diam = 7;
 pcb_bolt_depth = 3.2;
 pcb_bolt_length = 40;
 pcb_image = "picoclock_scaled.png";
 
 // general thickness
-t = 2;
+t = 1.5;
 
 front = [pcb[0] + t * 2, pcb[1] + t * 2, 12];
 back = [pcb[0] + t * 2, pcb[1] + t * 2, 50];

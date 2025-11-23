@@ -234,7 +234,7 @@ module speaker_supports() {
     rotate([90]) difference() {
         union() {
             translate([
-                pcb_support[0]+2,
+                pcb_support[0]+t,
                 t,
                 -back[2]-(speaker_plate[2]-speaker[2])-7
             ]) cube(speaker_support);
@@ -257,15 +257,15 @@ module back() {
             for (i = [0:1]) {
                 // horizontal
                 translate([
-                    1 + joint_margin,
-                    i * (front[1] - 3) + 1 + (i == 0 ? 1 : 0) * joint_margin,
+                    t/2 + joint_margin,
+                    i * front[1] + (i == 0 ? 1 : -2) * t/2 + (i == 0 ? 1 : -1) * joint_margin,
                     0]) cube([front[0]-t-joint_margin*2,1-joint_margin,0.8]);
             }
             for (i = [0:1]) {
                 // vertical
                 translate([
-                    i * (front[0] - 3) + 1 + (i == 0 ? 1 : 0) * joint_margin,
-                    1 + joint_margin,
+                    i * front[0] + (i == 0 ? 1 : -2) * t/2 + (i == 0 ? 1 : -1) * joint_margin,
+                    t/2 + joint_margin,
                     0]) cube([1-joint_margin,front[1]-t-joint_margin*2,0.8]);
             }
         }
