@@ -72,14 +72,15 @@ module front() {
         io();
     }
 
+    // screen holder pins
     rotate([90]) translate([
         front[0]/2,
         front[1]/2,
         front[2]-t
     ]) screen_holder_pins();
-
+    // screen stop pin
     rotate([90]) translate([
-        front[0]/2 - screen_holder_out[1]/2 - 8.6,
+        front[0]/2 - screen_holder_out[1]/2 - 8.3,
         16,
         front[2]-t-5])
     cube([3,3,5]);
@@ -122,7 +123,6 @@ module io(forback=false) {
         -sd[0],
     ]) cube([sd[2], sd[1], sd[0] + (forback ? 1 : 0)]);
 
-    //echo(front[1]/2, front[1]/2 - jack_pos, front[1]/2 - jack_pos - jack[1]/2);
     // Jack
     translate([
         front[0] - jack[2],
@@ -299,10 +299,10 @@ module back() {
 
 //pcb();
 
-//front();
+front();
 
 //rotate([90]) translate([front[0]/2, front[1]/2, 6]) screen_holder();
 
-back();
+//back();
 
 //rotate([90]) translate([t, t]) color("red") surface(file=pcb_image, convexity = 1);
