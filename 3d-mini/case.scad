@@ -175,15 +175,15 @@ module back_screw() {
     for (x = [0:1]) {
         for (y = [0:1]) {
             translate([
-                t + pcb_screw_pos[0] + x * (pcb[0] - pcb_screw_pos[0] - t*2),
-                t + pcb_screw_pos[1] + y * (pcb[1] - pcb_screw_pos[1] - t*2),
+                (x == 0 ? pcb[0] - pcb_screw_pos[0] : pcb_screw_pos[0]) + t,
+                (y == 0 ? pcb[1] - pcb_screw_pos[1] : pcb_screw_pos[1]) + t,
                 -back[2]-t])
             cylinder(h=back[2]+t+1, r=pcb_screw_diam/2, $fn=15);
 
             // bolt
             translate([
-                t + pcb_screw_pos[0] + x * (pcb[0] - pcb_screw_pos[0] - t*2),
-                t + pcb_screw_pos[1] + y * (pcb[1] - pcb_screw_pos[1] - t*2),
+                (x == 0 ? pcb[0] - pcb_screw_pos[0] : pcb_screw_pos[0]) + t,
+                (y == 0 ? pcb[1] - pcb_screw_pos[1] : pcb_screw_pos[1]) + t,
                 -back[2] - pcb_bolt_depth])
             cylinder(h=pcb_bolt_back_depth, r=pcb_bolt_diam/2, $fn=6);
         }
@@ -236,12 +236,12 @@ module speaker_supports() {
             translate([
                 pcb_support[0]+t,
                 t,
-                -back[2]-(speaker_plate[2]-speaker[2])-7
+                -back[2]-(speaker_plate[2]-speaker[2])-7.5
             ]) cube(speaker_support);
             translate([
                 back[0]-pcb_support[0]-t-speaker_support[0],
                 t,
-                -back[2]-(speaker_plate[2]-speaker[2])-7
+                -back[2]-(speaker_plate[2]-speaker[2])-7.5
             ]) cube(speaker_support);
         }
         speaker_supports_holes();
@@ -299,10 +299,10 @@ module back() {
 
 //pcb();
 
-front();
+//front();
 
 //rotate([90]) translate([front[0]/2, front[1]/2, 6]) screen_holder();
 
-//back();
+back();
 
 //rotate([90]) translate([t, t]) color("red") surface(file=pcb_image, convexity = 1);
