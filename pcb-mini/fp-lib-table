@@ -6,4 +6,5 @@
   (lib (name "RP2350_80QFN_minimal")(type "KiCad")(uri "${KIPRJMOD}/RP2350_80QFN_minimal.pretty")(options "")(descr ""))
   (lib (name "RMC20452T")(type "KiCad")(uri "${KIPRJMOD}/RMC20452T.pretty")(options "")(descr ""))
   (lib (name "SJ2-35863B1-SMT-TR")(type "KiCad")(uri "${KIPRJMOD}/SJ2-35863B1-SMT-TR.pretty")(options "")(descr ""))
+  (lib (name "Lunasys_Library")(type "KiCad")(uri "../../common")(options "")(descr ""))
 )

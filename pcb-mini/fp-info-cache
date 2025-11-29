@@ -1,4 +1,4 @@
-26339047475703979
+26340811910616677
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -68823,6 +68823,13 @@ Yellow 5381 Series LED
 0
 2
 2
+Lunasys_Library
+LP5817
+https://www.ti.com/lit/ds/symlink/tps62933.pdf
+SOT-583-8
+0
+8
+8
 Module
 A20_OLINUXINO_LIME2
 A20 Olinuxino LIME2, 1.2GHz, 512-1024MB RAM, Micro-SD, NAND or eMMC, 1000Mbit Ethernet
