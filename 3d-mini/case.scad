@@ -35,12 +35,14 @@ module front_screw() {
     for (x = [0:1]) {
         for (y = [0:1]) {
             translate([
-                t + pcb_screw_pos[0] + x * (pcb[0] - pcb_screw_pos[0] - t*2),
-                t + pcb_screw_pos[1] + y * (pcb[1] - pcb_screw_pos[1] - t*2)]) cylinder(front[2], pcb_screw_diam/2, pcb_screw_diam/2, $fn=15);
+                (x == 0 ? pcb[0] - pcb_screw_pos[0] : pcb_screw_pos[0]) + t,
+                (y == 0 ? pcb[1] - pcb_screw_pos[1] : pcb_screw_pos[1]) + t,
+                0
+            ]) cylinder(front[2], pcb_screw_diam/2, pcb_screw_diam/2, $fn=15);
 
             translate([
-                t + pcb_screw_pos[0] + x * (pcb[0] - pcb_screw_pos[0] - t*2),
-                t + pcb_screw_pos[1] + y * (pcb[1] - pcb_screw_pos[1] - t*2),
+                (x == 0 ? pcb[0] - pcb_screw_pos[0] : pcb_screw_pos[0]) + t,
+                (y == 0 ? pcb[1] - pcb_screw_pos[1] : pcb_screw_pos[1]) + t,
                 front[2] - pcb_bolt_depth]) cylinder(h=pcb_bolt_depth, r=pcb_bolt_diam/2, $fn=15);
         }
     }
@@ -93,7 +95,7 @@ module front() {
             for (y = [0:1]) {
                 translate([
                     t + x * (front[0] - pcb_support[0] - t*2),
-                    t + y * (front[1] - pcb_support[2] - t*2),
+                    t + y * (front[1] - pcb_support[1] - t*2),
                     pcb[2]]) cube(pcb_support);
             }
         }
@@ -284,7 +286,7 @@ module back() {
             for (y = [0:1]) {
                 translate([
                     t + x * (front[0] - pcb_support[0] - t*2),
-                    t + y * (front[1] - pcb_support[2] - t*2),
+                    t + y * (front[1] - pcb_support[1] - t*2),
                     -back[2]])
                 cube([pcb_support[0], pcb_support[1], back[2]+0.8]);
             }
