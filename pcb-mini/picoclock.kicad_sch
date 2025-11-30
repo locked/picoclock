@@ -15133,7 +15133,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RGB LED, red/green/blue/anode"
+		(property "Description" "LTST-C19HE1WT"
+			(at 179.07 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Field5" ""
 			(at 179.07 40.64 0)
 			(effects
 				(font
@@ -17469,7 +17478,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RGB LED, red/green/blue/anode"
+		(property "Description" "LTST-C19HE1WT"
 			(at 165.1 40.64 0)
 			(effects
 				(font
@@ -18437,7 +18446,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RGB LED, red/green/blue/anode"
+		(property "Description" "LTST-C19HE1WT"
 			(at 193.04 40.64 0)
 			(effects
 				(font
@@ -22218,7 +22227,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Package_SO:TSSOP-16_4.4x5mm_P0.65mm"
+		(property "Footprint" "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm"
 			(at 148.59 113.03 0)
 			(effects
 				(font

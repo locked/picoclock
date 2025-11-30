@@ -88,7 +88,7 @@
           ""
         ],
         [
-          "starved_thermal|170767500|116212500|6995617b-d94b-4c9f-9275-52d7ed5aa049|cfaef4c8-4324-4c1f-8d88-59de947fcf86|B.Cu",
+          "starved_thermal|168690000|114190000|6995617b-d94b-4c9f-9275-52d7ed5aa049|ac8919ca-f708-4b79-924e-248640f4afc9|B.Cu",
           ""
         ],
         [
@@ -549,7 +549,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "",
+      "netlist": "./",
       "plot": "gerbers/",
       "pos_files": "prod/",
       "specctra_dsn": "",
