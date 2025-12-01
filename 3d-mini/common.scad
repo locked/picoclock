@@ -36,6 +36,12 @@ speaker_plate = [132, 10, 19];
 speaker = [100, 36, 28];
 speaker_support = [11, pcb_support[1], 22];
 
+speaker2 = [51.5, 19.5, 30.3];
+speaker2_baffle_diam = 47;
+speaker2_screw_diam = 60;
+speaker2_screw_from_center = speaker2_screw_diam / 2 * sqrt(2) / 2;
+speaker2_support = [52, 52, 2];
+
 screen_holder_screw_rad = 2;
 screen_holder_out = [screen_holder_screw_rad*3, pcb[1] - 0.2, 3];
 //screen_holder_in = [70.4, 39.2, 4];
