@@ -5673,6 +5673,28 @@
 			)
 		)
 	)
+	(global_label "SWCLK"
+		(shape input)
+		(at 160.02 172.72 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "19c31fc8-a287-4eba-96c9-1f5e8ad4f406")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 150.8058 172.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "GPIO28{slash}btn"
 		(shape input)
 		(at 245.11 163.83 0)
@@ -6087,6 +6109,28 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "SWD"
+		(shape input)
+		(at 160.02 175.26 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "74072ebf-1034-4d38-96b3-8e8e0e8b7561")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 153.1039 175.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 				(hide yes)
 			)
 		)
