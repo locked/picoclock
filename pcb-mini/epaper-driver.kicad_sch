@@ -2059,6 +2059,16 @@
 	)
 	(wire
 		(pts
+			(xy 199.39 101.6) (xy 212.09 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "052829a1-c031-47f4-99f7-4ef9c49ca9ea")
+	)
+	(wire
+		(pts
 			(xy 220.98 83.82) (xy 220.98 81.28)
 		)
 		(stroke
@@ -2089,23 +2099,13 @@
 	)
 	(wire
 		(pts
-			(xy 218.44 101.6) (xy 229.87 101.6)
+			(xy 219.71 101.6) (xy 229.87 101.6)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "072db9af-4d0d-4913-aeae-0f36afce6e6c")
-	)
-	(wire
-		(pts
-			(xy 208.28 99.06) (xy 229.87 99.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1627c212-78cb-4b53-aa22-16cec3e2b806")
 	)
 	(wire
 		(pts
@@ -2189,13 +2189,23 @@
 	)
 	(wire
 		(pts
-			(xy 199.39 99.06) (xy 200.66 99.06)
+			(xy 199.39 99.06) (xy 201.93 99.06)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "2fb5e8f6-274d-4e7c-b595-0bde65735614")
+	)
+	(wire
+		(pts
+			(xy 199.39 96.52) (xy 212.09 96.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "37e10b04-d64f-49fe-a632-665500e0aa97")
 	)
 	(wire
 		(pts
@@ -2219,7 +2229,7 @@
 	)
 	(wire
 		(pts
-			(xy 208.28 104.14) (xy 229.87 104.14)
+			(xy 209.55 104.14) (xy 229.87 104.14)
 		)
 		(stroke
 			(width 0)
@@ -2239,7 +2249,7 @@
 	)
 	(wire
 		(pts
-			(xy 199.39 93.98) (xy 200.66 93.98)
+			(xy 199.39 93.98) (xy 201.93 93.98)
 		)
 		(stroke
 			(width 0)
@@ -2269,6 +2279,16 @@
 	)
 	(wire
 		(pts
+			(xy 209.55 99.06) (xy 229.87 99.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "51282c25-a64a-4473-810c-e368e33792cf")
+	)
+	(wire
+		(pts
 			(xy 199.39 86.36) (xy 229.87 86.36)
 		)
 		(stroke
@@ -2279,7 +2299,7 @@
 	)
 	(wire
 		(pts
-			(xy 200.66 81.28) (xy 199.39 81.28)
+			(xy 201.93 81.28) (xy 199.39 81.28)
 		)
 		(stroke
 			(width 0)
@@ -2296,16 +2316,6 @@
 			(type default)
 		)
 		(uuid "5e72a3b9-bfb6-4154-9d86-c76c9475af91")
-	)
-	(wire
-		(pts
-			(xy 199.39 96.52) (xy 210.82 96.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6251bdfa-95a5-4829-bb80-8cd2191395df")
 	)
 	(wire
 		(pts
@@ -2349,7 +2359,7 @@
 	)
 	(wire
 		(pts
-			(xy 208.28 81.28) (xy 220.98 81.28)
+			(xy 209.55 81.28) (xy 220.98 81.28)
 		)
 		(stroke
 			(width 0)
@@ -2429,7 +2439,7 @@
 	)
 	(wire
 		(pts
-			(xy 199.39 88.9) (xy 200.66 88.9)
+			(xy 199.39 88.9) (xy 201.93 88.9)
 		)
 		(stroke
 			(width 0)
@@ -2456,16 +2466,6 @@
 			(type default)
 		)
 		(uuid "9e05b8df-6749-43ba-965a-69e34966cc6c")
-	)
-	(wire
-		(pts
-			(xy 199.39 101.6) (xy 210.82 101.6)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b42baa4a-a5bb-4598-8e12-8e0ebe0458ed")
 	)
 	(wire
 		(pts
@@ -2509,7 +2509,7 @@
 	)
 	(wire
 		(pts
-			(xy 218.44 96.52) (xy 229.87 96.52)
+			(xy 219.71 96.52) (xy 229.87 96.52)
 		)
 		(stroke
 			(width 0)
@@ -2529,7 +2529,7 @@
 	)
 	(wire
 		(pts
-			(xy 199.39 104.14) (xy 200.66 104.14)
+			(xy 199.39 104.14) (xy 201.93 104.14)
 		)
 		(stroke
 			(width 0)
@@ -2559,7 +2559,7 @@
 	)
 	(wire
 		(pts
-			(xy 208.28 93.98) (xy 229.87 93.98)
+			(xy 209.55 93.98) (xy 229.87 93.98)
 		)
 		(stroke
 			(width 0)
@@ -2589,7 +2589,7 @@
 	)
 	(wire
 		(pts
-			(xy 208.28 88.9) (xy 229.87 88.9)
+			(xy 209.55 88.9) (xy 229.87 88.9)
 		)
 		(stroke
 			(width 0)
@@ -2937,7 +2937,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 204.47 81.28 270)
+		(at 205.74 81.28 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2945,15 +2945,15 @@
 		(dnp no)
 		(uuid "02e8e1eb-ff8d-4872-81cc-57f4804380d7")
 		(property "Reference" "C22"
-			(at 201.93 80.264 90)
+			(at 202.692 80.264 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "1uF/10V"
-			(at 210.058 80.01 90)
+		(property "Value" "1uF"
+			(at 210.566 80.01 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2961,7 +2961,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 200.66 82.2452 0)
+			(at 201.93 82.2452 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2970,7 +2970,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 204.47 81.28 0)
+			(at 205.74 81.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2978,8 +2978,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 204.47 81.28 0)
+		(property "Description" "ok LCSC"
+			(at 197.358 92.964 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C15849"
+			(at 205.74 81.28 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3072,7 +3080,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 214.63 101.6 270)
+		(at 215.9 101.6 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3080,15 +3088,15 @@
 		(dnp no)
 		(uuid "19c0d906-3c70-4924-94ab-fd9f232a05bc")
 		(property "Reference" "C28"
-			(at 212.344 100.33 90)
+			(at 212.598 100.584 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "1uF/25V"
-			(at 219.964 100.33 90)
+		(property "Value" "1uF"
+			(at 219.202 100.584 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3096,7 +3104,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 210.82 102.5652 0)
+			(at 212.09 102.5652 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3105,7 +3113,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 214.63 101.6 0)
+			(at 215.9 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3114,7 +3122,16 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 214.63 101.6 0)
+			(at 215.9 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C15849"
+			(at 215.9 101.6 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3139,7 +3156,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 204.47 88.9 270)
+		(at 205.74 88.9 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3147,15 +3164,15 @@
 		(dnp no)
 		(uuid "2a3cff42-6cd1-4428-afb6-2e205499d141")
 		(property "Reference" "C23"
-			(at 202.184 87.63 90)
+			(at 202.692 87.884 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "1uF/10V"
-			(at 210.058 87.63 90)
+		(property "Value" "1uF"
+			(at 209.042 87.63 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3163,7 +3180,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 200.66 89.8652 0)
+			(at 201.93 89.8652 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3172,7 +3189,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 204.47 88.9 0)
+			(at 205.74 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3181,7 +3198,16 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 204.47 88.9 0)
+			(at 205.74 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C15849"
+			(at 205.74 88.9 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3206,7 +3232,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 214.63 96.52 270)
+		(at 215.9 96.52 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3214,15 +3240,15 @@
 		(dnp no)
 		(uuid "2d419132-24d9-452d-b268-177e9a3db5b6")
 		(property "Reference" "C27"
-			(at 212.344 95.25 90)
+			(at 212.598 95.504 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "1uF/25V"
-			(at 219.964 95.25 90)
+		(property "Value" "1uF"
+			(at 219.202 95.504 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3230,7 +3256,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 210.82 97.4852 0)
+			(at 212.09 97.4852 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3239,7 +3265,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 214.63 96.52 0)
+			(at 215.9 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3248,7 +3274,16 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 214.63 96.52 0)
+			(at 215.9 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C15849"
+			(at 215.9 96.52 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3408,7 +3443,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 204.47 99.06 270)
+		(at 205.74 99.06 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3416,15 +3451,15 @@
 		(dnp no)
 		(uuid "48943b50-ea84-42eb-876f-a14d8d581b64")
 		(property "Reference" "C25"
-			(at 202.184 97.79 90)
+			(at 202.692 98.044 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "1uF/25V"
-			(at 209.804 97.79 90)
+		(property "Value" "1uF"
+			(at 209.042 97.79 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3432,7 +3467,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 200.66 100.0252 0)
+			(at 201.93 100.0252 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3441,7 +3476,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 204.47 99.06 0)
+			(at 205.74 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3450,7 +3485,16 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 204.47 99.06 0)
+			(at 205.74 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C15849"
+			(at 205.74 99.06 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3697,7 +3741,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 120.142 73.66 90)
 			(effects
 				(font
@@ -3715,7 +3759,15 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor"
+		(property "Description" "ok LCSC"
+			(at 122.428 77.216 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C25744"
 			(at 121.92 73.66 0)
 			(effects
 				(font
@@ -3741,7 +3793,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 204.47 93.98 270)
+		(at 205.74 93.98 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3749,15 +3801,15 @@
 		(dnp no)
 		(uuid "6413e1c6-c512-4e6b-9c3e-08db6cf6edb0")
 		(property "Reference" "C24"
-			(at 202.184 92.71 90)
+			(at 202.692 92.964 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "1uF/25V"
-			(at 209.804 92.71 90)
+		(property "Value" "1uF"
+			(at 209.042 92.71 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3765,7 +3817,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 200.66 94.9452 0)
+			(at 201.93 94.9452 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3774,7 +3826,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 204.47 93.98 0)
+			(at 205.74 93.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3783,7 +3835,16 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 204.47 93.98 0)
+			(at 205.74 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C15849"
+			(at 205.74 93.98 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3993,13 +4054,12 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor"
-			(at 129.54 81.28 0)
+		(property "Description" "NO LCSC"
+			(at 133.35 80.518 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(pin "1"
@@ -4102,7 +4162,7 @@
 				)
 			)
 		)
-		(property "Value" "1uF/25V"
+		(property "Value" "1uF"
 			(at 209.804 54.61 90)
 			(effects
 				(font
@@ -4128,8 +4188,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 204.47 55.88 0)
+		(property "Description" "ok LCSC"
+			(at 201.676 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C15849"
+			(at 204.47 55.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4287,7 +4355,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 204.47 104.14 270)
+		(at 205.74 104.14 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4295,15 +4363,15 @@
 		(dnp no)
 		(uuid "bae21e37-0e0f-4f44-acbe-63eb54527ace")
 		(property "Reference" "C26"
-			(at 202.184 102.87 90)
+			(at 202.692 103.124 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "1uF/25V"
-			(at 209.804 102.87 90)
+		(property "Value" "1uF"
+			(at 209.042 102.87 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4311,7 +4379,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 200.66 105.1052 0)
+			(at 201.93 105.1052 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4320,7 +4388,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 204.47 104.14 0)
+			(at 205.74 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4329,7 +4397,16 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 204.47 104.14 0)
+			(at 205.74 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C15849"
+			(at 205.74 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)

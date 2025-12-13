@@ -2206,7 +2206,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10u"
+		(property "Value" "10uF"
 			(at 114.681 55.753 0)
 			(effects
 				(font
@@ -2233,12 +2233,21 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "ok LCSC"
+			(at 113.03 51.816 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C15850"
 			(at 111.76 54.61 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(hide yes)
 			)
 		)
 		(pin "1"
@@ -2400,7 +2409,7 @@
 		(dnp no)
 		(uuid "90e4d2df-2cd1-45bd-8030-fdd246e527ab")
 		(property "Reference" "R28"
-			(at 184.15 83.82 90)
+			(at 184.404 84.328 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2409,7 +2418,7 @@
 			)
 		)
 		(property "Value" "10K"
-			(at 186.69 84.455 90)
+			(at 188.976 84.328 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2417,7 +2426,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 184.912 82.55 90)
 			(effects
 				(font
@@ -2435,13 +2444,12 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
-			(at 186.69 82.55 0)
+		(property "Description" "ok LCSC"
+			(at 187.96 86.106 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(property "LCSC" "C25744"
@@ -2487,7 +2495,7 @@
 			)
 		)
 		(property "Value" "10K"
-			(at 91.44 64.135 90)
+			(at 93.726 64.262 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2495,7 +2503,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 89.662 62.23 90)
 			(effects
 				(font
@@ -2513,13 +2521,12 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
-			(at 91.44 62.23 0)
+		(property "Description" "ok LCSC"
+			(at 92.71 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(property "LCSC" "C25744"
@@ -2620,7 +2627,7 @@
 		(dnp no)
 		(uuid "c5df13e0-6ba4-4f1c-a710-dda3b92a8744")
 		(property "Reference" "R31"
-			(at 167.64 50.8 90)
+			(at 168.148 51.308 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2629,7 +2636,7 @@
 			)
 		)
 		(property "Value" "10K"
-			(at 170.18 51.435 90)
+			(at 172.466 51.562 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2637,7 +2644,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 168.402 49.53 90)
 			(effects
 				(font
@@ -2655,13 +2662,12 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
-			(at 170.18 49.53 0)
+		(property "Description" "ok LCSC"
+			(at 171.704 53.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(property "LCSC" "C25744"

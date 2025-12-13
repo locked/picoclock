@@ -1936,14 +1936,14 @@
 		(dnp no)
 		(uuid "7d847426-18d9-4183-b8c0-163a47fa217f")
 		(property "Reference" "R38"
-			(at 132.08 91.44 90)
+			(at 127.254 90.424 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "10K"
 			(at 132.08 93.472 90)
 			(effects
 				(font
@@ -1951,7 +1951,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 132.08 93.218 90)
 			(effects
 				(font
@@ -1969,16 +1969,15 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
-			(at 132.08 91.44 0)
+		(property "Description" "ok LCSC"
+			(at 135.89 90.17 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
-		(property "LCSC" "C25804"
+		(property "LCSC" "C25744"
 			(at 132.08 91.44 90)
 			(effects
 				(font
@@ -2201,7 +2200,7 @@
 		(dnp no)
 		(uuid "d9f49d2e-82af-4372-b7c8-f92a5731365b")
 		(property "Reference" "R37"
-			(at 132.08 81.28 90)
+			(at 127.508 80.264 90)
 			(effects
 				(font
 					(size 1.27 1.27)
