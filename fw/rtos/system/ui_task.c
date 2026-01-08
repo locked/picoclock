@@ -20,7 +20,11 @@
 //#include "EPD_2in13bc.h"
 #include "EPD_2in13b_V4.h"
 
+#if PCB_VERSION == PCB_VERSION_MINI
+#include "pico/util/datetime.h"
+#else
 #include "hardware/rtc.h"
+#endif
 #include <hardware/sync.h>
 #include "hardware/watchdog.h"
 

@@ -28,9 +28,14 @@ extern "C"
 #define BAUD_RATE 115200
 #define UART_TX_PIN 0
 
-//#define PCBV1 1
+// Can be:
+// 1, 2, mini
+#define PCB_VERSION_1 1
+#define PCB_VERSION_2 2
+#define PCB_VERSION_MINI mini
+#define PCB_VERSION PCB_VERSION_MINI
 
-#ifdef PCBV1
+#if PCB_VERSION == PCB_VERSION_1
 #define BTN_1 8
 #define BTN_2 9
 #define BTN_3 10
@@ -38,7 +43,8 @@ extern "C"
 #define BTN_5 20
 #define BTN_6 21
 #define FRONT_PANEL_LED_PIN 11
-#else
+#endif
+#if PCB_VERSION == PCB_VERSION_2
 // PCBv2 OK
 #define BTN_1 8
 #define BTN_2 9
@@ -48,24 +54,36 @@ extern "C"
 #define BTN_6 28
 #define FRONT_PANEL_LED_PIN 7	// on gpio extender
 #endif
+#if PCB_VERSION == PCB_VERSION_MINI
+#define BTN_1 8
+#define BTN_2 9
+#define BTN_3 10
+#define BTN_4 20
+#define BTN_5 21
+#define BTN_6 28
+#define FRONT_PANEL_LED_PIN 7	// on gpio extender
+#endif
 
-#ifdef PCBV1
+#if PCB_VERSION == PCB_VERSION_1
 #define I2C_SDA 12
 #define I2C_SCL 13
 #define I2C_CHANNEL i2c0
-#else
-// PCBv2 OK
+#endif
+#if PCB_VERSION == PCB_VERSION_2
+#define I2C_SDA 18
+#define I2C_SCL 19
+#define I2C_CHANNEL i2c1
+#endif
+#if PCB_VERSION == PCB_VERSION_MINI
 #define I2C_SDA 18
 #define I2C_SCL 19
 #define I2C_CHANNEL i2c1
 #endif
 #define I2C_BAUD_RATE 400000
 
-// PCBv2 OK
 #define I2S_DATA_PIN 22
 #define I2S_CLOCK_PIN_BASE 26
 
-// PCBv2 OK
 #define SDCARD_SCK 14
 #define SDCARD_MOSI 15
 #define SDCARD_MISO 12

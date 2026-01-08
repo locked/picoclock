@@ -27,7 +27,11 @@
 #include "pico.h"
 #include "pico/critical_section.h"
 #include "hardware/exception.h"
+#if PCB_VERSION == PCB_VERSION_MINI
+#include "RP2350.h"
+#else
 #include "RP2040.h"
+#endif
 
 void qor_switch_context();
 void qor_go();
@@ -91,7 +95,11 @@ static const bool qor_inside_interrupt(void)
 static volatile uint32_t timer_period;
 
 #define ALARM_NUM 0
+#if PCB_VERSION == PCB_VERSION_MINI
+#define ALARM_IRQ TIMER0_IRQ_0
+#else
 #define ALARM_IRQ TIMER_IRQ_0
+#endif
 
 #include "hardware/structs/systick.h"
 

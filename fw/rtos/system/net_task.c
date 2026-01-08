@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "main.h"
@@ -12,7 +11,13 @@
 #include "wifi.h"
 #include "flash_storage.h"
 
+#include "pico/stdlib.h"
+#if PCB_VERSION == PCB_VERSION_MINI
+#include "pico/util/datetime.h"
+#include "pico/aon_timer.h"
+#else
 #include "hardware/rtc.h"
+#endif
 #include "hardware/clocks.h"
 
 #include "tiny-json.h"
@@ -163,6 +168,17 @@ int parse_json_response(char *response) {
         century = true;
 	}
 	json_t const* day_elem = json_getProperty(date_elem, "day");
+#if PCB_VERSION == PCB_VERSION_MINI
+	time_struct dt;
+	dt.year = year_full;
+	dt.month = json_getInteger(json_getProperty(date_elem, "month"));
+	dt.day = json_getInteger(day_elem);
+	dt.weekday = json_getInteger(json_getProperty(date_elem, "weekday"));
+	dt.hour = json_getInteger(json_getProperty(date_elem, "hour"));
+	dt.min = json_getInteger(json_getProperty(date_elem, "minute"));
+	dt.sec = json_getInteger(json_getProperty(date_elem, "second"));
+	pcf8563_setDateTime(dt.day, dt.weekday, dt.month, century, year, dt.hour, dt.min, dt.sec);
+#else
 	datetime_t dt;
 	dt.year = year_full;
 	dt.month = json_getInteger(json_getProperty(date_elem, "month"));
@@ -171,9 +187,8 @@ int parse_json_response(char *response) {
 	dt.hour = json_getInteger(json_getProperty(date_elem, "hour"));
 	dt.min = json_getInteger(json_getProperty(date_elem, "minute"));
 	dt.sec = json_getInteger(json_getProperty(date_elem, "second"));
-    //debug_printf("SET in INTERNAL + EXTERNAL RTC year:[%d]\r\n", dt.year);
-	rtc_set_datetime(&dt);
-    pcf8563_setDateTime(dt.day, dt.dotw, dt.month, century, year, dt.hour, dt.min, dt.sec);
+	pcf8563_setDateTime(dt.day, dt.dotw, dt.month, century, year, dt.hour, dt.min, dt.sec);
+#endif
 
 	// Save alarms
 	json_t const* wakeup_alarms_elem = json_getProperty(root_elem, "wakeup_alarms");
@@ -275,7 +290,11 @@ int parse_json_response(char *response) {
         }
     }
 
+#if PCB_VERSION == PCB_VERSION_MINI
+	printf("STATUS FROM SERVER:[%d] year:[%d] day:[%d] weekday:[%d] month:[%d] hour:[%d] wakeup_alarm[0]:[%02d:%02d:%s]\r\n", status, dt.year, dt.day, dt.weekday, dt.month, dt.hour, wakeup_alarms[0].hour, wakeup_alarms[0].min, wakeup_alarms[0].chime);
+#else
 	printf("STATUS FROM SERVER:[%d] year:[%d] day:[%d] weekday:[%d] month:[%d] hour:[%d] wakeup_alarm[0]:[%02d:%02d:%s]\r\n", status, dt.year, dt.day, dt.dotw, dt.month, dt.hour, wakeup_alarms[0].hour, wakeup_alarms[0].min, wakeup_alarms[0].chime);
+#endif
 }
 
 // ===========================================================================================================

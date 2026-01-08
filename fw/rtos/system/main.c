@@ -26,7 +26,12 @@
 #include "hardware/irq.h"
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
+#if PCB_VERSION == PCB_VERSION_MINI
+#include "pico/util/datetime.h"
+#include "pico/aon_timer.h"
+#else
 #include "hardware/rtc.h"
+#endif
 #include "hardware/i2c.h"
 #include "hardware/watchdog.h"
 #include "pico/unique_id.h"
@@ -94,7 +99,11 @@ uint8_t last_btn_values[6] = {1, 1, 1, 1, 1, 1};
 
 // PICO alarm (RTOS uses Alarm 0 and IRQ 0)
 #define ALARM_NUM 1
+#if PCB_VERSION == PCB_VERSION_MINI
+#define ALARM_IRQ TIMER1_IRQ_1
+#else
 #define ALARM_IRQ TIMER_IRQ_1
+#endif
 
 // ===========================================================================================================
 // GLOBAL VARIABLES
@@ -198,7 +207,7 @@ void system_initialize() {
     printf("[picoclock] pcf8563_set_i2c OK\r\n");
 
     // Init GPIO extender
-#ifndef PCBV1
+#if PCB_VERSION != PCB_VERSION_1
     mcp23009_set_i2c(I2C_CHANNEL);
     bool mcp23009_enabled = mcp23009_is_connected();
     printf("[picoclock] mcp23009_is_connected: [%d]\r\n", mcp23009_enabled);
@@ -215,7 +224,7 @@ void system_initialize() {
 #endif
 
     // Init Sound
-#ifndef PCBV1
+#if PCB_VERSION != PCB_VERSION_1
     mcp46XX_set_i2c(I2C_CHANNEL);
     mcp4651_set_wiper(0x100);
 #endif
@@ -223,20 +232,6 @@ void system_initialize() {
     audio_init(&audio_ctx);
     ost_audio_register_callback(audio_callback);
     printf("[picoclock] init sound OK\r\n");
-
-    // Init time
-    // Set time to known values to identify it needs to be updated
-    /*rtc_init();
-    datetime_t dt;
-    dt.year = 1000;
-    dt.month = 1;
-    dt.day = 1;
-    dt.dotw = 1;
-    dt.hour = 1;
-    dt.min = 1;
-    dt.sec = 1;
-    rtc_set_datetime(&dt);
-    printf("[picoclock] Init rtc OK\r\n");*/
 
     //------------------- Buttons init
     for (uint8_t btn=0; btn<6; btn++) {
@@ -428,7 +423,7 @@ int main() {
 	strncpy(global_config.wifi_ssid, WIFI_SSID, 50);
 	strncpy(global_config.wifi_key, WIFI_PASSWORD, 50);
 	strncpy(global_config.remote_host, SERVER_IP, 50);
-	strncpy(global_config.screen, "4", 2);
+	strncpy(global_config.screen, "B", 2); // "4" or "B"
 
     // Filesystem / SDCard initialization
     printf("[picoclock] Check SD card\r\n");
