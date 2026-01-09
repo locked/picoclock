@@ -14,7 +14,11 @@ if(NOT OST_BUNDLE)
 endif()
 
 if(NOT PICO_SDK_PATH)
-    set(PICO_SDK_PATH "../pico-sdk")
+    set(PICO_SDK_PATH "../lib/pico-sdk")
+endif()
+
+if(NOT PICO_EXTRAS_PATH)
+    set(PICO_EXTRAS_PATH "../lib/pico-extras")
 endif()
 
 if(NOT CMAKE_BUILD_TYPE)

@@ -55,12 +55,12 @@ extern "C"
 #define FRONT_PANEL_LED_PIN 7	// on gpio extender
 #endif
 #if PCB_VERSION == PCB_VERSION_MINI
-#define BTN_1 8
-#define BTN_2 9
-#define BTN_3 10
+#define BTN_1 30
+#define BTN_2 31
+#define BTN_3 32
 #define BTN_4 20
 #define BTN_5 21
-#define BTN_6 28
+#define BTN_6 22
 #define FRONT_PANEL_LED_PIN 7	// on gpio extender
 #endif
 
@@ -84,11 +84,19 @@ extern "C"
 #define I2S_DATA_PIN 22
 #define I2S_CLOCK_PIN_BASE 26
 
+#if PCB_VERSION == PCB_VERSION_MINI
+#define SDCARD_SCK 42
+#define SDCARD_MOSI 43
+#define SDCARD_MISO 44
+#define SD_CARD_CS 41
+#define SD_CARD_PRESENCE 28
+#else
 #define SDCARD_SCK 14
 #define SDCARD_MOSI 15
 #define SDCARD_MISO 12
 #define SD_CARD_CS 13
-#define SD_CARD_PRESENCE 2		// on gpio extender
+#define SD_CARD_PRESENCE 2	// on gpio extender
+#endif
 
 
 typedef struct

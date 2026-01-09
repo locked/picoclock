@@ -237,6 +237,7 @@ void system_initialize() {
     for (uint8_t btn=0; btn<6; btn++) {
         gpio_init(BUTTONS[btn]);
         gpio_set_dir(BUTTONS[btn], GPIO_IN);
+        gpio_pull_up(BUTTONS[btn]);
     }
     /*debounce_debounce();
     for (uint8_t btn=0; btn<4; btn++) {
@@ -423,7 +424,7 @@ int main() {
 	strncpy(global_config.wifi_ssid, WIFI_SSID, 50);
 	strncpy(global_config.wifi_key, WIFI_PASSWORD, 50);
 	strncpy(global_config.remote_host, SERVER_IP, 50);
-	strncpy(global_config.screen, "B", 2); // "4" or "B"
+	strncpy(global_config.screen, "B", 2); // "4" (color) or "B" (B/W)
 
     // Filesystem / SDCard initialization
     printf("[picoclock] Check SD card\r\n");
@@ -465,7 +466,7 @@ int main() {
     printf("[picoclock] Initialize FS tasks\r\n");
     fs_task_initialize();
 
-    watchdog_enable(8200, false);
+    //watchdog_enable(8200, false);
 
     // Start the operating system!
     printf("[picoclock] Start OS\r\n");
