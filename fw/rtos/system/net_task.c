@@ -48,29 +48,31 @@ extern config_struct global_config;
 
 
 int get_response_from_server(char *response) {
-	//printf("Sleep a bit [0]...\r\n");
-    qor_sleep(10);
+	printf("get_response_from_server() Sleep a bit [0]...\r\n");
+	qor_sleep(10);
 	printf("Connecting to wifi [%s][%s]...\r\n", global_config.wifi_ssid, global_config.wifi_key);
 	int ret = wifi_connect(global_config.wifi_ssid, global_config.wifi_key);
-	//printf("Sleep a bit [1]...\r\n");
-    qor_sleep(10);
-    if (ret == 0) {
-        char board_id[20];
-        get_uniq_id(board_id);
-        char query[100];
-        sprintf(query, "GET /clock.php?id=%s HTTP/1.0\r\nContent-Length: 0\r\n\r\n", board_id);
-        ret = send_tcp(global_config.remote_host, atoi(SERVER_PORT), query, strlen(query), response);
-        qor_sleep(10);
-        //debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\r\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
-        if (ret == 0 && strlen(response) < 10) {
-            ret = 1;
-        }
-    }
-	printf("Disconnect...\r\n");
-    wifi_disconnect();
-    qor_sleep(10);
-    printf("Disconnected from wifi, ret:[%d]\r\n", ret);
-    return ret;
+	printf("get_response_from_server() ret:[%d] Sleep a bit [1]...\r\n", ret);
+	//qor_sleep(10);
+	if (ret == 0) {
+		char board_id[20];
+		get_uniq_id(board_id);
+		printf("get_response_from_server() board_id:[%s]\r\n", board_id);
+		char query[100];
+		sprintf(query, "GET /clock.php?id=%s HTTP/1.0\r\nContent-Length: 0\r\n\r\n", board_id);
+		printf("get_response_from_server() send_tcp [%s] [%d]...\r\n", global_config.remote_host, atoi(SERVER_PORT));
+		ret = send_tcp(global_config.remote_host, 80, query, strlen(query), response);
+		//qor_sleep(10);
+		//debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\r\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
+		if (ret == 0 && strlen(response) < 10) {
+			ret = 1;
+		}
+	}
+	printf("get_response_from_server() Disconnect...\r\n");
+	wifi_disconnect();
+	//qor_sleep(10);
+	printf("get_response_from_server() Disconnected from wifi, ret:[%d]\r\n", ret);
+	return ret;
 }
 
 // HTTP lib

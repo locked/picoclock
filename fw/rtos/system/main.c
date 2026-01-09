@@ -100,7 +100,7 @@ uint8_t last_btn_values[6] = {1, 1, 1, 1, 1, 1};
 // PICO alarm (RTOS uses Alarm 0 and IRQ 0)
 #define ALARM_NUM 1
 #if PCB_VERSION == PCB_VERSION_MINI
-#define ALARM_IRQ TIMER1_IRQ_1
+#define ALARM_IRQ TIMER0_IRQ_1
 #else
 #define ALARM_IRQ TIMER_IRQ_1
 #endif
@@ -207,7 +207,7 @@ void system_initialize() {
     printf("[picoclock] pcf8563_set_i2c OK\r\n");
 
     // Init GPIO extender
-#if PCB_VERSION != PCB_VERSION_1
+#if PCB_VERSION == PCB_VERSION_2
     mcp23009_set_i2c(I2C_CHANNEL);
     bool mcp23009_enabled = mcp23009_is_connected();
     printf("[picoclock] mcp23009_is_connected: [%d]\r\n", mcp23009_enabled);
@@ -224,9 +224,13 @@ void system_initialize() {
 #endif
 
     // Init Sound
-#if PCB_VERSION != PCB_VERSION_1
+#if PCB_VERSION == PCB_VERSION_2
     mcp46XX_set_i2c(I2C_CHANNEL);
     mcp4651_set_wiper(0x100);
+#endif
+#if PCB_VERSION == PCB_VERSION_MINI
+    //mcp46XX_set_i2c(I2C_CHANNEL);
+    //mcp4651_set_wiper(0x100);
 #endif
     i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
     audio_init(&audio_ctx);
