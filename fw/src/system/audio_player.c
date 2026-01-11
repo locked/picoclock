@@ -261,7 +261,7 @@ int audio_process(audio_ctx_t *ctx)
     {
         // Récupération du buffer audio à partir du disque
         ctx->next_is_end = get_audio_buf(ctx, &audio_buf[0]);
-        ost_hal_audio_new_frame(&audio_buf[0], ctx->transfer_size);
+        main_audio_new_frame(&audio_buf[0], ctx->transfer_size);
     }
     else
     {

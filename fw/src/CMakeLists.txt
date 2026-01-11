@@ -4,7 +4,10 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_COLOR_MAKEFILE ON)
 set(PROJECT_NAME picoclock)
 
-set(PICO_BOARD pico2_w)
+set(PICO_BOARD_HEADER_DIRS ${CMAKE_CURRENT_LIST_DIR}/boards)
+
+set(PICO_BOARD pico2_picoclock)
+#set(PICO_BOARD pico2_w)
 
 # ==========================
 # DEFAULT VARIABLES OPTIONS
@@ -41,7 +44,7 @@ set(OST_SRCS
     system/audio_player.c
     system/ui_task.c
     system/net_task.c
-    #system/fs_task.c
+    system/fs_task.c
     system/audio_player.c
     system/ff/ff.c
     system/ff/ffsystem.c

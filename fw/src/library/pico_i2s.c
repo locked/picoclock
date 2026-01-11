@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 
+#include "pico/stdlib.h"
 #include "pico_i2s.h"
 #include "pico_i2s.pio.h"
 #include "hardware/pio.h"
@@ -47,8 +48,14 @@ static void dma_double_buffer_init(pio_i2s *i2s)
     // On va revenir à l'index 0 tous les ... 8 octets, donc on programme ce décalage (3 bits)
     channel_config_set_ring(&c, false, 3);
     channel_config_set_transfer_data_size(&c, DMA_SIZE_32);
-    dma_channel_configure(i2s->dma_ch_out_ctrl, &c, &dma_hw->ch[i2s->dma_ch_out_data].al3_read_addr_trig, i2s->out_ctrl_blocks, 1, false);
-
+    dma_channel_configure(
+		i2s->dma_ch_out_ctrl,
+		&c,
+		&dma_hw->ch[i2s->dma_ch_out_data].al3_read_addr_trig,
+		i2s->out_ctrl_blocks,
+		1,
+		false
+	);
     // la destination est l'alias al3_read_addr_trig qui va donc modifier l'adresse de début du transfer DMA et enclencher le démarrage
     // Nous avons deux actions, c'est pour cela que c'est un alias
 
@@ -75,7 +82,7 @@ static void i2s_sync_program_init(PIO pio, pio_i2s *i2s, const audio_i2s_config_
 
     i2s->sm_dout = pio_claim_unused_sm(pio, true);
     i2s->sm_mask |= (1u << i2s->sm_dout);
-    offset = pio_add_program(pio0, &i2s_out_master_program);
+    offset = pio_add_program(pio, &i2s_out_master_program);
     // 4th argument is bit depth, 5th dout, 6th bclk pin base (lrclk is bclk pin + 1)
     i2s_out_master_program_init(pio, i2s->sm_dout, offset, config->bps, config->data_pin, config->clock_pin_base);
 }
@@ -98,10 +105,23 @@ void i2s_start(pio_i2s *i2s)
 {
     // D'abord on va paramétrer les diverses interruptions
     dma_channel_set_irq0_enabled(i2s->dma_ch_out_data, true);
+    //dma_channel_acknowledge_irq0(i2s->dma_ch_out_data);
     irq_set_enabled(DMA_IRQ_0, true);
 
-    // YAAAAAAA on lance!
     dma_channel_start(i2s->dma_ch_out_ctrl);
+
+sleep_us(100);
+
+	// Check the level of the TX FIFO
+	uint level = pio_sm_get_tx_fifo_level(i2s->pio, i2s->sm_dout);
+	printf("FIFO Level: %d\n", level);
+
+	// Check if the State Machine is actually executing instructions
+	uint pc = pio_sm_get_pc(i2s->pio, i2s->sm_dout);
+	printf("Current PC: %d\n", pc);
+
+	printf("Data DMA Busy: %d\n", dma_channel_is_busy(i2s->dma_ch_out_data));
+	printf("Data DMA Read Addr: %p\n", (void*)dma_hw->ch[i2s->dma_ch_out_data].read_addr);
 }
 
 static void pico_gracefully_stop_dma(uint channel)

@@ -1,4 +1,4 @@
-#define PICO_MAX_SHARED_IRQ_HANDLERS 5u
+//#define PICO_MAX_SHARED_IRQ_HANDLERS 5u
 
 // C library
 #include "main.h"
@@ -17,7 +17,7 @@
 #include "ui_task.h"
 #include "net_task.h"
 #include "alarms.h"
-//#include "fs_task.h"
+#include "fs_task.h"
 
 // Raspberry Pico SDK
 #include "pico/stdlib.h"
@@ -76,6 +76,7 @@ const uint8_t BUTTONS[] = {BTN_1, BTN_2, BTN_3, BTN_4, BTN_5, BTN_6};
 volatile uint8_t last_btn_values[6] = {1, 1, 1, 1, 1, 1};
 static struct repeating_timer timer;
 volatile int request_btn_push = -1;
+volatile int request_audio_read = -1;
 
 // ===========================================================================================================
 // PROTOTYPES
@@ -105,6 +106,70 @@ bool timer_callback(struct repeating_timer *t) {
 }
 
 
+// ----------------------------------------------------------------------------
+// AUDIO HAL
+// ----------------------------------------------------------------------------
+static void audio_callback(void) {
+    main_audio_process();
+}
+
+void main_audio_play(const char *filename) {
+    printf("audio_play... [%s]\r\n", filename);
+    audio_play(&audio_ctx, filename);
+    config.freq = audio_ctx.audio_info.sample_rate;
+    config.channels = audio_ctx.audio_info.channels;
+    printf("pico_i2s_set_frequency...\r\n");
+    pico_i2s_set_frequency(&i2s, &config);
+
+    i2s.buffer_index = 0;
+
+    // On appelle une première fois le process pour récupérer et initialiser le premier buffer...
+    printf("audio_process 1st buffer...\r\n");
+    audio_process(&audio_ctx);
+
+    // Puis le deuxième ... (pour avoir un buffer d'avance)
+    audio_process(&audio_ctx);
+
+    gpio_put(AUDIO_MUTE_PIN, 1); // Unmute
+    // On lance les DMA
+    printf("i2s_start...\r\n");
+    i2s_start(&i2s);
+}
+
+void main_audio_stop() {
+    gpio_put(AUDIO_MUTE_PIN, 0); // Mute
+
+    //debug_printf("audio stop\r\n");
+    memset(i2s.out_ctrl_blocks[0], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
+    memset(i2s.out_ctrl_blocks[1], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
+    audio_stop(&audio_ctx);
+    i2s_stop(&i2s);
+}
+
+int main_audio_process() {
+    return audio_process(&audio_ctx);
+}
+
+void main_audio_new_frame(const void *buff, int size) {
+    if (size > STEREO_BUFFER_SIZE) {
+        // Problème
+        debug_printf("[picoclock] WARNING: audio_new_frame size:[%d] > STEREO_BUFFER_SIZE\n", size);
+        return;
+    }
+    memcpy(i2s.out_ctrl_blocks[i2s.buffer_index], buff, size * sizeof(uint32_t));
+    i2s.buffer_index = 1 - i2s.buffer_index;
+}
+
+void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
+	//dma_hw->ints0 = 1u << i2s.dma_ch_out_data; // clear the IRQ
+    dma_channel_acknowledge_irq0(i2s.dma_ch_out_data);
+
+	// Warn the application layer that we have done on that channel
+	//audio_callback();
+	request_audio_read = 1;
+}
+
+
 void init_i2c() {
     i2c_init(I2C_CHANNEL, I2C_BAUD_RATE);
 
@@ -117,21 +182,32 @@ void init_i2c() {
     gpio_pull_up(I2C_SCL);
 }
 
-//static void audio_callback(void) {
-//    ost_audio_process();
-//}
+void init_gpio() {
+    pio_set_gpio_base(pio0, 16);
+
+    gpio_init(FRONT_PANEL_LED_PIN);
+    gpio_set_dir(FRONT_PANEL_LED_PIN, GPIO_OUT);
+
+    gpio_init(AUDIO_MUTE_PIN);
+    gpio_set_dir(AUDIO_MUTE_PIN, GPIO_OUT);
+
+    // Buttons
+    for (uint8_t btn=0; btn<6; btn++) {
+        gpio_init(BUTTONS[btn]);
+        gpio_set_dir(BUTTONS[btn], GPIO_IN);
+        gpio_pull_up(BUTTONS[btn]);
+    }
+}
 
 void system_initialize() {
     stdio_init_all();
 
     set_sys_clock_khz(125000, true);
 
-    //sleep_ms(500);
-
     // Init UART
     uart_init(UART_ID, BAUD_RATE);
     gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
-    printf("[picoclock] START\r\n");
+    printf("[picoclock] START PICO_RP2350A=%d\r\n", PICO_RP2350A);
 
     // Init I2C
     init_i2c();
@@ -140,24 +216,15 @@ void system_initialize() {
 	pcf8563_set_i2c(I2C_CHANNEL);
     printf("[picoclock] pcf8563_set_i2c OK\r\n");
 
-    gpio_init(FRONT_PANEL_LED_PIN);
-    gpio_set_dir(FRONT_PANEL_LED_PIN, GPIO_OUT);
+	init_gpio();
 
     // Init Sound
     //mcp46XX_set_i2c(I2C_CHANNEL);
     //mcp4651_set_wiper(0x100);
 
-    //i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
-    //audio_init(&audio_ctx);
-    //ost_audio_register_callback(audio_callback);
+    i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
+    audio_init(&audio_ctx);
     printf("[picoclock] init sound OK\r\n");
-
-    //------------------- Buttons init
-    for (uint8_t btn=0; btn<6; btn++) {
-        gpio_init(BUTTONS[btn]);
-        gpio_set_dir(BUTTONS[btn], GPIO_IN);
-        gpio_pull_up(BUTTONS[btn]);
-    }
 
     // Negative delay means "run every X ms from the start of the last run"
     add_repeating_timer_ms(-10, timer_callback, NULL, &timer);
@@ -223,74 +290,6 @@ uint8_t ost_hal_sdcard_get_presence() {
 }
 
 
-// ----------------------------------------------------------------------------
-// AUDIO HAL
-// ----------------------------------------------------------------------------
-void ost_audio_play(const char *filename) {
-    printf("audio_play... [%s]\r\n", filename);
-    audio_play(&audio_ctx, filename);
-    config.freq = audio_ctx.audio_info.sample_rate;
-    config.channels = audio_ctx.audio_info.channels;
-    printf("pico_i2s_set_frequency...\r\n");
-    pico_i2s_set_frequency(&i2s, &config);
-
-    i2s.buffer_index = 0;
-
-    // On appelle une première fois le process pour récupérer et initialiser le premier buffer...
-    printf("audio_process 1st buffer...\r\n");
-    audio_process(&audio_ctx);
-
-    // Puis le deuxième ... (pour avoir un buffer d'avance)
-    audio_process(&audio_ctx);
-
-    //mcp23009_set(0, 1); // Unmute
-    // On lance les DMA
-    printf("i2s_start...\r\n");
-    i2s_start(&i2s);
-}
-
-void ost_audio_stop() {
-    //mcp23009_set(0, 0); // Mute
-
-    debug_printf("audio stop\r\n");
-    memset(i2s.out_ctrl_blocks[0], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
-    memset(i2s.out_ctrl_blocks[1], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
-    audio_stop(&audio_ctx);
-    i2s_stop(&i2s);
-}
-
-int ost_audio_process() {
-    return audio_process(&audio_ctx);
-}
-
-static ost_audio_callback_t AudioCallBack = NULL;
-
-void ost_audio_register_callback(ost_audio_callback_t cb) {
-    AudioCallBack = cb;
-}
-
-void ost_hal_audio_new_frame(const void *buff, int size) {
-    if (size > STEREO_BUFFER_SIZE) {
-        // Problème
-        debug_printf("[picoclock] WARNING: audio_new_frame size:[%d] > STEREO_BUFFER_SIZE\n", size);
-        return;
-    }
-    memcpy(i2s.out_ctrl_blocks[i2s.buffer_index], buff, size * sizeof(uint32_t));
-    i2s.buffer_index = 1 - i2s.buffer_index;
-}
-
-void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
-    dma_hw->ints0 = 1u << i2s.dma_ch_out_data; // clear the IRQ
-
-    // Warn the application layer that we have done on that channel
-    if (AudioCallBack != NULL) {
-        AudioCallBack();
-    }
-}
-
-
-
-
 // ===========================================================================================================
 // MAIN ENTRY POINT
 // ===========================================================================================================
@@ -350,6 +349,10 @@ int main() {
 	bool refresh_screen = false;
 	bool refresh_screen_clear = false;
 	time_struct dt;
+
+			char SoundFile[260] = "Tellement.wav";
+			fs_task_sound_start(SoundFile);
+
 	while (true) {
 		//printf("[picoclock] In loop\r\n");
 		if (request_btn_push >= 0) {
@@ -380,18 +383,22 @@ int main() {
 				// First run, initialize as if sync nearly 1 hour ago
 				last_sync = ts - 3600 + 10;
 			}
-			if (((ts - last_sync) > 3600) || ((ts - last_sync) < 0)) {
+			/*if (((ts - last_sync) > 3600) || ((ts - last_sync) < 0)) {
 				printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
 				request_remote_sync();
 				last_sync = ts;
 				sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
 				printf("sync trigger done\r\n");
-			}
+			}*/
 			if (refresh_screen) {
 				ui_refresh_screen(refresh_screen_clear);
 			}
 		}
-		sleep_ms(100);
+		sleep_ms(1);
+		if (request_audio_read > 0) {
+			fs_audio_next_samples();
+			request_audio_read = -1;
+		}
 	}
 
     return 0;

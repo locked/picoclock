@@ -12,6 +12,7 @@
 #include "graphics.h"
 
 #include "net_task.h"
+#include "fs_task.h"
 
 // Screen
 #include "DEV_Config.h"
@@ -269,14 +270,12 @@ void ui_btn_click(int btn) {
 				gpio_put(FRONT_PANEL_LED_PIN, 1);
 				backlight_on = true;
 			}
-		} else if (current_screen == 3) {
-			//request_play_song(0);
 		}
 	} else if (btn == 1) {
 		if (current_screen < 3) {
-			request_remote_sync();
-		} else if (current_screen == 3) {
-			//request_play_song(1);
+			//request_remote_sync();
+			char SoundFile[260] = "Tellement.wav";
+			fs_task_sound_start(SoundFile);
 		}
 	}
 }

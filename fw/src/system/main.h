@@ -80,8 +80,19 @@ extern "C"
 #endif
 #define I2C_BAUD_RATE 400000
 
+
+#if PCB_VERSION == PCB_VERSION_MINI
+#define I2S_DATA_PIN 45
+#define I2S_CLOCK_PIN_BASE 46
+//#define I2S_DATA_PIN 20        // OK
+//#define I2S_CLOCK_PIN_BASE 21  // OK
+#define AUDIO_MUTE_PIN 39
+#else
 #define I2S_DATA_PIN 22
 #define I2S_CLOCK_PIN_BASE 26
+#define AUDIO_MUTE_PIN 0 // on gpio extender
+#endif
+
 
 #if PCB_VERSION == PCB_VERSION_MINI
 #define SDCARD_SCK 42
@@ -154,15 +165,10 @@ void system_putc(char ch);
 void ost_system_delay_ms(uint32_t delay);
 
 // Audio API
-void ost_audio_play(const char *filename);
-void ost_audio_stop();
-int ost_audio_process();
-typedef void (*ost_audio_callback_t)(void);
-void ost_audio_register_callback(ost_audio_callback_t cb);
-
-// Buttons APU
-typedef void (*ost_button_callback_t)(uint32_t flags);
-void ost_button_register_callback(ost_button_callback_t cb);
+void main_audio_play(const char *filename);
+void main_audio_stop();
+int main_audio_process();
+void main_audio_new_frame(const void *buffer, int size);
 
 // ----------------------------------------------------------------------------
 // SDCARD HAL
@@ -197,11 +203,6 @@ void ost_hal_sdcard_spi_read(uint8_t *out, uint32_t size);
  * @return uint8_t SD card is present or not
  */
 uint8_t ost_hal_sdcard_get_presence();
-
-// ----------------------------------------------------------------------------
-// AUDIO HAL
-// ----------------------------------------------------------------------------
-void ost_hal_audio_new_frame(const void *buffer, int size);
 
 #ifdef __cplusplus
 }

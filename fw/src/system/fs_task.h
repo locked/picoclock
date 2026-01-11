@@ -5,15 +5,10 @@
 
 typedef void (*fs_result_cb_t)(bool);
 
-void fs_task_scan_index(fs_result_cb_t cb);
-void fs_task_initialize();
-void fs_task_load_story(uint8_t *mem);
-void fs_task_image_start(char *image);
-void fs_task_sound_start(char *sound);
-void fs_task_play_index();
+void fs_audio_next_samples();
+
 void fs_task_read_block(uint32_t addr, uint8_t *block, fs_result_cb_t cb);
-void fs_task_write_block(uint32_t addr, uint8_t *block, fs_result_cb_t cb);
-void fs_task_usb_connected();
-void fs_task_usb_disconnected();
+
+void fs_task_sound_start(char *sound);
 
 #endif // FS_TASK_H
