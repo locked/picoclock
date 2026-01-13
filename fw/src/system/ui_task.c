@@ -28,7 +28,7 @@
 #include "audio_player.h"
 
 #include "pcf8563/pcf8563.h"
-#include "mcp46XX/mcp46XX.h"
+#include "mcp46XX/mcp45XX.h"
 
 
 // ===========================================================================================================
@@ -277,5 +277,9 @@ void ui_btn_click(int btn) {
 			char SoundFile[260] = "Tellement.wav";
 			fs_task_sound_start(SoundFile);
 		}
+	} else if (btn == 4) {
+		mcp4551_set_wiper(mcp4551_read_wiper() + 10);
+	} else if (btn == 5) {
+		mcp4551_set_wiper(mcp4551_read_wiper() - 10);
 	}
 }

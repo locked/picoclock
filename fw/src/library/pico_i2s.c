@@ -37,6 +37,7 @@ static void dma_double_buffer_init(pio_i2s *i2s)
     i2s->out_ctrl_blocks[1] = &i2s->output_buffer[STEREO_BUFFER_SIZE];
 
     dma_channel_config c = dma_channel_get_default_config(i2s->dma_ch_out_ctrl);
+    channel_config_set_high_priority(&c, true);
     channel_config_set_read_increment(&c, true);
     channel_config_set_write_increment(&c, false);
 
@@ -108,10 +109,12 @@ void i2s_start(pio_i2s *i2s)
     //dma_channel_acknowledge_irq0(i2s->dma_ch_out_data);
     irq_set_enabled(DMA_IRQ_0, true);
 
+	// TEST
+	//pio_sm_clear_fifos(i2s->pio, i2s->sm_dout);
+
     dma_channel_start(i2s->dma_ch_out_ctrl);
 
-sleep_us(100);
-
+	/*
 	// Check the level of the TX FIFO
 	uint level = pio_sm_get_tx_fifo_level(i2s->pio, i2s->sm_dout);
 	printf("FIFO Level: %d\n", level);
@@ -122,6 +125,7 @@ sleep_us(100);
 
 	printf("Data DMA Busy: %d\n", dma_channel_is_busy(i2s->dma_ch_out_data));
 	printf("Data DMA Read Addr: %p\n", (void*)dma_hw->ch[i2s->dma_ch_out_data].read_addr);
+	*/
 }
 
 static void pico_gracefully_stop_dma(uint channel)

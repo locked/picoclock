@@ -53,7 +53,7 @@ set(OST_SRCS
     library/tiny-json.c
     library/mcp9808/mcp9808.c
     library/pcf8563/pcf8563.c
-    library/mcp46XX/mcp46XX.c
+    library/mcp46XX/mcp45XX.c
     library/graphics.c
     library/tinyhttp/http.c
     library/tinyhttp/chunk.c
@@ -107,7 +107,7 @@ add_executable(${PROJECT_NAME} ${OST_SRCS} ${MIDDLEWARE_SRCS})
 
 # ------ Link
 target_link_libraries(${PROJECT_NAME} PUBLIC "-Wl,--start-group"
-	gcc m c stdc++ pico_stdlib pico_util pico_aon_timer
+	gcc m c stdc++ pico_stdlib pico_util pico_aon_timer pico_multicore
 	hardware_spi hardware_dma hardware_pio hardware_i2c hardware_exception
 	cmsis_core
 	pico_cyw43_arch_lwip_poll

@@ -21,14 +21,14 @@ public entry_point:
                     ;        |/-- BCLK
 frameL:             ;        ||
     set x, 30         side 0b00 ; start of Left frame
-    pull noblock      side 0b01 ; One clock after edge change with no data
+    pull block      side 0b01 ; One clock after edge change with no data
 dataL:
     out pins, 1       side 0b00
     jmp x-- dataL     side 0b01
 
 frameR:
     set x, 30         side 0b10
-    pull noblock      side 0b11 ; One clock after edge change with no data
+    pull block      side 0b11 ; One clock after edge change with no data
 dataR:
     out pins, 1       side 0b10
     jmp x-- dataR     side 0b11
@@ -53,6 +53,7 @@ static inline void i2s_out_master_program_init(PIO pio, uint8_t sm, uint8_t offs
     sm_config_set_out_shift(&sm_config, false, false, bit_depth);
     sm_config_set_fifo_join(&sm_config, PIO_FIFO_JOIN_TX);
     pio_sm_init(pio, sm, offset, &sm_config);
+
 
     uint64_t pin_mask = (1ull << dout_pin) | (3ull << clock_pin_base);
     pio_sm_set_pins_with_mask64(pio, sm, 0, pin_mask);  // zero output

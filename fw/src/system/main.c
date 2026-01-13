@@ -33,6 +33,7 @@
 #include "hardware/watchdog.h"
 #include "pico/unique_id.h"
 #include "pico.h"
+#include "pico/multicore.h"
 
 // Screen
 #include "DEV_Config.h"
@@ -41,7 +42,7 @@
 #include "EPD_2in13_V4.h"
 #include "EPD_2in13b_V4.h"
 
-#include "mcp46XX/mcp46XX.h"
+#include "mcp46XX/mcp45XX.h"
 #include "pcf8563/pcf8563.h"
 
 // Audio (PIO)
@@ -202,7 +203,7 @@ void init_gpio() {
 void system_initialize() {
     stdio_init_all();
 
-    set_sys_clock_khz(125000, true);
+    set_sys_clock_khz(150000, true);
 
     // Init UART
     uart_init(UART_ID, BAUD_RATE);
@@ -219,8 +220,8 @@ void system_initialize() {
 	init_gpio();
 
     // Init Sound
-    //mcp46XX_set_i2c(I2C_CHANNEL);
-    //mcp4651_set_wiper(0x100);
+    mcp4551_init(I2C_CHANNEL);
+    mcp4551_set_wiper(MCP4551_WIPER_MID); // 0 => high vol, 0xff => low vol
 
     i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
     audio_init(&audio_ctx);
@@ -289,6 +290,49 @@ uint8_t ost_hal_sdcard_get_presence() {
   return 1; // not wired
 }
 
+void core1_entry() {
+	int last_min = 0;
+	int last_sync = -1;
+	bool refresh_screen = false;
+	bool refresh_screen_clear = false;
+	time_struct dt;
+    while (1) {
+        dt = pcf8563_getDateTime();
+        if (!dt.volt_low) {
+			refresh_screen = false;
+            if (dt.min != last_min) {
+                if (check_alarm(dt) == 1) {
+                    //ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 300;  // To reset screen after a while
+
+                    // Set screen to alarm
+                    current_screen = SCREEN_ALARM;
+                    refresh_screen = true;
+                    refresh_screen_clear = true;
+                }
+
+				refresh_screen = true;
+				refresh_screen_clear = false;
+
+                last_min = dt.min;
+            }
+			int ts = dt.hour * 3600 + dt.min * 60 + dt.sec;
+			if (last_sync == -1) {
+				// First run, initialize as if sync nearly 1 hour ago
+				last_sync = ts - 3600 + 30;
+			}
+			if ((((ts - last_sync) > 3600) || ((ts - last_sync) < 0)) && !audio_ctx.playing) {
+				printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
+				request_remote_sync();
+				last_sync = ts;
+				sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
+				printf("sync trigger done\r\n");
+			}
+			if (refresh_screen) {
+				ui_refresh_screen(refresh_screen_clear);
+			}
+		}
+    }
+}
 
 // ===========================================================================================================
 // MAIN ENTRY POINT
@@ -344,22 +388,22 @@ int main() {
     // Start the operating system!
     printf("[picoclock] Start\r\n");
 
+	//char SoundFile[260] = "Tellement.wav";
+	//fs_task_sound_start(SoundFile);
+
+	//multicore_launch_core1(core1_entry);
+
 	int last_min = 0;
 	int last_sync = -1;
 	bool refresh_screen = false;
 	bool refresh_screen_clear = false;
 	time_struct dt;
-
-			char SoundFile[260] = "Tellement.wav";
-			fs_task_sound_start(SoundFile);
-
 	while (true) {
 		//printf("[picoclock] In loop\r\n");
 		if (request_btn_push >= 0) {
 			ui_btn_click(request_btn_push);
 			request_btn_push = -1;
 		}
-		// Trigger server sync
         dt = pcf8563_getDateTime();
         if (!dt.volt_low) {
 			refresh_screen = false;
@@ -381,20 +425,24 @@ int main() {
 			int ts = dt.hour * 3600 + dt.min * 60 + dt.sec;
 			if (last_sync == -1) {
 				// First run, initialize as if sync nearly 1 hour ago
-				last_sync = ts - 3600 + 10;
+				last_sync = ts - 3600 + 30;
 			}
-			/*if (((ts - last_sync) > 3600) || ((ts - last_sync) < 0)) {
+			if ((((ts - last_sync) > 3600) || ((ts - last_sync) < 0)) && !audio_ctx.playing) {
 				printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
 				request_remote_sync();
 				last_sync = ts;
 				sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
 				printf("sync trigger done\r\n");
-			}*/
+			}
 			if (refresh_screen) {
 				ui_refresh_screen(refresh_screen_clear);
 			}
 		}
-		sleep_ms(1);
+		uint64_t sleep_dur = 10000;
+		if (audio_ctx.playing) {
+			sleep_dur = 50;		// I2S audio data cannot wait
+		}
+		sleep_us(sleep_dur);
 		if (request_audio_read > 0) {
 			fs_audio_next_samples();
 			request_audio_read = -1;
