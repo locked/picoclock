@@ -6,6 +6,7 @@ pcb_bolt_diam = 7;
 pcb_bolt_depth = 3.2;
 pcb_bolt_length = 40;
 pcb_image = "picoclock_scaled.png";
+pcb_margin = 0.4;
 
 // general thickness
 t = 1.5;
@@ -14,7 +15,7 @@ front = [pcb[0] + t * 2, pcb[1] + t * 2, 12];
 back = [pcb[0] + t * 2, pcb[1] + t * 2, 50];
 pcb_bolt_back_depth = back[2] - pcb_bolt_length + t + pcb_bolt_depth + front[2];
 
-pcb_support = [pcb_screw_pos[0]*2, pcb_screw_pos[0]*2, front[2] - pcb[2] - t];
+pcb_support = [pcb_screw_pos[0]*2+pcb_margin/2, pcb_screw_pos[0]*2+pcb_margin/2, front[2] - pcb[2] - t];
 
 screen_size = [59.3, 29.6, 1.5];
 screen_visible_size = [52, 27.4, 3];

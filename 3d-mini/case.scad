@@ -48,12 +48,15 @@ module front_screw() {
     }
 }
 module front() {
-    front_inner = [pcb[0], pcb[1], front[2] - t];
+    joint_margin = 0.2;
+    front_inner = [pcb[0] + pcb_margin, pcb[1] + pcb_margin, front[2] - t];
+    joint_width = t/2 - joint_margin;
 
     rotate([90]) difference() {
         union(){
             cube(front);
             // front/back joint
+            /*
             for (i = [0:1]) {
                 translate([
                     0,
@@ -66,8 +69,33 @@ module front() {
                     0,
                     -1]) cube([1,front[1],1]);
             }
+            */
+
+            // back joint
+            for (i = [0:1]) {
+                // horizontal
+                translate([
+                    t/2 + joint_margin,
+                    i * front[1] + (i == 0 ? 1 : -2) * joint_width + (i == 0 ? 1 : -1) * joint_margin,
+                    -1+joint_margin]) cube([
+                        front[0]-t-joint_margin*2,
+                        joint_width,
+                        1-joint_margin
+                    ]);
+            }
+            for (i = [0:1]) {
+                // vertical
+                translate([
+                    i * front[0] + (i == 0 ? 1 : -2) * joint_width + (i == 0 ? 1 : -1) * joint_margin,
+                    t/2 + joint_margin,
+                    -1+joint_margin]) cube([
+                        joint_width,
+                        front[1]-t-joint_margin*2,
+                        1-joint_margin
+                    ]);
+            }
         }
-        translate([t, t]) cube(front_inner);
+        translate([t-pcb_margin/2, t-pcb_margin/2]) cube(front_inner);
         front_screw();
         screen();
         buttons();
@@ -94,8 +122,8 @@ module front() {
         for (x = [0:1]) {
             for (y = [0:1]) {
                 translate([
-                    t + x * (front[0] - pcb_support[0] - t*2),
-                    t + y * (front[1] - pcb_support[1] - t*2),
+                    t + x * (front[0] - pcb_support[0] - t*2 + pcb_margin / 2),
+                    t + y * (front[1] - pcb_support[1] - t*2 + pcb_margin / 2),
                     pcb[2]]) cube(pcb_support);
             }
         }
@@ -282,21 +310,7 @@ module back() {
     rotate([90]) difference() {
         union(){
             translate([0, 0, -back[2]]) cube(back);
-            // front/back joint
-            for (i = [0:1]) {
-                // horizontal
-                translate([
-                    t/2 + joint_margin,
-                    i * front[1] + (i == 0 ? 1 : -2) * t/2 + (i == 0 ? 1 : -1) * joint_margin,
-                    0]) cube([front[0]-t-joint_margin*2,1-joint_margin,0.8]);
-            }
-            for (i = [0:1]) {
-                // vertical
-                translate([
-                    i * front[0] + (i == 0 ? 1 : -2) * t/2 + (i == 0 ? 1 : -1) * joint_margin,
-                    t/2 + joint_margin,
-                    0]) cube([1-joint_margin,front[1]-t-joint_margin*2,0.8]);
-            }
+            // ADD FRONT JOINT
         }
         translate([t, t, -back[2] + t]) cube(back_inner);
         io(true);
@@ -332,10 +346,10 @@ module back() {
 
 //pcb();
 
-//front();
+front();
 
 //rotate([90]) translate([front[0]/2, front[1]/2, 6]) screen_holder();
 
-back();
+//back();
 
 //rotate([90]) translate([t, t]) color("red") surface(file=pcb_image, convexity = 1);
