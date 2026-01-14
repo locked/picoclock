@@ -1,7 +1,7 @@
 #include "alarms.h"
 #include "fs_task.h"
 
-#include "mcp46XX/mcp46XX.h"
+#include "mcp46XX/mcp45XX.h"
 #include "audio_player.h"
 #include <string.h>
 
@@ -54,14 +54,12 @@ void get_next_alarm(wakeup_alarm_struct **next_alarm, time_struct dt) {
 
 
 void ring_alarm(wakeup_alarm_struct *alarm) {
-	//extern qor_mbox_t UiMailBox;
-
 	// Set volume
-	//mcp4651_set_wiper(0x90);
-	//set_audio_volume_factor(50);
+	mcp4551_set_wiper(0x10);
+	set_audio_volume_factor(50);
 
 	// Start sound
-	//fs_task_sound_start(alarm->chime);
+	fs_task_sound_start(alarm->chime);
 }
 
 

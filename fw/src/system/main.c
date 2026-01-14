@@ -67,6 +67,9 @@ int current_screen = 0;
 config_struct global_config;
 int reboot_requested = 0;
 char last_sync_str[9] = "";
+bool refresh_screen = false;
+bool refresh_screen_clear = false;
+int ts_reset_alarm_screen = 0;
 
 
 // ===========================================================================================================
@@ -293,16 +296,23 @@ uint8_t ost_hal_sdcard_get_presence() {
 void core1_entry() {
 	int last_min = 0;
 	int last_sync = -1;
-	bool refresh_screen = false;
-	bool refresh_screen_clear = false;
 	time_struct dt;
+
+	printf("[core1] check RTC\r\n");
+	dt = pcf8563_getDateTime();
+	if (dt.volt_low) {
+		request_remote_sync();
+	}
+
+	printf("[core1] start loop\r\n");
     while (1) {
         dt = pcf8563_getDateTime();
+		//printf("[core1] got time:[%d] [%d:%d]\r\n", dt.volt_low, dt.hour, dt.min);
         if (!dt.volt_low) {
-			refresh_screen = false;
+			// Check alarm
             if (dt.min != last_min) {
                 if (check_alarm(dt) == 1) {
-                    //ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 300;  // To reset screen after a while
+					ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 300;  // To reset screen after a while
 
                     // Set screen to alarm
                     current_screen = SCREEN_ALARM;
@@ -315,6 +325,8 @@ void core1_entry() {
 
                 last_min = dt.min;
             }
+
+            // Trigger sync periodically
 			int ts = dt.hour * 3600 + dt.min * 60 + dt.sec;
 			if (last_sync == -1) {
 				// First run, initialize as if sync nearly 1 hour ago
@@ -327,10 +339,23 @@ void core1_entry() {
 				sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
 				printf("sync trigger done\r\n");
 			}
-			if (refresh_screen) {
-				ui_refresh_screen(refresh_screen_clear);
-			}
+
+            // Reset alarm screen after a while
+            if (ts_reset_alarm_screen > 0 && ts > ts_reset_alarm_screen) {
+                printf("ts:[%d] ts_reset_alarm_screen:[%d] => Reset alarm screen\r\n", ts, ts_reset_alarm_screen);
+                ts_reset_alarm_screen = 0;
+                // Set screen back to normal mode
+                current_screen = SCREEN_MAIN;
+                // And force refresh
+				refresh_screen = true;
+				refresh_screen_clear = true;
+            }
 		}
+		if (refresh_screen) {
+			ui_refresh_screen(refresh_screen_clear);
+			refresh_screen = false;
+		}
+		sleep_ms(100);
     }
 }
 
@@ -378,7 +403,7 @@ int main() {
         }
     }
 
-    //watchdog_enable(8200, false);
+    watchdog_enable(8200, false);
     printf("[picoclock] Init UI\r\n");
 	init_ui();
 
@@ -391,53 +416,17 @@ int main() {
 	//char SoundFile[260] = "Tellement.wav";
 	//fs_task_sound_start(SoundFile);
 
-	//multicore_launch_core1(core1_entry);
+	multicore_launch_core1(core1_entry);
 
-	int last_min = 0;
-	int last_sync = -1;
-	bool refresh_screen = false;
-	bool refresh_screen_clear = false;
-	time_struct dt;
+	//time_struct dt;
 	while (true) {
 		//printf("[picoclock] In loop\r\n");
 		if (request_btn_push >= 0) {
 			ui_btn_click(request_btn_push);
 			request_btn_push = -1;
 		}
-        dt = pcf8563_getDateTime();
-        if (!dt.volt_low) {
-			refresh_screen = false;
-            if (dt.min != last_min) {
-                if (check_alarm(dt) == 1) {
-                    //ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 300;  // To reset screen after a while
-
-                    // Set screen to alarm
-                    current_screen = SCREEN_ALARM;
-                    refresh_screen = true;
-                    refresh_screen_clear = true;
-                }
-
-				refresh_screen = true;
-				refresh_screen_clear = false;
-
-                last_min = dt.min;
-            }
-			int ts = dt.hour * 3600 + dt.min * 60 + dt.sec;
-			if (last_sync == -1) {
-				// First run, initialize as if sync nearly 1 hour ago
-				last_sync = ts - 3600 + 30;
-			}
-			if ((((ts - last_sync) > 3600) || ((ts - last_sync) < 0)) && !audio_ctx.playing) {
-				printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
-				request_remote_sync();
-				last_sync = ts;
-				sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
-				printf("sync trigger done\r\n");
-			}
-			if (refresh_screen) {
-				ui_refresh_screen(refresh_screen_clear);
-			}
-		}
+        //dt = pcf8563_getDateTime();
+		//printf("[core0] got time:[%d] [%d:%d]\r\n", dt.volt_low, dt.hour, dt.min);
 		uint64_t sleep_dur = 10000;
 		if (audio_ctx.playing) {
 			sleep_dur = 50;		// I2S audio data cannot wait
@@ -447,6 +436,7 @@ int main() {
 			fs_audio_next_samples();
 			request_audio_read = -1;
 		}
+		watchdog_update();
 	}
 
     return 0;

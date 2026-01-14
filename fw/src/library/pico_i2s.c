@@ -37,7 +37,7 @@ static void dma_double_buffer_init(pio_i2s *i2s)
     i2s->out_ctrl_blocks[1] = &i2s->output_buffer[STEREO_BUFFER_SIZE];
 
     dma_channel_config c = dma_channel_get_default_config(i2s->dma_ch_out_ctrl);
-    channel_config_set_high_priority(&c, true);
+    //channel_config_set_high_priority(&c, true);
     channel_config_set_read_increment(&c, true);
     channel_config_set_write_increment(&c, false);
 

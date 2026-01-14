@@ -53,12 +53,14 @@ extern int current_screen;
 extern config_struct global_config;
 extern int reboot_requested;
 extern char last_sync_str[9];
+extern bool refresh_screen;
+extern bool refresh_screen_clear;
+extern int ts_reset_alarm_screen;
 
 bool module_initialized = true;
 bool need_screen_clear = true;
 int loop_count = 0;
 bool backlight_on = false;
-int ts_reset_alarm_screen = 0;
 UBYTE *BlackImage;
 
 
@@ -259,6 +261,13 @@ void ui_refresh_screen(bool message_clear) {
 
 
 void ui_btn_click(int btn) {
+	// On any button click, stop alarm
+	if (current_screen == SCREEN_ALARM) {
+		main_audio_stop();
+		time_struct dt = pcf8563_getDateTime();
+		ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 1;  // Force reset in 1 s
+	}
+
 	if (btn == 0) {
 		if (current_screen < 3) {
 			if (backlight_on) {
@@ -273,13 +282,23 @@ void ui_btn_click(int btn) {
 		}
 	} else if (btn == 1) {
 		if (current_screen < 3) {
-			//request_remote_sync();
-			char SoundFile[260] = "Tellement.wav";
-			fs_task_sound_start(SoundFile);
+			request_remote_sync();
+			//char SoundFile[260] = "Tellement.wav";
+			//fs_task_sound_start(SoundFile);
 		}
+	} else if (btn == 2 || btn == 3) {
+		current_screen += btn == 2 ? 1 : -1;
+		if (current_screen > MAX_SCREEN_ID) {
+			current_screen = 0;
+		}
+		if (current_screen < 0) {
+			current_screen = MAX_SCREEN_ID;
+		}
+		refresh_screen = true;
+		refresh_screen_clear = false;
 	} else if (btn == 4) {
-		mcp4551_set_wiper(mcp4551_read_wiper() + 10);
+		mcp4551_set_wiper(mcp4551_read_wiper() + 20);
 	} else if (btn == 5) {
-		mcp4551_set_wiper(mcp4551_read_wiper() - 10);
+		mcp4551_set_wiper(mcp4551_read_wiper() - 20);
 	}
 }
