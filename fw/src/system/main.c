@@ -1,5 +1,3 @@
-//#define PICO_MAX_SHARED_IRQ_HANDLERS 5u
-
 // C library
 #include "main.h"
 #include "debug.h"
@@ -169,7 +167,6 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
 	dma_channel_acknowledge_irq0(i2s.dma_ch_out_data);
 
 	// Warn the application layer that we have done on that channel
-	//audio_callback();
 	request_audio_read = 1;
 }
 
@@ -249,7 +246,6 @@ void system_initialize() {
 	gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
 	printf("[picoclock] Init SD card OK\r\n");
 
-	// ------------ Everything is initialized, print stuff here
 	printf("[picoclock] System Clock: %lu\n", clock_get_hz(clk_sys));
 }
 
@@ -283,7 +279,7 @@ void ost_hal_sdcard_spi_read(uint8_t *out, uint32_t size) {
 	spi_read_blocking(spi1, 0xFF, out, size);
 }
 uint8_t ost_hal_sdcard_get_presence() {
-	return 1; // not wired
+	return 1; // TODO
 }
 
 
@@ -407,20 +403,14 @@ int main() {
 	// Start the operating system!
 	printf("[picoclock] Start\r\n");
 
-	//char SoundFile[260] = "Tellement.wav";
-	//fs_task_sound_start(SoundFile);
-
 	multicore_launch_core1(core1_entry);
 
-	//time_struct dt;
 	while (true) {
 		//printf("[picoclock] In loop\r\n");
 		if (request_btn_push >= 0) {
 			ui_btn_click(request_btn_push);
 			request_btn_push = -1;
 		}
-		//dt = pcf8563_getDateTime();
-		//printf("[core0] got time:[%d] [%d:%d]\r\n", dt.volt_low, dt.hour, dt.min);
 		uint64_t sleep_dur = 10000;
 		if (audio_ctx.playing) {
 			sleep_dur = 50;		// I2S audio data cannot wait
