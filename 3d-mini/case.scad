@@ -122,8 +122,8 @@ module front() {
         for (x = [0:1]) {
             for (y = [0:1]) {
                 translate([
-                    t + x * (front[0] - pcb_support[0] - t*2 + pcb_margin / 2),
-                    t + y * (front[1] - pcb_support[1] - t*2 + pcb_margin / 2),
+                    t + x * (front[0] - pcb_support[0] - t*2) + (x == 1 ? 1 : -1) * pcb_margin / 2,
+                    t + y * (front[1] - pcb_support[1] - t*2) + (y == 1 ? 1 : -1) *pcb_margin / 2,
                     pcb[2]]) cube(pcb_support);
             }
         }
