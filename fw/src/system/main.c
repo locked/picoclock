@@ -52,10 +52,10 @@ static __attribute__((aligned(8))) pio_i2s i2s;
 static volatile uint32_t msTicks = 0;
 static audio_ctx_t audio_ctx;
 static audio_i2s_config_t config = {
-    .freq = 22050,
-    .bps = 32,
-    .data_pin = I2S_DATA_PIN,
-    .clock_pin_base = I2S_CLOCK_PIN_BASE
+	.freq = 22050,
+	.bps = 32,
+	.data_pin = I2S_DATA_PIN,
+	.clock_pin_base = I2S_CLOCK_PIN_BASE
 };
 
 
@@ -91,22 +91,22 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)();
 
 
 void ost_system_delay_ms(uint32_t delay) {
-    busy_wait_ms(delay);
+	busy_wait_ms(delay);
 }
 
 void check_buttons() {
-    for (uint8_t btn=0; btn<6; btn++) {
-        uint8_t btn_value = gpio_get(BUTTONS[btn]);
-        if (btn_value == 1 && btn_value != last_btn_values[btn]) {
-            request_btn_push = btn;
-        }
-        last_btn_values[btn] = btn_value;
-    }
+	for (uint8_t btn=0; btn<6; btn++) {
+		uint8_t btn_value = gpio_get(BUTTONS[btn]);
+		if (btn_value == 1 && btn_value != last_btn_values[btn]) {
+			request_btn_push = btn;
+		}
+		last_btn_values[btn] = btn_value;
+	}
 }
 
 bool timer_callback(struct repeating_timer *t) {
-    check_buttons();
-    return true; // Keep the timer running
+	check_buttons();
+	return true; // Keep the timer running
 }
 
 
@@ -114,59 +114,59 @@ bool timer_callback(struct repeating_timer *t) {
 // AUDIO HAL
 // ----------------------------------------------------------------------------
 static void audio_callback(void) {
-    main_audio_process();
+	main_audio_process();
 }
 
 void main_audio_play(const char *filename) {
-    printf("audio_play... [%s]\r\n", filename);
-    audio_play(&audio_ctx, filename);
-    config.freq = audio_ctx.audio_info.sample_rate;
-    config.channels = audio_ctx.audio_info.channels;
-    printf("pico_i2s_set_frequency...\r\n");
-    pico_i2s_set_frequency(&i2s, &config);
+	printf("audio_play... [%s]\r\n", filename);
+	audio_play(&audio_ctx, filename);
+	config.freq = audio_ctx.audio_info.sample_rate;
+	config.channels = audio_ctx.audio_info.channels;
+	printf("pico_i2s_set_frequency...\r\n");
+	pico_i2s_set_frequency(&i2s, &config);
 
-    i2s.buffer_index = 0;
+	i2s.buffer_index = 0;
 
-    // On appelle une première fois le process pour récupérer et initialiser le premier buffer...
-    printf("audio_process 1st buffer...\r\n");
-    audio_process(&audio_ctx);
+	// On appelle une première fois le process pour récupérer et initialiser le premier buffer...
+	printf("audio_process 1st buffer...\r\n");
+	audio_process(&audio_ctx);
 
-    // Puis le deuxième ... (pour avoir un buffer d'avance)
-    audio_process(&audio_ctx);
+	// Puis le deuxième ... (pour avoir un buffer d'avance)
+	audio_process(&audio_ctx);
 
-    gpio_put(AUDIO_MUTE_PIN, 1); // Unmute
-    // On lance les DMA
-    printf("i2s_start...\r\n");
-    i2s_start(&i2s);
+	gpio_put(AUDIO_MUTE_PIN, 1); // Unmute
+	// On lance les DMA
+	printf("i2s_start...\r\n");
+	i2s_start(&i2s);
 }
 
 void main_audio_stop() {
-    gpio_put(AUDIO_MUTE_PIN, 0); // Mute
+	gpio_put(AUDIO_MUTE_PIN, 0); // Mute
 
-    //debug_printf("audio stop\r\n");
-    memset(i2s.out_ctrl_blocks[0], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
-    memset(i2s.out_ctrl_blocks[1], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
-    audio_stop(&audio_ctx);
-    i2s_stop(&i2s);
+	//debug_printf("audio stop\r\n");
+	memset(i2s.out_ctrl_blocks[0], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
+	memset(i2s.out_ctrl_blocks[1], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
+	audio_stop(&audio_ctx);
+	i2s_stop(&i2s);
 }
 
 int main_audio_process() {
-    return audio_process(&audio_ctx);
+	return audio_process(&audio_ctx);
 }
 
 void main_audio_new_frame(const void *buff, int size) {
-    if (size > STEREO_BUFFER_SIZE) {
-        // Problème
-        debug_printf("[picoclock] WARNING: audio_new_frame size:[%d] > STEREO_BUFFER_SIZE\n", size);
-        return;
-    }
-    memcpy(i2s.out_ctrl_blocks[i2s.buffer_index], buff, size * sizeof(uint32_t));
-    i2s.buffer_index = 1 - i2s.buffer_index;
+	if (size > STEREO_BUFFER_SIZE) {
+		// Problème
+		debug_printf("[picoclock] WARNING: audio_new_frame size:[%d] > STEREO_BUFFER_SIZE\n", size);
+		return;
+	}
+	memcpy(i2s.out_ctrl_blocks[i2s.buffer_index], buff, size * sizeof(uint32_t));
+	i2s.buffer_index = 1 - i2s.buffer_index;
 }
 
 void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
 	//dma_hw->ints0 = 1u << i2s.dma_ch_out_data; // clear the IRQ
-    dma_channel_acknowledge_irq0(i2s.dma_ch_out_data);
+	dma_channel_acknowledge_irq0(i2s.dma_ch_out_data);
 
 	// Warn the application layer that we have done on that channel
 	//audio_callback();
@@ -175,86 +175,86 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
 
 
 void init_i2c() {
-    i2c_init(I2C_CHANNEL, I2C_BAUD_RATE);
+	i2c_init(I2C_CHANNEL, I2C_BAUD_RATE);
 
-    //printf("[picoclock] sensors: setting I2C pins: SDA=%d SCL=%d\n", SENSORS_SDA_PIN, SENSORS_SCL_PIN);
-    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
-    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
+	//printf("[picoclock] sensors: setting I2C pins: SDA=%d SCL=%d\n", SENSORS_SDA_PIN, SENSORS_SCL_PIN);
+	gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
+	gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
 
-    //printf("[picoclock] sensors: pulling I2C pins up\n");
-    gpio_pull_up(I2C_SDA);
-    gpio_pull_up(I2C_SCL);
+	//printf("[picoclock] sensors: pulling I2C pins up\n");
+	gpio_pull_up(I2C_SDA);
+	gpio_pull_up(I2C_SCL);
 }
 
 void init_gpio() {
-    pio_set_gpio_base(pio0, 16);
+	pio_set_gpio_base(pio0, 16);
 
-    gpio_init(FRONT_PANEL_LED_PIN);
-    gpio_set_dir(FRONT_PANEL_LED_PIN, GPIO_OUT);
+	gpio_init(FRONT_PANEL_LED_PIN);
+	gpio_set_dir(FRONT_PANEL_LED_PIN, GPIO_OUT);
 
-    gpio_init(AUDIO_MUTE_PIN);
-    gpio_set_dir(AUDIO_MUTE_PIN, GPIO_OUT);
+	gpio_init(AUDIO_MUTE_PIN);
+	gpio_set_dir(AUDIO_MUTE_PIN, GPIO_OUT);
 
-    // Buttons
-    for (uint8_t btn=0; btn<6; btn++) {
-        gpio_init(BUTTONS[btn]);
-        gpio_set_dir(BUTTONS[btn], GPIO_IN);
-        gpio_pull_up(BUTTONS[btn]);
-    }
+	// Buttons
+	for (uint8_t btn=0; btn<6; btn++) {
+		gpio_init(BUTTONS[btn]);
+		gpio_set_dir(BUTTONS[btn], GPIO_IN);
+		gpio_pull_up(BUTTONS[btn]);
+	}
 }
 
 void system_initialize() {
-    stdio_init_all();
+	stdio_init_all();
 
-    set_sys_clock_khz(150000, true);
+	set_sys_clock_khz(150000, true);
 
-    // Init UART
-    uart_init(UART_ID, BAUD_RATE);
-    gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
-    printf("[picoclock] START PICO_RP2350A=%d\r\n", PICO_RP2350A);
+	// Init UART
+	uart_init(UART_ID, BAUD_RATE);
+	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+	printf("[picoclock] START PICO_RP2350A=%d\r\n", PICO_RP2350A);
 
-    // Init I2C
-    init_i2c();
-    printf("[picoclock] init_i2c OK\r\n");
+	// Init I2C
+	init_i2c();
+	printf("[picoclock] init_i2c OK\r\n");
 
 	pcf8563_set_i2c(I2C_CHANNEL);
-    printf("[picoclock] pcf8563_set_i2c OK\r\n");
+	printf("[picoclock] pcf8563_set_i2c OK\r\n");
 
 	init_gpio();
 
-    // Init Sound
-    mcp4551_init(I2C_CHANNEL);
-    mcp4551_set_wiper(MCP4551_WIPER_MID); // 0 => high vol, 0xff => low vol
+	// Init Sound
+	mcp4551_init(I2C_CHANNEL);
+	mcp4551_set_wiper(MCP4551_WIPER_MID); // 0 => high vol, 0xff => low vol
 
-    i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
-    audio_init(&audio_ctx);
-    printf("[picoclock] init sound OK\r\n");
+	i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
+	audio_init(&audio_ctx);
+	printf("[picoclock] init sound OK\r\n");
 
-    // Negative delay means "run every X ms from the start of the last run"
-    add_repeating_timer_ms(-10, timer_callback, NULL, &timer);
+	// Negative delay means "run every X ms from the start of the last run"
+	add_repeating_timer_ms(-10, timer_callback, NULL, &timer);
 
-    // Init SDCARD
-    gpio_init(SD_CARD_CS);
-    gpio_put(SD_CARD_CS, 1);
-    gpio_set_dir(SD_CARD_CS, GPIO_OUT);
-    //gpio_init(SD_CARD_PRESENCE);
-    //gpio_set_dir(SD_CARD_PRESENCE, GPIO_IN);
+	// Init SDCARD
+	gpio_init(SD_CARD_CS);
+	gpio_put(SD_CARD_CS, 1);
+	gpio_set_dir(SD_CARD_CS, GPIO_OUT);
+	//gpio_init(SD_CARD_PRESENCE);
+	//gpio_set_dir(SD_CARD_PRESENCE, GPIO_IN);
 
-    spi_init(spi1, 1000 * 1000); // slow clock
+	spi_init(spi1, 1000 * 1000); // slow clock
 
-    spi_set_format(spi1, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+	spi_set_format(spi1, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 
-    gpio_set_function(SDCARD_SCK, GPIO_FUNC_SPI);
-    gpio_set_function(SDCARD_MOSI, GPIO_FUNC_SPI);
-    gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
-    printf("[picoclock] Init SD card OK\r\n");
+	gpio_set_function(SDCARD_SCK, GPIO_FUNC_SPI);
+	gpio_set_function(SDCARD_MOSI, GPIO_FUNC_SPI);
+	gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
+	printf("[picoclock] Init SD card OK\r\n");
 
-    // ------------ Everything is initialized, print stuff here
-    printf("[picoclock] System Clock: %lu\n", clock_get_hz(clk_sys));
+	// ------------ Everything is initialized, print stuff here
+	printf("[picoclock] System Clock: %lu\n", clock_get_hz(clk_sys));
 }
 
 void system_putc(char ch) {
-    uart_putc_raw(UART_ID, ch);
+	uart_putc_raw(UART_ID, ch);
 }
 
 
@@ -262,36 +262,30 @@ void system_putc(char ch) {
 // SDCARD HAL
 // ----------------------------------------------------------------------------
 void ost_hal_sdcard_set_slow_clock() {
-  spi_set_baudrate(spi1, 1000000UL);
+	spi_set_baudrate(spi1, 1000000UL);
 }
-
 void ost_hal_sdcard_set_fast_clock() {
-  spi_set_baudrate(spi1, 40000000UL);
+	spi_set_baudrate(spi1, 40000000UL);
 }
-
 void ost_hal_sdcard_cs_high() {
-  gpio_put(SD_CARD_CS, 1);
+	gpio_put(SD_CARD_CS, 1);
 }
-
 void ost_hal_sdcard_cs_low() {
-  gpio_put(SD_CARD_CS, 0);
+	gpio_put(SD_CARD_CS, 0);
 }
-
 void ost_hal_sdcard_spi_exchange(const uint8_t *buffer, uint8_t *out, uint32_t size) {
-  spi_write_read_blocking(spi1, buffer, out, size);
+	spi_write_read_blocking(spi1, buffer, out, size);
 }
-
 void ost_hal_sdcard_spi_write(const uint8_t *buffer, uint32_t size) {
-  spi_write_blocking(spi1, buffer, size);
+	spi_write_blocking(spi1, buffer, size);
 }
-
 void ost_hal_sdcard_spi_read(uint8_t *out, uint32_t size) {
-  spi_read_blocking(spi1, 0xFF, out, size);
+	spi_read_blocking(spi1, 0xFF, out, size);
+}
+uint8_t ost_hal_sdcard_get_presence() {
+	return 1; // not wired
 }
 
-uint8_t ost_hal_sdcard_get_presence() {
-  return 1; // not wired
-}
 
 void core1_entry() {
 	int last_min = 0;
@@ -305,28 +299,28 @@ void core1_entry() {
 	}
 
 	printf("[core1] start loop\r\n");
-    while (1) {
-        dt = pcf8563_getDateTime();
+	while (1) {
+		dt = pcf8563_getDateTime();
 		//printf("[core1] got time:[%d] [%d:%d]\r\n", dt.volt_low, dt.hour, dt.min);
-        if (!dt.volt_low) {
+		if (!dt.volt_low) {
 			// Check alarm
-            if (dt.min != last_min) {
-                if (check_alarm(dt) == 1) {
+			if (dt.min != last_min) {
+				if (check_alarm(dt) == 1) {
 					ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 300;  // To reset screen after a while
 
-                    // Set screen to alarm
-                    current_screen = SCREEN_ALARM;
-                    refresh_screen = true;
-                    refresh_screen_clear = true;
-                }
+					// Set screen to alarm
+					current_screen = SCREEN_ALARM;
+					refresh_screen = true;
+					refresh_screen_clear = true;
+				}
 
 				refresh_screen = true;
 				refresh_screen_clear = false;
 
-                last_min = dt.min;
-            }
+				last_min = dt.min;
+			}
 
-            // Trigger sync periodically
+			// Trigger sync periodically
 			int ts = dt.hour * 3600 + dt.min * 60 + dt.sec;
 			if (last_sync == -1) {
 				// First run, initialize as if sync nearly 1 hour ago
@@ -340,34 +334,34 @@ void core1_entry() {
 				printf("sync trigger done\r\n");
 			}
 
-            // Reset alarm screen after a while
-            if (ts_reset_alarm_screen > 0 && ts > ts_reset_alarm_screen) {
-                printf("ts:[%d] ts_reset_alarm_screen:[%d] => Reset alarm screen\r\n", ts, ts_reset_alarm_screen);
-                ts_reset_alarm_screen = 0;
-                // Set screen back to normal mode
-                current_screen = SCREEN_MAIN;
-                // And force refresh
+			// Reset alarm screen after a while
+			if (ts_reset_alarm_screen > 0 && ts > ts_reset_alarm_screen) {
+				printf("ts:[%d] ts_reset_alarm_screen:[%d] => Reset alarm screen\r\n", ts, ts_reset_alarm_screen);
+				ts_reset_alarm_screen = 0;
+				// Set screen back to normal mode
+				current_screen = SCREEN_MAIN;
+				// And force refresh
 				refresh_screen = true;
 				refresh_screen_clear = true;
-            }
+			}
 		}
 		if (refresh_screen) {
 			ui_refresh_screen(refresh_screen_clear);
 			refresh_screen = false;
 		}
 		sleep_ms(100);
-    }
+	}
 }
 
 // ===========================================================================================================
 // MAIN ENTRY POINT
 // ===========================================================================================================
 int main() {
-    // Call the platform initialization
-    system_initialize();
+	// Call the platform initialization
+	system_initialize();
 
-    // Test the printf output
-    printf("[picoclock] Starting: V%d.%d\r\n", 1, 0);
+	// Test the printf output
+	printf("[picoclock] Starting: V%d.%d\r\n", 1, 0);
 
 	// Init config with default values
 	strncpy(global_config.wifi_ssid, WIFI_SSID, 50);
@@ -375,43 +369,43 @@ int main() {
 	strncpy(global_config.remote_host, SERVER_IP, 50);
 	strncpy(global_config.screen, "4", 2); // "4" (color) or "B" (B/W)
 
-    // Filesystem / SDCard initialization
-    printf("[picoclock] Check SD card\r\n");
-    filesystem_mount();
-    // List files on sdcard (test)
-    filesystem_read_config_file();
+	// Filesystem / SDCard initialization
+	printf("[picoclock] Check SD card\r\n");
+	filesystem_mount();
+	// List files on sdcard (test)
+	filesystem_read_config_file();
 
-    // Init screen
-    //------------------- Init LCD
-    printf("[picoclock] Init e-Paper module...\r\n");
-    if (DEV_Module_Init() == 0) {
-        if (strcmp(global_config.screen, "B") == 0) {
-            printf("[picoclock] e-Paper module: B\r\n");
-            //EPD_2IN13BC_Init();
-            EPD_2IN13B_V4_Init();
-            printf("[picoclock] e-Paper module: B init OK\r\n");
-            //EPD_2IN13BC_Clear();
-            EPD_2IN13B_V4_Clear();
-            printf("[picoclock] e-Paper module: B clear OK\r\n");
-            DEV_Delay_ms(500);
-        } else {
-            printf("[picoclock] e-Paper module: V4\r\n");
-            EPD_2in13_V4_Init();
-            printf("[picoclock] e-Paper module: V4 init OK\r\n");
-            EPD_2in13_V4_Clear();
-            printf("[picoclock] e-Paper module: V4 clear OK\r\n");
-        }
-    }
+	// Init screen
+	//------------------- Init LCD
+	printf("[picoclock] Init e-Paper module...\r\n");
+	if (DEV_Module_Init() == 0) {
+		if (strcmp(global_config.screen, "B") == 0) {
+			printf("[picoclock] e-Paper module: B\r\n");
+			//EPD_2IN13BC_Init();
+			EPD_2IN13B_V4_Init();
+			printf("[picoclock] e-Paper module: B init OK\r\n");
+			//EPD_2IN13BC_Clear();
+			EPD_2IN13B_V4_Clear();
+			printf("[picoclock] e-Paper module: B clear OK\r\n");
+			DEV_Delay_ms(500);
+		} else {
+			printf("[picoclock] e-Paper module: V4\r\n");
+			EPD_2in13_V4_Init();
+			printf("[picoclock] e-Paper module: V4 init OK\r\n");
+			EPD_2in13_V4_Clear();
+			printf("[picoclock] e-Paper module: V4 clear OK\r\n");
+		}
+	}
 
-    watchdog_enable(8200, false);
-    printf("[picoclock] Init UI\r\n");
+	watchdog_enable(8200, false);
+	printf("[picoclock] Init UI\r\n");
 	init_ui();
 
-    printf("[picoclock] UI: refresh screen\r\n");
+	printf("[picoclock] UI: refresh screen\r\n");
 	ui_refresh_screen(false);
 
-    // Start the operating system!
-    printf("[picoclock] Start\r\n");
+	// Start the operating system!
+	printf("[picoclock] Start\r\n");
 
 	//char SoundFile[260] = "Tellement.wav";
 	//fs_task_sound_start(SoundFile);
@@ -425,7 +419,7 @@ int main() {
 			ui_btn_click(request_btn_push);
 			request_btn_push = -1;
 		}
-        //dt = pcf8563_getDateTime();
+		//dt = pcf8563_getDateTime();
 		//printf("[core0] got time:[%d] [%d:%d]\r\n", dt.volt_low, dt.hour, dt.min);
 		uint64_t sleep_dur = 10000;
 		if (audio_ctx.playing) {
@@ -439,5 +433,5 @@ int main() {
 		watchdog_update();
 	}
 
-    return 0;
+	return 0;
 }
