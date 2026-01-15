@@ -17,6 +17,9 @@ pcb_bolt_back_depth = back[2] - pcb_bolt_length + t + pcb_bolt_depth + front[2];
 
 pcb_support = [pcb_screw_pos[0]*2+pcb_margin/2, pcb_screw_pos[0]*2+pcb_margin/2, front[2] - pcb[2] - t];
 
+joint_margin = 0.2;
+joint_width = t/2 - joint_margin;
+
 screen_size = [59.3, 29.6, 1.5];
 screen_visible_size = [52, 27.4, 3];
 

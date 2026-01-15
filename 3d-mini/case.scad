@@ -48,30 +48,12 @@ module front_screw() {
     }
 }
 module front() {
-    joint_margin = 0.2;
     front_inner = [pcb[0] + pcb_margin, pcb[1] + pcb_margin, front[2] - t];
-    joint_width = t/2 - joint_margin;
 
     rotate([90]) difference() {
         union(){
             cube(front);
-            // front/back joint
-            /*
-            for (i = [0:1]) {
-                translate([
-                    0,
-                    i * (front[1] - 1),
-                    -1]) cube([front[0],1,1]);
-            }
-            for (i = [0:1]) {
-                translate([
-                    i * (front[0] - 1),
-                    0,
-                    -1]) cube([1,front[1],1]);
-            }
-            */
-
-            // back joint
+            // front joint
             for (i = [0:1]) {
                 // horizontal
                 translate([
@@ -123,7 +105,7 @@ module front() {
             for (y = [0:1]) {
                 translate([
                     t + x * (front[0] - pcb_support[0] - t*2) + (x == 1 ? 1 : -1) * pcb_margin / 2,
-                    t + y * (front[1] - pcb_support[1] - t*2) + (y == 1 ? 1 : -1) *pcb_margin / 2,
+                    t + y * (front[1] - pcb_support[1] - t*2) + (y == 1 ? 1 : -1) * pcb_margin / 2,
                     pcb[2]]) cube(pcb_support);
             }
         }
@@ -306,11 +288,30 @@ module speaker_supports() {
 }
 module back() {
     back_inner = [pcb[0], pcb[1], back[2] - t];
-    joint_margin = 0.2;
     rotate([90]) difference() {
         union(){
             translate([0, 0, -back[2]]) cube(back);
-            // ADD FRONT JOINT
+            // Front joint
+            for (i = [0:1]) {
+                translate([
+                    0,
+                    i * front[1] + (i == 0 ? 0 : -1) * joint_width + (i == 0 ? 0 : 0) * joint_margin,
+                    0]) cube([
+                        front[0],
+                        joint_width,
+                        1
+                    ]);
+            }
+            for (i = [0:1]) {
+                translate([
+                    i * front[0] + (i == 0 ? 0 : -1) * joint_width + (i == 0 ? 0 : 0) * joint_margin,
+                    0,
+                    0]) cube([
+                        joint_width,
+                        front[1],
+                        1
+                    ]);
+            }
         }
         translate([t, t, -back[2] + t]) cube(back_inner);
         io(true);
