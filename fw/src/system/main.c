@@ -40,6 +40,7 @@
 #include "EPD_2in13_V4.h"
 #include "EPD_2in13b_V4.h"
 
+#include "lp5817/lp5817.h"
 #include "mcp46XX/mcp45XX.h"
 #include "pcf8563/pcf8563.h"
 
@@ -48,7 +49,7 @@
 #include "pico_i2s.h"
 static __attribute__((aligned(8))) pio_i2s i2s;
 static volatile uint32_t msTicks = 0;
-static audio_ctx_t audio_ctx;
+audio_ctx_t audio_ctx;
 static audio_i2s_config_t config = {
 	.freq = 22050,
 	.bps = 32,
@@ -192,6 +193,10 @@ void init_gpio() {
 	gpio_init(AUDIO_MUTE_PIN);
 	gpio_set_dir(AUDIO_MUTE_PIN, GPIO_OUT);
 
+	gpio_init(I2S_SELECT_PIN);
+	gpio_set_dir(I2S_SELECT_PIN, GPIO_OUT);
+	gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
+
 	// Buttons
 	for (uint8_t btn=0; btn<6; btn++) {
 		gpio_init(BUTTONS[btn]);
@@ -218,6 +223,9 @@ void system_initialize() {
 	printf("[picoclock] pcf8563_set_i2c OK\r\n");
 
 	init_gpio();
+
+	// Init LED controller
+	lp5817_init(I2C_CHANNEL);
 
 	// Init Sound
 	mcp4551_init(I2C_CHANNEL);

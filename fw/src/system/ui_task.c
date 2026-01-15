@@ -57,6 +57,8 @@ extern bool refresh_screen;
 extern bool refresh_screen_clear;
 extern int ts_reset_alarm_screen;
 
+extern audio_ctx_t audio_ctx;
+
 bool module_initialized = true;
 bool need_screen_clear = true;
 int loop_count = 0;
@@ -283,8 +285,6 @@ void ui_btn_click(int btn) {
 	} else if (btn == 1) {
 		if (current_screen < 3) {
 			request_remote_sync();
-			//char SoundFile[260] = "Tellement.wav";
-			//fs_task_sound_start(SoundFile);
 		}
 	} else if (btn == 2 || btn == 3) {
 		current_screen += btn == 2 ? 1 : -1;
@@ -297,8 +297,18 @@ void ui_btn_click(int btn) {
 		refresh_screen = true;
 		refresh_screen_clear = false;
 	} else if (btn == 4) {
-		mcp4551_set_wiper(mcp4551_read_wiper() + 20);
+		if (!audio_ctx.playing) {
+			char SoundFile[260] = "Tellement.wav";
+			fs_task_sound_start(SoundFile);
+		} else {
+			mcp4551_set_wiper(mcp4551_read_wiper() + 20);
+		}
 	} else if (btn == 5) {
-		mcp4551_set_wiper(mcp4551_read_wiper() - 20);
+		if (!audio_ctx.playing) {
+			char SoundFile[260] = "Tellement.wav";
+			fs_task_sound_start(SoundFile);
+		} else {
+			mcp4551_set_wiper(mcp4551_read_wiper() - 20);
+		}
 	}
 }

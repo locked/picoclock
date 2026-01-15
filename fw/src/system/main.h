@@ -87,6 +87,7 @@ extern "C"
 //#define I2S_DATA_PIN 20        // OK
 //#define I2S_CLOCK_PIN_BASE 21  // OK
 #define AUDIO_MUTE_PIN 39
+#define I2S_SELECT_PIN 38
 #else
 #define I2S_DATA_PIN 22
 #define I2S_CLOCK_PIN_BASE 26
@@ -107,6 +108,7 @@ extern "C"
 #define SD_CARD_CS 13
 #define SD_CARD_PRESENCE 2	// on gpio extender
 #endif
+
 
 
 typedef struct
