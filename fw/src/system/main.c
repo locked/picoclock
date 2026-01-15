@@ -226,6 +226,10 @@ void system_initialize() {
 
 	// Init LED controller
 	lp5817_init(I2C_CHANNEL);
+	lp5817_enable(true);
+	lp5817_set_dot_current(0, 50);
+	lp5817_set_dot_current(1, 20);
+	lp5817_set_dot_current(2, 80);
 
 	// Init Sound
 	mcp4551_init(I2C_CHANNEL);
