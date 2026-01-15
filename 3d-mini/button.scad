@@ -4,9 +4,9 @@ hole_diam = 5;
 outer_diam = 6;   // pcb holes are 5mm
 inner_diam = 5;   // pcb holes are 5mm
 depth = 6 + 1.6 + 1;
-depth_blocker = 5.5;
+depth_blocker = 5.5 - 2.3;
 depth_visible = 3;
-sphere_visible = 0.3;
+sphere_visible = 0.4;
 
 //btn_size = 2.4;	// Ok, tight
 btn_size = 2.5;	// Ok, loose
