@@ -27,6 +27,7 @@
 
 #include "audio_player.h"
 
+#include "lp5817/lp5817.h"
 #include "pcf8563/pcf8563.h"
 #include "mcp46XX/mcp45XX.h"
 
@@ -275,10 +276,12 @@ void ui_btn_click(int btn) {
 			if (backlight_on) {
 				printf("Backlight OFF\r\n");
 				gpio_put(FRONT_PANEL_LED_PIN, 0);
+				lp5817_turn_off();
 				backlight_on = false;
 			} else {
 				printf("Backlight ON\r\n");
 				gpio_put(FRONT_PANEL_LED_PIN, 1);
+				lp5817_turn_on(0xff, 0xff, 0xff);
 				backlight_on = true;
 			}
 		}

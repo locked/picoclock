@@ -59,5 +59,12 @@
 void lp5817_init(i2c_inst_t *i2c);
 uint8_t lp5817_enable(bool on);
 uint8_t lp5817_set_dot_current(uint8_t ch, uint8_t value);
+uint8_t lp5817_set_pwm(uint8_t ch, uint8_t value);
+uint8_t lp5817_set_output_enable_all();
+uint8_t lp5817_set_output_enable(uint8_t ch);
+uint8_t lp5817_update();
+uint8_t lp5817_set_max_current_code();
+uint8_t lp5817_turn_on(uint8_t c0, uint8_t c1, uint8_t c2);
+uint8_t lp5817_turn_off();
 
 #endif
