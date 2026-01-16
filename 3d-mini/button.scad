@@ -1,11 +1,11 @@
 include <common.scad>;
 
-hole_diam = 5;
+hole_diam = 5.4;
 outer_diam = 6;   // pcb holes are 5mm
 inner_diam = 5;   // pcb holes are 5mm
 depth = 6 + 1.6 + 1;
 depth_blocker = 5.5 - 2.3;
-depth_visible = 3;
+depth_visible = 3.8;
 sphere_visible = 0.4;
 
 //btn_size = 2.4;	// Ok, tight
