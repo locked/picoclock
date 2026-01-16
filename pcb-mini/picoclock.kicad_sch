@@ -8958,6 +8958,16 @@
 	)
 	(wire
 		(pts
+			(xy 182.88 133.35) (xy 191.77 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "220f3891-776f-485c-8b12-28f693f42af7")
+	)
+	(wire
+		(pts
 			(xy 165.1 134.62) (xy 165.1 132.08)
 		)
 		(stroke
@@ -9498,16 +9508,6 @@
 	)
 	(wire
 		(pts
-			(xy 190.5 134.62) (xy 191.77 134.62)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "59277ccb-340b-4ccb-915f-d33dae7ae9ff")
-	)
-	(wire
-		(pts
 			(xy 240.03 78.74) (xy 242.57 78.74)
 		)
 		(stroke
@@ -9758,7 +9758,7 @@
 	)
 	(wire
 		(pts
-			(xy 191.77 134.62) (xy 191.77 119.38)
+			(xy 191.77 133.35) (xy 191.77 119.38)
 		)
 		(stroke
 			(width 0)
@@ -10038,7 +10038,7 @@
 	)
 	(wire
 		(pts
-			(xy 182.88 134.62) (xy 182.88 132.08)
+			(xy 182.88 133.35) (xy 182.88 132.08)
 		)
 		(stroke
 			(width 0)
@@ -12755,7 +12755,7 @@
 			)
 		)
 	)
-	(global_label "GPIO35_I2S_SELECT"
+	(global_label "GPIO38_I2S_SELECT"
 		(shape input)
 		(at 180.34 134.62 270)
 		(fields_autoplaced yes)
@@ -17704,83 +17704,6 @@
 			(project "picoclock"
 				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9"
 					(reference "SW4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 186.69 134.62 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "71c649d4-e8a6-446e-bd1e-32e8972c2122")
-		(property "Reference" "R30"
-			(at 188.468 136.906 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10K"
-			(at 188.468 132.334 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 186.69 136.398 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 186.69 134.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "ok LCSC"
-			(at 190.5 133.604 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C25744"
-			(at 186.69 134.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "e1b749d3-7e64-4e2e-8890-20137a23b185")
-		)
-		(pin "2"
-			(uuid "6bc9848e-4d87-46b3-952a-eca36c0cae23")
-		)
-		(instances
-			(project "picoclock"
-				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9"
-					(reference "R30")
 					(unit 1)
 				)
 			)

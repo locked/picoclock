@@ -6289,7 +6289,7 @@
 			)
 		)
 	)
-	(global_label "GPIO35_I2S_SELECT"
+	(global_label "GPIO38_I2S_SELECT"
 		(shape input)
 		(at 243.84 204.47 0)
 		(fields_autoplaced yes)
@@ -7342,6 +7342,15 @@
 				(font
 					(size 1.27 1.27)
 				)
+			)
+		)
+		(property "LCSC" "C42411119"
+			(at 142.24 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
 		)
 		(pin "1"
