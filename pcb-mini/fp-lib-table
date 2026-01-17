@@ -8,4 +8,5 @@
   (lib (name "SJ2-35863B1-SMT-TR")(type "KiCad")(uri "${KIPRJMOD}/SJ2-35863B1-SMT-TR.pretty")(options "")(descr ""))
   (lib (name "Lunasys_Library")(type "KiCad")(uri "../../common")(options "")(descr ""))
   (lib (name "ENS160")(type "KiCad")(uri "${KIPRJMOD}/ENS160.pretty")(options "")(descr ""))
+  (lib (name "LTST-C19HE1WT")(type "KiCad")(uri "${KIPRJMOD}/LTST-C19HE1WT.pretty")(options "")(descr ""))
 )

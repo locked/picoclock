@@ -15902,7 +15902,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5_HandSoldering"
+		(property "Footprint" "Package_TO_SOT_SMD:SC-74A-5_1.55x2.9mm_P0.95mm"
 			(at 127 119.38 0)
 			(effects
 				(font
@@ -16515,7 +16515,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_Array_Convex_2x0606"
+		(property "Footprint" "LED_SMD:LED_LiteOn_LTST-C19HE1WT"
 			(at 185.42 39.37 0)
 			(effects
 				(font
@@ -18872,7 +18872,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_Array_Convex_2x0606"
+		(property "Footprint" "LED_SMD:LED_LiteOn_LTST-C19HE1WT"
 			(at 171.45 39.37 0)
 			(effects
 				(font
@@ -20011,7 +20011,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_Array_Convex_2x0606"
+		(property "Footprint" "LED_SMD:LED_LiteOn_LTST-C19HE1WT"
 			(at 199.39 39.37 0)
 			(effects
 				(font
