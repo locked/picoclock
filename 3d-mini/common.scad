@@ -27,9 +27,9 @@ button_x = 50;
 button_y = 13;
 button_radius = 3;
 
-usbc = [4, 10.7, 10.3];
+usbc = [3, 10.7, 10.3];
 usba = [6, 15.5, 16.3];
-sd = [3, 15.7, 19.7];
+sd = [1.6, 15.7, 19.7];
 jack = [4.5, 6.3, 14];
 usbc_pos = 9.6;  // from center
 usba_pos = 8.14; // from center

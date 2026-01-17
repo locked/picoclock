@@ -261,12 +261,12 @@ module speaker_supports_holes() {
     rotate([90]) translate([
         pcb_support[0]+t+3+1,
         -back[2]+speaker[2]+t-10-4,
-        -speaker_support[1]-t+6
+        -speaker_support[1]-t+5.5
     ]) cylinder(h=5, r=6);
     rotate([90]) translate([
         back[0]-pcb_support[0]-t-5+1,
         -back[2]+speaker[2]+t-10-4,
-        -speaker_support[1]-t+6
+        -speaker_support[1]-t+5.5
     ]) cylinder(h=5, r=6);
 }
 module speaker_supports() {
@@ -347,10 +347,10 @@ module back() {
 
 //pcb();
 
-front();
+//front();
 
 //rotate([90]) translate([front[0]/2, front[1]/2, 6]) screen_holder();
 
-//back();
+back();
 
 //rotate([90]) translate([t, t]) color("red") surface(file=pcb_image, convexity = 1);
