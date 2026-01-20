@@ -11,7 +11,6 @@
 #include "main.h"
 
 #include "mcp9808/mcp9808.h"
-#include "pcf8563/pcf8563.h"
 
 extern weather_struct weather;
 extern int wakeup_alarms_count;
@@ -35,19 +34,15 @@ void display_screen_nav() {
 }
 
 
-void display_screen_main() {
-    time_struct dt;
-    char temp_str[50];
-    char temp2_str[10];
+void display_screen_main(time_struct dt) {
+	char temp_str[50];
+	char temp2_str[10];
 	int _y = SCREEN_Y;
-    PAINT_TIME sPaint_time;
+	PAINT_TIME sPaint_time;
 
 	display_icon(ICON_RIGHT_X, 10, ICON_LIGHT);
 	display_icon(ICON_RIGHT_X, 50, ICON_WIFI);
 
-	printf("[in loop] calling pcf8563_getDateTime()\r\n");
-	dt = pcf8563_getDateTime();
-	printf("[in loop] pcf8563_getDateTime() year:[%d]\r\n", dt.year);
 	sPaint_time.Year = dt.year;
 	sPaint_time.Month = dt.month;
 	sPaint_time.Day = dt.day;
@@ -73,7 +68,6 @@ void display_screen_main() {
 	wakeup_alarm_struct *next_alarm;
 	get_next_alarm(&next_alarm, dt);
 
-	// Next alarm
 	_y += Font12.Height + 1;
 	if (next_alarm->in_mins != 999999) {
 		char weekdays_str[21] = "";
@@ -104,10 +98,6 @@ void display_screen_weather() {
 	sprintf(temp_str, "Weather");
 	Paint_DrawString_EN(SCREEN_X, _y, temp_str, &Font16, WHITE, BLACK);
 	_y += Font16.Height + 1;
-
-	//mcp9808_get_temperature(temp2_str);
-	//sprintf(temp_str, "Clock temp: %s C", temp2_str);
-	//Paint_DrawString_EN(SCREEN_X, _y + Font12.Height * 0, temp_str, &Font12, WHITE, BLACK);
 
 	Paint_DrawString_EN(SCREEN_X, _y + Font12.Height * 1, weather.code_desc, &Font12, WHITE, BLACK);
 	sprintf(temp_str, "Temp: %s", weather.temperature_2m);
@@ -142,9 +132,6 @@ void display_screen_alarms() {
 			getWeekdaysStr(wakeup_alarms[i].weekdays, weekdays_str);
 			sprintf(temp_str, "%d:%d(%s) %s", wakeup_alarms[i].hour, wakeup_alarms[i].min, weekdays_str, wakeup_alarms[i].chime);
 			Paint_DrawString_EN(SCREEN_X, _y, temp_str, &Font12, WHITE, BLACK);
-
-			//sprintf(temp_str, "[%d] %d:%d (%d)", wakeup_alarms[i].isset, wakeup_alarms[i].hour, wakeup_alarms[i].min, wakeup_alarms[i].weekdays);
-			//Paint_DrawString_EN(SCREEN_X, _y + Font12.Height * 0, temp_str, &Font12, WHITE, BLACK);
 		}
 	}
 }

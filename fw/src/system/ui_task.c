@@ -32,10 +32,6 @@
 #include "mcp46XX/mcp45XX.h"
 
 
-// ===========================================================================================================
-// DEFINITIONS
-// ===========================================================================================================
-
 typedef struct {
     uint8_t ev;
     uint32_t btn;
@@ -57,6 +53,7 @@ extern char last_sync_str[9];
 extern bool refresh_screen;
 extern bool refresh_screen_clear;
 extern int ts_reset_alarm_screen;
+extern bool sync_requested;
 
 extern audio_ctx_t audio_ctx;
 
@@ -85,117 +82,10 @@ void init_ui() {
     } else {
         EPD_2in13_V4_Display_Partial(BlackImage);
     }
-
-    printf("calling pcf8563_getDateTime()\r\n");
-	time_struct dt;
-    dt = pcf8563_getDateTime();
-    printf("GET EXTERNAL RTC volt_low:[%d] year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.volt_low, dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
-
-    bool time_initialized = !dt.volt_low;
-    if (!time_initialized || dt.year == 0) {
-        Paint_DrawString_EN(10, 40, "Connecting...", &Font20, WHITE, BLACK);
-        if (strcmp(global_config.screen, "B") == 0) {
-            EPD_2IN13B_V4_DisplayNoColor(BlackImage);
-        } else {
-            EPD_2in13_V4_Display_Partial(BlackImage);
-        }
-
-        //request_remote_sync();
-
-        printf("[startup] calling pcf8563_getDateTime()\r\n");
-        dt = pcf8563_getDateTime();
-        printf("[startup] pcf8563_getDateTime() year:[%d]\r\n", dt.year);
-    }
-    Paint_Clear(WHITE);
-
-    int reboot_at[2] = {-1, -1};
-    /*
-    while (1) {
-        res = qor_mbox_wait(&UiMailBox, (void **)&message, 5);
-        if (res == QOR_MBOX_OK) {
-            // Buttons click
-            if (message->ev == OST_SYS_BUTTON) {
-                printf("/!\\ Received event OST_SYS_BUTTON:[%d]\r\n", message->btn);
-                if (current_screen == SCREEN_ALARM && message->btn < 4) {
-                    // In alarm
-                    // Stop sound
-                    ost_audio_stop();
-
-                    dt = pcf8563_getDateTime();
-                    ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 2;  // Force reset in 2 s
-                } else {
-                    // Normal mode
-                    if (message->btn == 2 || message->btn == 3) {
-                        current_screen += message->btn == 2 ? 1 : -1;
-                        if (current_screen > MAX_SCREEN_ID) {
-                            current_screen = 0;
-                        }
-                        if (current_screen < 0) {
-                            current_screen = MAX_SCREEN_ID;
-                        }
-                        static ost_ui_event_t Ev = {
-                            .ev = OST_SYS_REFRESH_SCREEN,
-                            .clear = false
-                        };
-                        qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
-                    }
-                }
-                if (message->btn == 4) {
-                    mcp4651_set_wiper(0x20);
-                    //set_audio_volume_factor(1);
-
-                    // Start sound
-                    char SoundFile[260] = "Tellement.wav";
-                    fs_task_sound_start(SoundFile);
-                } else if (message->btn == 5) {
-                    ost_audio_stop();
-                    mcp4651_set_wiper(0xff);
-                    //set_audio_volume_factor(30);
-                }
-            }
-
-            // Refresh screens
-
-        }
-
-        dt = pcf8563_getDateTime();
-        //debug_printf("GET EXTERNAL RTC volt_low:[%d] year:[%d] month:[%d] day:[%d] Hour:[%d] Min:[%d] Sec:[%d]\r\n", dt.volt_low, dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec);
-
-
-            if (dt.hour == 21 && dt.min == 0) {
-                // Set reboot time (to avoid reboot loop)
-                reboot_at[0] = dt.hour;
-                reboot_at[1] = dt.min + 1;
-            }
-            if (dt.hour == reboot_at[0] && dt.min == reboot_at[1]) {
-                printf("Request reboot\r\n");
-                reboot_requested = 1;
-            }
-
-            // Reset alarm screen after a while
-            if (ts_reset_alarm_screen > 0 && ts > ts_reset_alarm_screen) {
-                printf("ts:[%d] ts_reset_alarm_screen:[%d] => Reset alarm screen\r\n", ts, ts_reset_alarm_screen);
-                ts_reset_alarm_screen = 0;
-                // Set screen back to normal mode
-                current_screen = SCREEN_MAIN;
-                // And force refresh
-                static ost_ui_event_t Ev = {
-                    .ev = OST_SYS_REFRESH_SCREEN,
-                    .clear = true
-                };
-                qor_mbox_notify(&UiMailBox, (void **)&Ev, QOR_MBOX_OPTION_SEND_BACK);
-            }
-        }
-
-        if (!reboot_requested) {
-            watchdog_update();
-        }
-    }
-    */
 }
 
 
-void ui_refresh_screen(bool message_clear) {
+void ui_refresh_screen(bool message_clear, time_struct dt) {
 	printf("/!\\ Refresh screen:[%d]\r\n", current_screen);
 	if (!module_initialized) {
 		if (strcmp(global_config.screen, "B") == 0) {
@@ -219,7 +109,7 @@ void ui_refresh_screen(bool message_clear) {
 	bool shutdown_screen = false;
 	display_screen_nav();
 	if (current_screen == SCREEN_MAIN) {
-		display_screen_main();
+		display_screen_main(dt);
 	} else if (current_screen == SCREEN_WEATHER) {
 		display_screen_weather();
 	} else if (current_screen == SCREEN_LIST_ALARMS) {
@@ -263,11 +153,10 @@ void ui_refresh_screen(bool message_clear) {
 }
 
 
-void ui_btn_click(int btn) {
+void ui_btn_click(int btn, time_struct dt) {
 	// On any button click, stop alarm
 	if (current_screen == SCREEN_ALARM) {
 		main_audio_stop();
-		time_struct dt = pcf8563_getDateTime();
 		ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 1;  // Force reset in 1 s
 	}
 
@@ -287,7 +176,7 @@ void ui_btn_click(int btn) {
 		}
 	} else if (btn == 1) {
 		if (current_screen < 3) {
-			request_remote_sync();
+			sync_requested = true;
 		}
 	} else if (btn == 2 || btn == 3) {
 		current_screen += btn == 2 ? 1 : -1;

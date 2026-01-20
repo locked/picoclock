@@ -78,7 +78,7 @@ extern "C"
 #define I2C_SCL 19
 #define I2C_CHANNEL i2c1
 #endif
-#define I2C_BAUD_RATE 400000
+#define I2C_BAUD_RATE 100000
 
 
 #if PCB_VERSION == PCB_VERSION_MINI

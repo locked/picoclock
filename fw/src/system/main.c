@@ -58,9 +58,7 @@ static audio_i2s_config_t config = {
 };
 
 
-//
 // Globals
-//
 weather_struct weather = {"", "", "", ""};
 int current_screen = 0;
 config_struct global_config;
@@ -69,21 +67,19 @@ char last_sync_str[9] = "";
 bool refresh_screen = false;
 bool refresh_screen_clear = false;
 int ts_reset_alarm_screen = 0;
+bool sync_requested = false;
 
-
-// ===========================================================================================================
 // CONSTANTS / DEFINES
-// ===========================================================================================================
-
 const uint8_t BUTTONS[] = {BTN_1, BTN_2, BTN_3, BTN_4, BTN_5, BTN_6};
 volatile uint8_t last_btn_values[6] = {1, 1, 1, 1, 1, 1};
 static struct repeating_timer timer;
 volatile int request_btn_push = -1;
 volatile int request_audio_read = -1;
 
-// ===========================================================================================================
+bool datetime_update_requested = true;
+static struct repeating_timer timer_datetime;
+
 // PROTOTYPES
-// ===========================================================================================================
 extern void init_spi(void);
 void dma_init();
 void __isr __time_critical_func(audio_i2s_dma_irq_handler)();
@@ -108,6 +104,11 @@ bool timer_callback(struct repeating_timer *t) {
 	return true; // Keep the timer running
 }
 
+bool timer_datetime_callback(struct repeating_timer *t) {
+	datetime_update_requested = true;
+	return true; // Keep the timer running
+}
+
 
 // ----------------------------------------------------------------------------
 // AUDIO HAL
@@ -126,15 +127,14 @@ void main_audio_play(const char *filename) {
 
 	i2s.buffer_index = 0;
 
-	// On appelle une première fois le process pour récupérer et initialiser le premier buffer...
+	// Fill 1st buffer..
 	printf("audio_process 1st buffer...\r\n");
 	audio_process(&audio_ctx);
-
-	// Puis le deuxième ... (pour avoir un buffer d'avance)
+	// ..then the 2nd one
 	audio_process(&audio_ctx);
 
 	gpio_put(AUDIO_MUTE_PIN, 1); // Unmute
-	// On lance les DMA
+	// Start DMA
 	printf("i2s_start...\r\n");
 	i2s_start(&i2s);
 }
@@ -142,7 +142,6 @@ void main_audio_play(const char *filename) {
 void main_audio_stop() {
 	gpio_put(AUDIO_MUTE_PIN, 0); // Mute
 
-	//debug_printf("audio stop\r\n");
 	memset(i2s.out_ctrl_blocks[0], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
 	memset(i2s.out_ctrl_blocks[1], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
 	audio_stop(&audio_ctx);
@@ -344,10 +343,15 @@ void core1_entry() {
 		request_remote_sync();
 	}
 
+	add_repeating_timer_ms(-1000, timer_datetime_callback, NULL, &timer_datetime);
+
 	printf("[core1] start loop\r\n");
 	while (1) {
-		dt = pcf8563_getDateTime();
-		//printf("[core1] got time:[%d] [%d:%d]\r\n", dt.volt_low, dt.hour, dt.min);
+		if (datetime_update_requested) {
+			datetime_update_requested = false;
+			dt = pcf8563_getDateTime();
+			//printf("[core1] update time:[%d] [%d:%d]\r\n", dt.volt_low, dt.hour, dt.min);
+		}
 		if (!dt.volt_low) {
 			// Check alarm
 			if (dt.min != last_min) {
@@ -372,10 +376,12 @@ void core1_entry() {
 				// First run, initialize as if sync nearly 1 hour ago
 				last_sync = ts - 3600 + 30;
 			}
-			if ((((ts - last_sync) > 3600) || ((ts - last_sync) < 0)) && !audio_ctx.playing) {
+			bool old_sync = ((ts - last_sync) > 3600) || ((ts - last_sync) < 0);
+			if ((sync_requested || old_sync) && !audio_ctx.playing) {
+				sync_requested = false;
+				last_sync = ts;
 				printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
 				request_remote_sync();
-				last_sync = ts;
 				sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
 				printf("sync trigger done\r\n");
 			}
@@ -391,11 +397,16 @@ void core1_entry() {
 				refresh_screen_clear = true;
 			}
 		}
+		if (request_btn_push >= 0) {
+			ui_btn_click(request_btn_push, dt);
+			request_btn_push = -1;
+		}
 		if (refresh_screen) {
-			ui_refresh_screen(refresh_screen_clear);
+			ui_refresh_screen(refresh_screen_clear, dt);
 			refresh_screen = false;
 		}
-		sleep_ms(100);
+		sleep_ms(50);
+		watchdog_update();
 	}
 }
 
@@ -447,20 +458,12 @@ int main() {
 	printf("[picoclock] Init UI\r\n");
 	init_ui();
 
-	printf("[picoclock] UI: refresh screen\r\n");
-	ui_refresh_screen(false);
-
-	// Start the operating system!
 	printf("[picoclock] Start\r\n");
 
 	multicore_launch_core1(core1_entry);
 
 	while (true) {
 		//printf("[picoclock] In loop\r\n");
-		if (request_btn_push >= 0) {
-			ui_btn_click(request_btn_push);
-			request_btn_push = -1;
-		}
 		uint64_t sleep_dur = 10000;
 		if (audio_ctx.playing) {
 			sleep_dur = 50;		// I2S audio data cannot wait
@@ -470,7 +473,6 @@ int main() {
 			fs_audio_next_samples();
 			request_audio_read = -1;
 		}
-		watchdog_update();
 	}
 
 	return 0;
