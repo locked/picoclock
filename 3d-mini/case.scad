@@ -1,6 +1,7 @@
 include <common.scad>;
 include <screen_holder.scad>;
 
+support_large_speaker = false;
 
 module pcb() {
     rotate([90]) translate([t, t]) difference() {
@@ -47,35 +48,59 @@ module front_screw() {
         }
     }
 }
+module front_joint(joint_width_margin=0, y_adjust=0) {
+    for (i = [0:1]) {
+        // horizontal
+        translate([
+            t/2 + joint_margin,
+            i * front[1] + (i == 0 ? 1 : -2) * joint_width + (i == 0 ? 1 : -1) * joint_margin + (i == 0 ? 0 : -1) * joint_width_margin,
+            -1+joint_margin + y_adjust]) cube([
+                front[0]-t-joint_margin*2,
+                joint_width+joint_width_margin,
+                1-joint_margin
+            ]);
+    }
+    for (i = [0:1]) {
+        // vertical
+        translate([
+            i * front[0] + (i == 0 ? 1 : -2) * joint_width + (i == 0 ? 1 : -1) * joint_margin + (i == 0 ? 0 : -1) * joint_width_margin,
+            t/2 + joint_margin,
+            -1+joint_margin + y_adjust]) cube([
+                joint_width+joint_width_margin,
+                front[1]-t-joint_margin*2,
+                1-joint_margin
+            ]);
+    }
+}
+module back_joint() {
+    for (i = [0:1]) {
+        translate([
+            0,
+            i * front[1] + (i == 0 ? 0 : -1) * joint_width + (i == 0 ? 0 : 0) * joint_margin,
+            0]) cube([
+                front[0],
+                joint_width,
+                1
+            ]);
+    }
+    for (i = [0:1]) {
+        translate([
+            i * front[0] + (i == 0 ? 0 : -1) * joint_width + (i == 0 ? 0 : 0) * joint_margin,
+            0,
+            0]) cube([
+                joint_width,
+                front[1],
+                1
+            ]);
+    }
+}
 module front() {
     front_inner = [pcb[0] + pcb_margin, pcb[1] + pcb_margin, front[2] - t];
 
     rotate([90]) difference() {
         union(){
             cube(front);
-            // front joint
-            for (i = [0:1]) {
-                // horizontal
-                translate([
-                    t/2 + joint_margin,
-                    i * front[1] + (i == 0 ? 1 : -2) * joint_width + (i == 0 ? 1 : -1) * joint_margin,
-                    -1+joint_margin]) cube([
-                        front[0]-t-joint_margin*2,
-                        joint_width,
-                        1-joint_margin
-                    ]);
-            }
-            for (i = [0:1]) {
-                // vertical
-                translate([
-                    i * front[0] + (i == 0 ? 1 : -2) * joint_width + (i == 0 ? 1 : -1) * joint_margin,
-                    t/2 + joint_margin,
-                    -1+joint_margin]) cube([
-                        joint_width,
-                        front[1]-t-joint_margin*2,
-                        1-joint_margin
-                    ]);
-            }
+            front_joint();
         }
         translate([t-pcb_margin/2, t-pcb_margin/2]) cube(front_inner);
         front_screw();
@@ -209,6 +234,12 @@ module speaker2_holes() {
                 (y == 0 ? -1 : 1) * speaker2_screw_from_center,
                 -t-speaker2_support[2]
             ]) cylinder(h=10, r=1.6, $fn=10);
+
+            translate([
+                (x == 0 ? -1 : 1) * speaker2_screw_from_center,
+                (y == 0 ? -1 : 1) * speaker2_screw_from_center,
+                -t-speaker2_support[2] - 0.8
+            ]) cylinder(h=5, r=3, $fn=10);
         }
     }
 }
@@ -234,15 +265,24 @@ module speaker() {
     cube(speaker_plate);
 }
 module speaker_grid() {
-    startx = (back[0]-speaker[0])/2 - t/2;
-    endx = startx + speaker[0];
-    starty = (back[1]-speaker2[0])/2 + speaker2[0] * 0.14;
-    endy = starty + speaker2[0] * 0.7;
-    step = 5;
+    startx = (back[0]-speaker2[0])/2 - t/2 + 4;
+    endx = startx + speaker2[0] - 8;
+    starty = (back[1]-speaker2[0])/2 + speaker2[0] * 0.14 + 3;
+    endy = starty + speaker2[0] * 0.7 - 6;
+    step = 6;
+    width = 2.8;
+    if (support_large_speaker) {
+        startx = (back[0]-speaker[0])/2 - t/2;
+        endx = startx + speaker[0];
+        starty = (back[1]-speaker2[0])/2 + speaker2[0] * 0.14;
+        endy = starty + speaker2[0] * 0.7;
+        step = 5;
+        width = 2;
+    }
     for (x = [startx:step:endx]) {
         for (y = [starty:step:endy]) {
             translate([x, y, -back[2]])
-            cube([2,2,t]);
+            cube([width,width,t]);
         }
     }
 }
@@ -291,33 +331,15 @@ module back() {
     rotate([90]) difference() {
         union(){
             translate([0, 0, -back[2]]) cube(back);
-            // Front joint
-            for (i = [0:1]) {
-                translate([
-                    0,
-                    i * front[1] + (i == 0 ? 0 : -1) * joint_width + (i == 0 ? 0 : 0) * joint_margin,
-                    0]) cube([
-                        front[0],
-                        joint_width,
-                        1
-                    ]);
-            }
-            for (i = [0:1]) {
-                translate([
-                    i * front[0] + (i == 0 ? 0 : -1) * joint_width + (i == 0 ? 0 : 0) * joint_margin,
-                    0,
-                    0]) cube([
-                        joint_width,
-                        front[1],
-                        1
-                    ]);
-            }
+            back_joint();
         }
         translate([t, t, -back[2] + t]) cube(back_inner);
         io(true);
         back_screw();
         speaker_grid();
-        speaker_supports_holes();
+        if (support_large_speaker) {
+            speaker_supports_holes();
+        }
         translate([back[0]/2, back[1]/2, -back[2] + t + speaker2_support[2]]) speaker2_holes();
     }
 
@@ -335,14 +357,17 @@ module back() {
             }
         }
         back_screw();
-        speaker_supports_holes();
+        if (support_large_speaker) {
+            speaker_supports_holes();
+        }
+        front_joint(0.5, 0.8);
     }
 
-    //rotate([90]) translate([back[0]/2, back[1]/2, -back[2] + t + speaker2_support[2]]) speaker2();
     rotate([90]) translate([back[0]/2, back[1]/2, -back[2] + t]) speaker2_support();
 
-    //rotate([90]) translate([(back[0]-speaker[0])/2, pcb_support[0] + t, -back[2]]) speaker();
-    speaker_supports();
+    if (support_large_speaker) {
+        speaker_supports();
+    }
 }
 
 //pcb();

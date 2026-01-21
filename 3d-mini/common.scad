@@ -2,7 +2,7 @@
 pcb = [140, 54, 1.6];
 pcb_screw_diam = 3.6;
 pcb_screw_pos = [4, 4];
-pcb_bolt_diam = 7;
+pcb_bolt_diam = 6.5;
 pcb_bolt_depth = 3.2;
 pcb_bolt_length = 40;
 pcb_image = "picoclock_scaled.png";
