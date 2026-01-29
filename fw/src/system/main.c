@@ -247,10 +247,11 @@ void system_initialize() {
 	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
 	printf("[picoclock] START PICO_RP2350A=%d\r\n", PICO_RP2350A);
 
+	sleep_ms(2000);
 	// Init I2C
 	init_i2c();
 	printf("[picoclock] init_i2c OK\r\n");
-	//i2c_bus_scan();
+	i2c_bus_scan();
 
 	pcf8563_set_i2c(I2C_CHANNEL);
 	printf("[picoclock] pcf8563_set_i2c OK\r\n");

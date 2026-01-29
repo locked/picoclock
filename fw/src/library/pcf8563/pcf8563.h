@@ -10,7 +10,7 @@
 /* these are adjusted for arduino */
 #define RTCC_R      0xa3
 #define RTCC_W      0xa2
-#define RTCC_ADDR   RTCC_R>>1
+#define RTCC_ADDR   RTCC_R>>1   // 0x51
 
 #define RTCC_SEC        1
 #define RTCC_MIN        2
