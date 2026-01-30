@@ -10026,7 +10026,7 @@
 			)
 		)
 		(property "Value" "ABM8-272-T3"
-			(at 8.08 3.11 270)
+			(at 2.61 -4.01 0)
 			(layer "B.Fab")
 			(uuid "c5b985a2-ea74-418d-8549-b6ea1fc7b936")
 			(effects
@@ -14605,25 +14605,25 @@
 		(descr "SC-74A, 5 Pin (https://www.jeita.or.jp/japanese/standard/book/ED-7500B/#target/page_no=41), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SC-74A TO_SOT_SMD")
 		(property "Reference" "U13"
-			(at 0 2.4 270)
+			(at 0 2.25 270)
 			(layer "B.SilkS")
 			(uuid "78b00ea7-b29d-48b9-8ec3-602445088547")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.8)
+					(thickness 0.1)
 				)
 				(justify mirror)
 			)
 		)
 		(property "Value" "TCR2EE19"
-			(at 0 -2.4 270)
-			(layer "B.Fab")
+			(at -0.01 3.21 270)
+			(layer "B.SilkS")
 			(uuid "a42f82b9-e4ea-458e-aeff-b5444c0c230a")
 			(effects
 				(font
-					(size 1 1)
-					(thickness 0.15)
+					(size 0.8 0.8)
+					(thickness 0.1)
 				)
 				(justify mirror)
 			)
