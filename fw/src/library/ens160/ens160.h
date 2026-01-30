@@ -5,11 +5,12 @@
 
 #include "hardware/i2c.h"
 
+// Data from https://github.com/krishnamvs/ECE-4180-Final-Project-Fall-22/tree/main/ENS160%20Library%20for%20Pi%20Pico
+
 #define ENS160_ADDRESS_LOW 0x52
 #define ENS160_ADDRESS_HIGH 0x53
 
 #define ENS160_DEVICE_ID 0x0160
-
 
 #define SFE_ENS160_PART_ID    0x00
 
@@ -180,5 +181,7 @@ bool ens160_ping(int address);
 uint16_t ens160_getUniqueID();
 uint8_t ens160_getFlags();
 uint16_t ens160_getTVOC();
+uint16_t ens160_getECO2();
+bool ens160_checkDataStatus();
 
 #endif

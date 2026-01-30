@@ -60,9 +60,11 @@ void display_screen_main(time_struct dt) {
 	Paint_DrawTime(SCREEN_X, _y, &sPaint_time, &Font24, WHITE, BLACK);
 
 	uint16_t tvoc = ens160_getTVOC();
+	uint16_t eco2 = ens160_getECO2();
+	bool data_status = ens160_checkDataStatus();
 	//mcp9808_get_temperature(temp2_str);
 	//sprintf(temp_str, "Temp: %s C", temp2_str);
-	sprintf(temp_str, "TVOC: %d", tvoc);
+	sprintf(temp_str, "[%d] TVOC:%d eCO2:%d", data_status, tvoc, eco2);
 	_y += Font24.Height + 2;
 	Paint_DrawString_EN(SCREEN_X, _y, temp_str, &Font12, WHITE, BLACK);
 
