@@ -10,6 +10,7 @@
 #include "alarms.h"
 #include "main.h"
 
+#include "ens160/ens160.h"
 #include "mcp9808/mcp9808.h"
 
 extern weather_struct weather;
@@ -58,10 +59,11 @@ void display_screen_main(time_struct dt) {
 	//Paint_ClearWindows(SCREEN_X, _y, SCREEN_X + Font24.Width * 8, 40 + Font24.Height, WHITE);
 	Paint_DrawTime(SCREEN_X, _y, &sPaint_time, &Font24, WHITE, BLACK);
 
-	mcp9808_get_temperature(temp2_str);
-	sprintf(temp_str, "Temp: %s C", temp2_str);
+	uint16_t tvoc = ens160_getTVOC();
+	//mcp9808_get_temperature(temp2_str);
+	//sprintf(temp_str, "Temp: %s C", temp2_str);
+	sprintf(temp_str, "TVOC: %d", tvoc);
 	_y += Font24.Height + 2;
-	//Paint_ClearWindows(SCREEN_X + Font12.Width * 6, _y, SCREEN_X + Font12.Width * 12, 80 + Font12.Height, WHITE);
 	Paint_DrawString_EN(SCREEN_X, _y, temp_str, &Font12, WHITE, BLACK);
 
 	// Next alarm

@@ -51,6 +51,7 @@ set(OST_SRCS
     system/ff/ff_stubs.c
     library/mini_qoi.c
     library/tiny-json.c
+    library/ens160/ens160.c
     library/mcp9808/mcp9808.c
     library/pcf8563/pcf8563.c
     library/mcp46XX/mcp45XX.c

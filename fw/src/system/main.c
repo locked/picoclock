@@ -43,6 +43,7 @@
 #include "lp5817/lp5817.h"
 #include "mcp46XX/mcp45XX.h"
 #include "pcf8563/pcf8563.h"
+#include "ens160/ens160.h"
 
 // Audio (PIO)
 #include "audio_player.h"
@@ -296,6 +297,9 @@ void system_initialize() {
 	gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
 	printf("[picoclock] Init SD card OK\r\n");
 
+	// Init gaz sensor
+	ens160_init(I2C_CHANNEL);
+
 	printf("[picoclock] System Clock: %lu\n", clock_get_hz(clk_sys));
 }
 
@@ -341,11 +345,13 @@ void core1_entry() {
 	printf("[core1] check RTC\r\n");
 	dt = pcf8563_getDateTime();
 	if (dt.volt_low) {
-		request_remote_sync();
+		//printf("[core1] check RTC => low volt, trigger sync\r\n");
+		//request_remote_sync();
 	}
 
 	add_repeating_timer_ms(-1000, timer_datetime_callback, NULL, &timer_datetime);
 
+	refresh_screen = true;
 	printf("[core1] start loop\r\n");
 	while (1) {
 		if (datetime_update_requested) {
@@ -353,24 +359,25 @@ void core1_entry() {
 			dt = pcf8563_getDateTime();
 			//printf("[core1] update time:[%d] [%d:%d]\r\n", dt.volt_low, dt.hour, dt.min);
 		}
-		if (!dt.volt_low) {
-			// Check alarm
-			if (dt.min != last_min) {
-				if (check_alarm(dt) == 1) {
-					ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 300;  // To reset screen after a while
 
-					// Set screen to alarm
-					current_screen = SCREEN_ALARM;
-					refresh_screen = true;
-					refresh_screen_clear = true;
-				}
+		// Check alarm
+		if (dt.min != last_min) {
+			if (check_alarm(dt) == 1) {
+				ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 300;  // To reset screen after a while
 
+				// Set screen to alarm
+				current_screen = SCREEN_ALARM;
 				refresh_screen = true;
-				refresh_screen_clear = false;
-
-				last_min = dt.min;
+				refresh_screen_clear = true;
 			}
 
+			refresh_screen = true;
+			refresh_screen_clear = false;
+
+			last_min = dt.min;
+		}
+
+		if (!dt.volt_low) {
 			// Trigger sync periodically
 			int ts = dt.hour * 3600 + dt.min * 60 + dt.sec;
 			if (last_sync == -1) {
