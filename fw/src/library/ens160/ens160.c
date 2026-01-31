@@ -40,8 +40,9 @@ uint16_t ens160_getUniqueID() {
 
     i2c_write_blocking(ens160_i2c, ENS160_ADDRESS_LOW, SFE_ENS160_PART_ID, 1, false);
 	retVal = i2c_read_blocking(ens160_i2c, ENS160_ADDRESS_LOW, tempVal, 2, false);
-	if (retVal != 2)
+	if (retVal != 2) {
 		return 0;
+	}
 
 	id = tempVal[0];
 	id |= tempVal[1] << 8;
@@ -52,14 +53,16 @@ uint16_t ens160_getUniqueID() {
 bool ens160_isConnected() {
 	uint16_t uniqueID; 
 	uniqueID = ens160_getUniqueID(); 
-	if( uniqueID != ENS160_DEVICE_ID )
+	if (uniqueID != ENS160_DEVICE_ID) {
 		return false;
+	}
 	return true;
 }
 
 bool ens160_setOperatingMode(uint8_t val) {
-	if( val > SFE_ENS160_RESET )
+	if (val > SFE_ENS160_RESET) {
 		return false;
+	}
 
     uint8_t buf[] = {SFE_ENS160_OP_MODE, val};
     i2c_write_blocking(ens160_i2c, ENS160_ADDRESS_LOW, buf, 2, false);
@@ -74,24 +77,18 @@ uint8_t ens160_getFlags() {
     uint8_t buf[] = {SFE_ENS160_DEVICE_STATUS};
     i2c_write_blocking(ens160_i2c, ENS160_ADDRESS_LOW, buf, 1, false);
 	retVal = i2c_read_blocking(ens160_i2c, ENS160_ADDRESS_LOW, &tempVal, 1, false);
-	if (retVal != 1)
+	if (retVal != 1) {
 		return 0xFF;
+	}
 
-	tempVal = (tempVal & 0x0C) >> 2; 
+	tempVal = (tempVal & 0x0C) >> 2;
 
 	switch (tempVal) {
 		case 0: // Normal operation
-			return 0;
-			break;
 		case 1: // Warm-up phase
-			return 1;
-			break;
 		case 2: // Initial Start-Up Phase
-			return 2;
-			break;
 		case 3: // Invalid Output
-			return 3;
-			break;
+			return tempVal;
 		default:
 			return 0xFF;
 	}
@@ -104,8 +101,9 @@ uint16_t ens160_getTVOC() {
     uint8_t buf[] = {SFE_ENS160_DATA_TVOC};
     i2c_write_blocking(ens160_i2c, ENS160_ADDRESS_LOW, buf, 1, false);
 	int32_t retVal = i2c_read_blocking(ens160_i2c, ENS160_ADDRESS_LOW, tempVal, 2, false);
-	if (retVal != 2)
+	if (retVal != 2) {
 		return 0;
+	}
 
 	tvoc = tempVal[0];
 	tvoc |= tempVal[1] << 8;
@@ -114,13 +112,12 @@ uint16_t ens160_getTVOC() {
 }
 
 uint16_t ens160_getECO2() {
-	int32_t retVal;
 	uint16_t eco;
 	uint8_t tempVal[2] = {0};
 
     uint8_t buf[] = {SFE_ENS160_DATA_ECO2};
     i2c_write_blocking(ens160_i2c, ENS160_ADDRESS_LOW, buf, 1, false);
-	retVal = i2c_read_blocking(ens160_i2c, ENS160_ADDRESS_LOW, tempVal, 2, false);
+	i2c_read_blocking(ens160_i2c, ENS160_ADDRESS_LOW, tempVal, 2, false);
 
 	eco = tempVal[0];
 	eco |= tempVal[1]  << 8;
@@ -128,18 +125,58 @@ uint16_t ens160_getECO2() {
 	return eco;
 }
 
-bool ens160_checkDataStatus() {
-	int32_t retVal;
+uint8_t ens160_checkDataStatus() {
 	uint8_t tempVal;
 
     uint8_t buf[] = {SFE_ENS160_DEVICE_STATUS};
     i2c_write_blocking(ens160_i2c, ENS160_ADDRESS_LOW, buf, 1, false);
-	retVal = i2c_read_blocking(ens160_i2c, ENS160_ADDRESS_LOW, &tempVal, 1, false);
+	i2c_read_blocking(ens160_i2c, ENS160_ADDRESS_LOW, &tempVal, 1, false);
 
-	tempVal &= 0x02;
+	tempVal &= 0x02 >> 1;
 
-	if (tempVal == 0x02)
-		return true;
+	return tempVal;
+}
 
-	return false;
+// Does not return actual temperature
+// It gives the compensation value fed to him
+float ens160_getTempKelvin() {
+	float temperature; 
+	int16_t tempConversion; 
+	uint8_t tempVal[2] = {0};
+
+    uint8_t buf[] = {SFE_ENS160_DATA_T};
+    i2c_write_blocking(ens160_i2c, ENS160_ADDRESS_LOW, buf, 1, false);
+	i2c_read_blocking(ens160_i2c, ENS160_ADDRESS_LOW, tempVal, 2, false);
+
+	tempConversion = tempVal[0];
+	tempConversion |= (tempVal[1] << 8);
+	temperature = (float)tempConversion; 
+
+	temperature = temperature/64; // Formula as described on pg. 32 of datasheet.
+
+	return temperature;
+}
+
+float ens160_getTempCelsius() {
+	float temperature; 
+
+	temperature = ens160_getTempKelvin();
+
+	return (temperature - 273.15);
+}
+
+float ens160_getRH() {
+	uint16_t rh; 
+	uint8_t tempVal[2] = {0};
+
+    uint8_t buf[] = {SFE_ENS160_DATA_RH};
+    i2c_write_blocking(ens160_i2c, ENS160_ADDRESS_LOW, buf, 1, false);
+	i2c_read_blocking(ens160_i2c, ENS160_ADDRESS_LOW, tempVal, 2, false);
+
+	rh = tempVal[0];
+	rh |= tempVal[1] << 8;
+
+	rh = rh/512; // Formula as described on pg. 33 of datasheet.
+
+	return rh;
 }

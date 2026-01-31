@@ -56,6 +56,7 @@ set(OST_SRCS
     library/pcf8563/pcf8563.c
     library/mcp46XX/mcp45XX.c
     library/lp5817/lp5817.c
+    library/circularBuffer.c
     library/graphics.c
     library/tinyhttp/http.c
     library/tinyhttp/chunk.c

@@ -26,11 +26,15 @@ void display_icon(int x, int y, int icon_id);
 #define SCREEN_X 32
 #define SCREEN_Y 8
 
+#define SCREEN_WIDTH 256
+#define SCREEN_HEIGHT 64
+
 void display_screen_nav();
 void display_screen_main(time_struct dt);
 void display_screen_weather();
 void display_screen_alarms();
 void display_screen_debug(char *last_sync_str);
 void display_screen_alarm();
+void display_screen_metrics();
 
 #endif // GRAPHICS_LIB_H

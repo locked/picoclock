@@ -118,6 +118,8 @@ void ui_refresh_screen(bool message_clear, time_struct dt) {
 		display_screen_debug(last_sync_str);
 	} else if (current_screen == SCREEN_ALARM) {
 		display_screen_alarm();
+	} else if (current_screen == SCREEN_METRIC) {
+		display_screen_metrics();
 	}
 	if (message_clear) {
 		if (strcmp(global_config.screen, "B") == 0) {

@@ -13,9 +13,12 @@
 #include "ens160/ens160.h"
 #include "mcp9808/mcp9808.h"
 
+#include "circularBuffer.h"
+
 extern weather_struct weather;
 extern int wakeup_alarms_count;
 extern wakeup_alarm_struct wakeup_alarms[10];
+extern circularBuffer_t* ring_metrics;
 
 
 void display_icon(int x, int y, int icon_id) {
@@ -59,12 +62,15 @@ void display_screen_main(time_struct dt) {
 	//Paint_ClearWindows(SCREEN_X, _y, SCREEN_X + Font24.Width * 8, 40 + Font24.Height, WHITE);
 	Paint_DrawTime(SCREEN_X, _y, &sPaint_time, &Font24, WHITE, BLACK);
 
-	uint16_t tvoc = ens160_getTVOC();
-	uint16_t eco2 = ens160_getECO2();
-	bool data_status = ens160_checkDataStatus();
+	//uint16_t tvoc = ens160_getTVOC();
+	//uint16_t eco2 = ens160_getECO2();
+	metrics_t *m = circularBuffer_current(ring_metrics);
+	uint8_t data_status = ens160_checkDataStatus();
+	int ens_status = ens160_getFlags();
+	float ens160_comp_temp = ens160_getTempCelsius();
 	//mcp9808_get_temperature(temp2_str);
 	//sprintf(temp_str, "Temp: %s C", temp2_str);
-	sprintf(temp_str, "[%d] TVOC:%d eCO2:%d", data_status, tvoc, eco2);
+	sprintf(temp_str, "%02x/%d TVOC:%d CO2:%d T:%0.1f", data_status, ens_status, m->tvoc, m->eco2, ens160_comp_temp);
 	_y += Font24.Height + 2;
 	Paint_DrawString_EN(SCREEN_X, _y, temp_str, &Font12, WHITE, BLACK);
 
@@ -173,4 +179,31 @@ void display_screen_alarm() {
 	_y += Font16.Height + 1;
 	sprintf(temp_str, "%02d:%02d", dt.hour, dt.min);
 	Paint_DrawString_EN(SCREEN_X, _y, temp_str, &Font24, WHITE, BLACK);
+}
+
+
+void display_screen_metrics() {
+	metrics_t *m;
+	uint8_t x = 0;
+	uint8_t y = SCREEN_HEIGHT;
+	uint8_t endx = 0;
+	uint8_t endy = SCREEN_HEIGHT;
+	// Compute max
+	float max_eco2 = 0;
+	for (uint8_t i = 0; i < ring_metrics->num; i++) {
+		m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
+		if (m->eco2 > max_eco2) {
+			max_eco2 = m->eco2;
+		}
+	}
+	for (uint8_t i = 0; i < ring_metrics->num; i++) {
+		m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
+		//printf("%d %d \n", m->tvoc, m->eco2);
+
+		x += 1;
+		endx = x;
+		uint8_t norm_v = ((float)m->eco2/max_eco2) * SCREEN_HEIGHT;
+		endy = SCREEN_HEIGHT - norm_v;
+		Paint_DrawLine(x, y, endx, endy, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
+	}
 }

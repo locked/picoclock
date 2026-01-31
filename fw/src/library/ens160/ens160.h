@@ -182,6 +182,8 @@ uint16_t ens160_getUniqueID();
 uint8_t ens160_getFlags();
 uint16_t ens160_getTVOC();
 uint16_t ens160_getECO2();
-bool ens160_checkDataStatus();
+uint8_t ens160_checkDataStatus();
+float ens160_getTempCelsius();
+float ens160_getRH();
 
 #endif

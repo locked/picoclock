@@ -45,6 +45,8 @@
 #include "pcf8563/pcf8563.h"
 #include "ens160/ens160.h"
 
+#include "circularBuffer.h"
+
 // Audio (PIO)
 #include "audio_player.h"
 #include "pico_i2s.h"
@@ -69,6 +71,7 @@ bool refresh_screen = false;
 bool refresh_screen_clear = false;
 int ts_reset_alarm_screen = 0;
 bool sync_requested = false;
+circularBuffer_t* ring_metrics;
 
 // CONSTANTS / DEFINES
 const uint8_t BUTTONS[] = {BTN_1, BTN_2, BTN_3, BTN_4, BTN_5, BTN_6};
@@ -248,7 +251,9 @@ void system_initialize() {
 	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
 	printf("[picoclock] START PICO_RP2350A=%d\r\n", PICO_RP2350A);
 
-	sleep_ms(2000);
+	// Init ring buffer for metrics
+	ring_metrics = circularBuffer_create(ring_metrics, 120, sizeof(metrics_t));
+
 	// Init I2C
 	init_i2c();
 	printf("[picoclock] init_i2c OK\r\n");
@@ -341,6 +346,7 @@ void core1_entry() {
 	int last_min = 0;
 	int last_sync = -1;
 	time_struct dt;
+	metrics_t metrics;
 
 	printf("[core1] check RTC\r\n");
 	dt = pcf8563_getDateTime();
@@ -370,6 +376,11 @@ void core1_entry() {
 				refresh_screen = true;
 				refresh_screen_clear = true;
 			}
+
+			// Collect metrics
+			metrics.tvoc = ens160_getTVOC();
+			metrics.eco2 = ens160_getECO2();
+			circularBuffer_insert(ring_metrics, &metrics);
 
 			refresh_screen = true;
 			refresh_screen_clear = false;

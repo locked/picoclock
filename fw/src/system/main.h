@@ -18,10 +18,11 @@ extern "C"
 #define SCREEN_WEATHER 1
 #define SCREEN_LIST_ALARMS 2
 #define SCREEN_DEBUG 3
+#define SCREEN_METRIC 4
 // unreachable screens
 #define SCREEN_ALARM 10
 
-#define MAX_SCREEN_ID 3
+#define MAX_SCREEN_ID 4
 
 #define UART_ID uart0
 #define BAUD_RATE 115200
@@ -157,6 +158,17 @@ typedef struct {
 	char remote_host[50];
 	char screen[2];
 } config_struct;
+
+typedef struct {
+	uint8_t year;
+	uint8_t month;
+	uint8_t day;
+	uint8_t hour;
+	uint8_t minute;
+	uint16_t tvoc;
+	uint16_t eco2;
+	float temp;
+} metrics_t;
 
 
 // ----------------------------------------------------------------------------
