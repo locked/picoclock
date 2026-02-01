@@ -31,6 +31,7 @@ SOFTWARE. */
 /* File includes */
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "circularBuffer.h"
 
 /*****************************************************************************/
@@ -54,6 +55,7 @@ circularBuffer_t* circularBuffer_create(circularBuffer_t* buff, uint16_t number,
 	{
 		return NULL;
 	}
+	memset(buff->buffer, 0, number * size);
 
 	/* Fill in default parameters */
 	buff->num = number;                 /* Number of elements in the array */

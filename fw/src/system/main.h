@@ -164,9 +164,10 @@ typedef struct {
 	uint8_t month;
 	uint8_t day;
 	uint8_t hour;
-	uint8_t minute;
+	uint8_t min;
 	uint16_t tvoc;
 	uint16_t eco2;
+	uint8_t ens160_status;
 	float temp;
 } metrics_t;
 

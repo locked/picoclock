@@ -13,12 +13,10 @@
 #include "ens160/ens160.h"
 #include "mcp9808/mcp9808.h"
 
-#include "circularBuffer.h"
 
 extern weather_struct weather;
 extern int wakeup_alarms_count;
 extern wakeup_alarm_struct wakeup_alarms[10];
-extern circularBuffer_t* ring_metrics;
 
 
 void display_icon(int x, int y, int icon_id) {
@@ -38,7 +36,7 @@ void display_screen_nav() {
 }
 
 
-void display_screen_main(time_struct dt) {
+void display_screen_main(time_struct dt, circularBuffer_t* ring_metrics) {
 	char temp_str[50];
 	char temp2_str[10];
 	int _y = SCREEN_Y;
@@ -182,11 +180,10 @@ void display_screen_alarm() {
 }
 
 
-void display_screen_metrics() {
+void display_screen_metrics(circularBuffer_t* ring_metrics) {
 	metrics_t *m;
-	uint8_t x = 0;
+	uint8_t x = SCREEN_X;
 	uint8_t y = SCREEN_HEIGHT;
-	uint8_t endx = 0;
 	uint8_t endy = SCREEN_HEIGHT;
 	// Compute max
 	float max_eco2 = 0;
@@ -196,14 +193,14 @@ void display_screen_metrics() {
 			max_eco2 = m->eco2;
 		}
 	}
+	max_eco2 -= 400;
 	for (uint8_t i = 0; i < ring_metrics->num; i++) {
 		m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
 		//printf("%d %d \n", m->tvoc, m->eco2);
 
 		x += 1;
-		endx = x;
-		uint8_t norm_v = ((float)m->eco2/max_eco2) * SCREEN_HEIGHT;
+		uint8_t norm_v = ((float)(m->eco2 - 400)/max_eco2) * SCREEN_HEIGHT;
 		endy = SCREEN_HEIGHT - norm_v;
-		Paint_DrawLine(x, y, endx, endy, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
+		Paint_DrawLine(x, y, x, endy, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
 	}
 }

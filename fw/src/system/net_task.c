@@ -14,14 +14,13 @@
 #include "pico/util/datetime.h"
 #include "pico/aon_timer.h"
 #include "hardware/clocks.h"
-
 #include <pico/cyw43_arch.h>
 
 #include "tiny-json.h"
-
+#include "json-maker.h"
 #include "pcf8563/pcf8563.h"
-
 #include "tinyhttp/http.h"
+#include "circularBuffer.h"
 
 
 // Externs
@@ -29,31 +28,11 @@ extern wakeup_alarm_struct wakeup_alarms[10];
 extern int wakeup_alarms_count;
 extern weather_struct weather;
 extern config_struct global_config;
+extern circularBuffer_t* ring_metrics;
 
 
-int get_response_from_server(char *response) {
-	printf("get_response_from_server() Sleep a bit [0]...\r\n");
-	printf("Connecting to wifi [%s][%s]...\r\n", global_config.wifi_ssid, global_config.wifi_key);
-	int ret = wifi_connect(global_config.wifi_ssid, global_config.wifi_key);
-	printf("get_response_from_server() ret:[%d] Sleep a bit [1]...\r\n", ret);
-	if (ret == 0) {
-		char board_id[20];
-		get_uniq_id(board_id);
-		printf("get_response_from_server() board_id:[%s]\r\n", board_id);
-		char query[100];
-		sprintf(query, "GET /clock.php?id=%s HTTP/1.0\r\nContent-Length: 0\r\n\r\n", board_id);
-		printf("get_response_from_server() send_tcp [%s] [%d]...\r\n", global_config.remote_host, atoi(SERVER_PORT));
-		ret = send_tcp(global_config.remote_host, 80, query, strlen(query), response);
-		//debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\r\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
-		if (ret == 0 && strlen(response) < 10) {
-			ret = 1;
-		}
-	}
-	printf("get_response_from_server() Disconnect...\r\n");
-	wifi_disconnect();
-	printf("get_response_from_server() Disconnected from wifi, ret:[%d]\r\n", ret);
-	return ret;
-}
+static size_t remLen;
+
 
 // HTTP lib
 // Response data/funcs
@@ -263,13 +242,70 @@ int parse_json_response(char *response) {
 }
 
 
-void request_remote_sync() {
-	printf("[NET] REMOTE SYNC\r\n");
-	char http_buffer[4096] = "";
-	if (get_response_from_server(http_buffer) == 0) {
-		struct HttpResponse response;
-		if (parse_http_response(http_buffer, &response) == 0) {
-			parse_json_response(response.body);
+void build_json(char* dest) {
+	char board_id[20];
+	get_uniq_id(board_id);
+
+	dest = json_objOpen(dest, NULL, &remLen);
+	dest = json_str(dest, "board_id", board_id, &remLen);
+	uint8_t count = 0;
+	for (uint8_t i = 0; i < ring_metrics->num; i++) {
+		metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
+		if (m->eco2 > 0) {
+			count++;
 		}
 	}
+	if (count > 0) {
+		dest = json_arrOpen(dest, "metrics", &remLen);
+		char date[12];
+		for (uint8_t i = 0; i < ring_metrics->num; i++) {
+			metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
+			if (m->eco2 > 0) {
+				dest = json_objOpen(dest, NULL, &remLen);
+				sprintf(date, "20%d%02d%02d_%02d%02d", m->year, m->month, m->day, m->hour, m->min);
+				dest = json_str(dest, "date", date, &remLen);
+				dest = json_int(dest, "tvoc", m->tvoc, &remLen);
+				dest = json_int(dest, "eco2", m->eco2, &remLen);
+				dest = json_int(dest, "st", m->ens160_status, &remLen);
+				dest = json_objClose(dest, &remLen);
+			}
+		}
+		dest = json_arrClose(dest, &remLen);
+	}
+	dest = json_objClose(dest, &remLen);
+	dest = json_end(dest, &remLen);
+}
+
+void remote_sync() {
+	printf("remote_sync() Connecting to wifi [%s][%s]...\r\n", global_config.wifi_ssid, global_config.wifi_key);
+	int ret = wifi_connect(global_config.wifi_ssid, global_config.wifi_key);
+	printf("remote_sync() ret:[%d]...\r\n", ret);
+	if (ret == 0) {
+		char board_id[20];
+		get_uniq_id(board_id);
+		printf("remote_sync() board_id:[%s]\r\n", board_id);
+
+		char json[8000] = "";
+		remLen = sizeof(json);
+		build_json(json);
+
+		char query[8500];
+		sprintf(query, "POST /clock.php?id=%s HTTP/1.0\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s", board_id, strlen(json), json);
+		printf("remote_sync() send_tcp [%s] [%d]...\r\n", global_config.remote_host, atoi(SERVER_PORT));
+
+		char http_buffer[4096] = "";
+		ret = send_tcp(global_config.remote_host, 80, query, strlen(query), http_buffer);
+		//debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\r\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
+		if (ret == 0 && strlen(http_buffer) < 10) {
+			ret = 1;
+		} else {
+			struct HttpResponse response;
+			if (parse_http_response(http_buffer, &response) == 0) {
+				parse_json_response(response.body);
+			}
+		}
+	}
+	printf("remote_sync() Disconnect...\r\n");
+	wifi_disconnect();
+	printf("remote_sync() Disconnected from wifi, ret:[%d]\r\n", ret);
 }

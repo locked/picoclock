@@ -26,7 +26,7 @@ uint8_t lp5817_set_dot_current(uint8_t ch, uint8_t value) {
 		packet[0] = LP5817_OUT0_DC;
 	} else if (ch == 1) {
 		packet[0] = LP5817_OUT1_DC;
-	} else if (ch == 1) {
+	} else if (ch == 2) {
 		packet[0] = LP5817_OUT2_DC;
 	}
 	packet[1] = value;
@@ -42,7 +42,7 @@ uint8_t lp5817_set_pwm(uint8_t ch, uint8_t value) {
 		packet[0] = LP5817_OUT0_MANUAL_PWM;
 	} else if (ch == 1) {
 		packet[0] = LP5817_OUT1_MANUAL_PWM;
-	} else if (ch == 1) {
+	} else if (ch == 2) {
 		packet[0] = LP5817_OUT2_MANUAL_PWM;
 	}
 	packet[1] = value;

@@ -2,6 +2,7 @@
 #define GRAPHICS_LIB_H
 
 #include "pcf8563/pcf8563.h"
+#include "circularBuffer.h"
 
 #define ICON_LIGHT 0
 #define ICON_RIGHTARROW 1
@@ -27,14 +28,14 @@ void display_icon(int x, int y, int icon_id);
 #define SCREEN_Y 8
 
 #define SCREEN_WIDTH 256
-#define SCREEN_HEIGHT 64
+#define SCREEN_HEIGHT 80
 
 void display_screen_nav();
-void display_screen_main(time_struct dt);
+void display_screen_main(time_struct dt, circularBuffer_t* ring_metrics);
 void display_screen_weather();
 void display_screen_alarms();
 void display_screen_debug(char *last_sync_str);
 void display_screen_alarm();
-void display_screen_metrics();
+void display_screen_metrics(circularBuffer_t* ring_metrics);
 
 #endif // GRAPHICS_LIB_H

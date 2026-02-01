@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-void request_remote_sync();
-//void request_play_song(uint8_t song);
+void remote_sync();
 
 #endif // NET_TASK_H

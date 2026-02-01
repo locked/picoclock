@@ -30,6 +30,7 @@
 #include "lp5817/lp5817.h"
 #include "pcf8563/pcf8563.h"
 #include "mcp46XX/mcp45XX.h"
+#include "circularBuffer.h"
 
 
 typedef struct {
@@ -54,6 +55,7 @@ extern bool refresh_screen;
 extern bool refresh_screen_clear;
 extern int ts_reset_alarm_screen;
 extern bool sync_requested;
+extern circularBuffer_t* ring_metrics;
 
 extern audio_ctx_t audio_ctx;
 
@@ -109,7 +111,7 @@ void ui_refresh_screen(bool message_clear, time_struct dt) {
 	bool shutdown_screen = false;
 	display_screen_nav();
 	if (current_screen == SCREEN_MAIN) {
-		display_screen_main(dt);
+		display_screen_main(dt, ring_metrics);
 	} else if (current_screen == SCREEN_WEATHER) {
 		display_screen_weather();
 	} else if (current_screen == SCREEN_LIST_ALARMS) {
@@ -119,7 +121,7 @@ void ui_refresh_screen(bool message_clear, time_struct dt) {
 	} else if (current_screen == SCREEN_ALARM) {
 		display_screen_alarm();
 	} else if (current_screen == SCREEN_METRIC) {
-		display_screen_metrics();
+		display_screen_metrics(ring_metrics);
 	}
 	if (message_clear) {
 		if (strcmp(global_config.screen, "B") == 0) {
@@ -172,7 +174,7 @@ void ui_btn_click(int btn, time_struct dt) {
 			} else {
 				printf("Backlight ON\r\n");
 				gpio_put(FRONT_PANEL_LED_PIN, 1);
-				lp5817_turn_on(0xff, 0xff, 0xff);
+				lp5817_turn_on(0x20, 0xff, 0x30);
 				backlight_on = true;
 			}
 		}

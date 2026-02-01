@@ -270,8 +270,8 @@ void system_initialize() {
 	lp5817_enable(true);
 	lp5817_set_max_current_code();
 	lp5817_set_dot_current(0, 0xff);	// Blue
-	lp5817_set_dot_current(1, 0xff);	// Red - Not working
-	lp5817_set_dot_current(2, 0xff);	// Green
+	lp5817_set_dot_current(1, 0xff);	// Green
+	lp5817_set_dot_current(2, 0xff);	// Red
 	lp5817_set_output_enable_all();
 	lp5817_update();
 
@@ -351,8 +351,8 @@ void core1_entry() {
 	printf("[core1] check RTC\r\n");
 	dt = pcf8563_getDateTime();
 	if (dt.volt_low) {
-		//printf("[core1] check RTC => low volt, trigger sync\r\n");
-		//request_remote_sync();
+		printf("[core1] check RTC => low volt, trigger sync\r\n");
+		remote_sync();
 	}
 
 	add_repeating_timer_ms(-1000, timer_datetime_callback, NULL, &timer_datetime);
@@ -378,8 +378,14 @@ void core1_entry() {
 			}
 
 			// Collect metrics
+			metrics.year = dt.year;
+			metrics.month = dt.month;
+			metrics.day = dt.day;
+			metrics.hour = dt.hour;
+			metrics.min = dt.min;
 			metrics.tvoc = ens160_getTVOC();
 			metrics.eco2 = ens160_getECO2();
+			metrics.ens160_status = ens160_getFlags();
 			circularBuffer_insert(ring_metrics, &metrics);
 
 			refresh_screen = true;
@@ -400,7 +406,7 @@ void core1_entry() {
 				sync_requested = false;
 				last_sync = ts;
 				printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
-				request_remote_sync();
+				remote_sync();
 				sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
 				printf("sync trigger done\r\n");
 			}
