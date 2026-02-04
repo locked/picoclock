@@ -111,7 +111,7 @@ extern "C"
 #define SD_CARD_PRESENCE 2	// on gpio extender
 #endif
 
-
+#define TRIGGER_SYNC_EVERY_SEC 1800
 
 typedef struct
 {

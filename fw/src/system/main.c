@@ -396,12 +396,12 @@ void core1_entry() {
 
 		if (!dt.volt_low) {
 			// Trigger sync periodically
-			int ts = dt.hour * 3600 + dt.min * 60 + dt.sec;
+			int ts = dt.hour * TRIGGER_SYNC_EVERY_SEC + dt.min * 60 + dt.sec;
 			if (last_sync == -1) {
 				// First run, initialize as if sync nearly 1 hour ago
-				last_sync = ts - 3600 + 30;
+				last_sync = ts - TRIGGER_SYNC_EVERY_SEC + 30;
 			}
-			bool old_sync = ((ts - last_sync) > 3600) || ((ts - last_sync) < 0);
+			bool old_sync = ((ts - last_sync) > TRIGGER_SYNC_EVERY_SEC) || ((ts - last_sync) < 0);
 			if ((sync_requested || old_sync) && !audio_ctx.playing) {
 				sync_requested = false;
 				last_sync = ts;

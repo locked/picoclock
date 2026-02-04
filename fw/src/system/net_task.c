@@ -14,6 +14,7 @@
 #include "pico/util/datetime.h"
 #include "pico/aon_timer.h"
 #include "hardware/clocks.h"
+#include "hardware/watchdog.h"
 #include <pico/cyw43_arch.h>
 
 #include "tiny-json.h"
@@ -245,17 +246,20 @@ int parse_json_response(char *response) {
 void build_json(char* dest) {
 	char board_id[20];
 	get_uniq_id(board_id);
+	uint32_t uptime = to_ms_since_boot(get_absolute_time());
 
 	dest = json_objOpen(dest, NULL, &remLen);
 	dest = json_str(dest, "board_id", board_id, &remLen);
-	uint8_t count = 0;
+	dest = json_int(dest, "uptime", uptime, &remLen);
+
+	uint8_t metrics_count = 0;
 	for (uint8_t i = 0; i < ring_metrics->num; i++) {
 		metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
 		if (m->eco2 > 0) {
-			count++;
+			metrics_count++;
 		}
 	}
-	if (count > 0) {
+	if (metrics_count > 0) {
 		dest = json_arrOpen(dest, "metrics", &remLen);
 		char date[12];
 		for (uint8_t i = 0; i < ring_metrics->num; i++) {
@@ -280,6 +284,7 @@ void remote_sync() {
 	printf("remote_sync() Connecting to wifi [%s][%s]...\r\n", global_config.wifi_ssid, global_config.wifi_key);
 	int ret = wifi_connect(global_config.wifi_ssid, global_config.wifi_key);
 	printf("remote_sync() ret:[%d]...\r\n", ret);
+	watchdog_update();
 	if (ret == 0) {
 		char board_id[20];
 		get_uniq_id(board_id);
@@ -294,7 +299,9 @@ void remote_sync() {
 		printf("remote_sync() send_tcp [%s] [%d]...\r\n", global_config.remote_host, atoi(SERVER_PORT));
 
 		char http_buffer[4096] = "";
+		watchdog_update();
 		ret = send_tcp(global_config.remote_host, 80, query, strlen(query), http_buffer);
+		watchdog_update();
 		//debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\r\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
 		if (ret == 0 && strlen(http_buffer) < 10) {
 			ret = 1;
@@ -305,6 +312,7 @@ void remote_sync() {
 			}
 		}
 	}
+	watchdog_update();
 	printf("remote_sync() Disconnect...\r\n");
 	wifi_disconnect();
 	printf("remote_sync() Disconnected from wifi, ret:[%d]\r\n", ret);
