@@ -184,6 +184,7 @@ uint16_t ens160_getTVOC();
 uint16_t ens160_getECO2();
 uint8_t ens160_checkDataStatus();
 float ens160_getTempCelsius();
+bool ens160_setTempCompensationCelsius(float tempCelsius);
 float ens160_getRH();
 
 #endif

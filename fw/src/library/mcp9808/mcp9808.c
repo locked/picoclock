@@ -37,38 +37,29 @@ void floatToString(char *str, float f, char size) {
 }
 
 
-float mcp9808_get_temperature(char *temp_str) {
-    //printf("mcp9808: starting on-board temperature measurement\n");
+float mcp9808_get_temperature() {
     int result;
     uint8_t addr = MCP9808_TA_REGISTER_ADDR;
 
     result = i2c_write_blocking(i2c1, MCP9808_I2C_ADDR, &addr, 1, false);
     if (result != 1) {
-        printf("mcp9808: failed to write Ta register address\n");
+        printf("[mcp9808] failed to write Ta register address\n");
         return result;
     }
 
     uint8_t measure_data[2];
     result = i2c_read_blocking(i2c1, MCP9808_I2C_ADDR, measure_data, sizeof(measure_data), false);
     if (result != sizeof(measure_data)) {
-        printf("mcp9808: failed to read measure data\n");
+        printf("[mcp9808] failed to read measure data\n");
         return result;
     }
 
     measure_data[0] &= 0x1F;
 
-	float temp;
     if ((measure_data[0] & 0x10) == 0x10) {
         // negative temperature, clear sign and convert
-        temp = 256.0 - (measure_data[0] * 16.0) + (measure_data[1] / 16.0);
-    } else {
-        // positive temperature, just convert
-        temp = (measure_data[0] * 16.0) + (measure_data[1] / 16.0);
+        return 256.0 - (measure_data[0] * 16.0) + (measure_data[1] / 16.0);
     }
-
-    //floatToString(temp_str, temp, 2);
-    itoa(temp, temp_str, 10);
-	//printf("mcp9808: %s", buf);
-
-	return temp;
+	// positive temperature, just convert
+	return (measure_data[0] * 16.0) + (measure_data[1] / 16.0);
 }

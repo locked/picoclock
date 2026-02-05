@@ -255,7 +255,7 @@ void build_json(char* dest) {
 	uint8_t metrics_count = 0;
 	for (uint8_t i = 0; i < ring_metrics->num; i++) {
 		metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
-		if (m->eco2 > 0) {
+		if (m->eco2 > 0 && m->ens160_status == 0) {
 			metrics_count++;
 		}
 	}
@@ -264,13 +264,14 @@ void build_json(char* dest) {
 		char date[12];
 		for (uint8_t i = 0; i < ring_metrics->num; i++) {
 			metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
-			if (m->eco2 > 0) {
+			if (m->eco2 > 0 && m->ens160_status == 0) {
 				dest = json_objOpen(dest, NULL, &remLen);
 				sprintf(date, "20%d%02d%02d_%02d%02d", m->year, m->month, m->day, m->hour, m->min);
 				dest = json_str(dest, "date", date, &remLen);
 				dest = json_int(dest, "tvoc", m->tvoc, &remLen);
-				dest = json_int(dest, "eco2", m->eco2, &remLen);
+				dest = json_int(dest, "co2", m->eco2, &remLen);
 				dest = json_int(dest, "st", m->ens160_status, &remLen);
+				dest = json_int(dest, "t", m->temp, &remLen);
 				dest = json_objClose(dest, &remLen);
 			}
 		}

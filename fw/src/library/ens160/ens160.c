@@ -11,17 +11,17 @@ void ens160_init(i2c_inst_t *i2c) {
 	//printf("Gas Sensor Ping: %d\n", ping);
 
 	uint16_t unique_id = ens160_getUniqueID();
-	printf("Gas Sensor Unique ID: %04x\n", unique_id);
+	printf("[ens160] Gas Sensor Unique ID: %04x\n", unique_id);
 
 	if (ens160_setOperatingMode(SFE_ENS160_RESET)) {
-		printf("Ready.\n");
+		printf("[ens160] Ready.\n");
 	}
 	sleep_ms(100);
 	ens160_setOperatingMode(SFE_ENS160_IDLE);
 	sleep_ms(500);
 	ens160_setOperatingMode(SFE_ENS160_STANDARD);
 	int ensStatus = ens160_getFlags();
-	printf("Gas Sensor Status Flag: %d\n", ensStatus);
+	printf("[ens160] Gas Sensor Status Flag: %d\n", ensStatus);
 }
 
 bool ens160_ping(int address) {
@@ -163,6 +163,39 @@ float ens160_getTempCelsius() {
 	temperature = ens160_getTempKelvin();
 
 	return (temperature - 273.15);
+}
+
+bool ens160_setTempCompensation(float tempKelvin) {
+	int32_t retVal;
+	uint8_t tempVal[3] = {0};
+	uint16_t kelvinConversion;
+
+	kelvinConversion = (uint16_t) (tempKelvin * 64); // convert value - fixed equation pg. 29 of datasheet
+    tempVal[0] = SFE_ENS160_TEMP_IN;
+	tempVal[1] = (kelvinConversion & 0x00FF);
+	tempVal[2] = (kelvinConversion & 0xFF00) >> 8;
+
+    retVal = i2c_write_blocking(ens160_i2c, ENS160_ADDRESS_LOW, tempVal, 3, false);
+
+	if (retVal != 3) {
+		printf("[ens160] Failed setting temp compensation in Kelvin\n");
+		return false;
+	}
+	//printf("[ens160] Set temp compensation to %d Kelvin\n", kelvinConversion);
+
+	return true;
+}
+
+bool ens160_setTempCompensationCelsius(float tempCelsius) {
+	float kelvinConversion = tempCelsius + 273.15;
+
+	//printf("[ens160] Set temp compensation to %0.1f C => %0.1f Kelvin\n", tempCelsius, kelvinConversion);
+	if (ens160_setTempCompensation(kelvinConversion)) {
+		return true;
+	}
+	printf("[ens160] Failed setting temp compensation in Celcius\n");
+
+	return false;
 }
 
 float ens160_getRH() {

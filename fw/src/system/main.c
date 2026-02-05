@@ -44,6 +44,7 @@
 #include "mcp46XX/mcp45XX.h"
 #include "pcf8563/pcf8563.h"
 #include "ens160/ens160.h"
+#include "mcp9808/mcp9808.h"
 
 #include "circularBuffer.h"
 
@@ -383,6 +384,8 @@ void core1_entry() {
 			metrics.day = dt.day;
 			metrics.hour = dt.hour;
 			metrics.min = dt.min;
+			metrics.temp = mcp9808_get_temperature();
+			ens160_setTempCompensationCelsius(metrics.temp);
 			metrics.tvoc = ens160_getTVOC();
 			metrics.eco2 = ens160_getECO2();
 			metrics.ens160_status = ens160_getFlags();

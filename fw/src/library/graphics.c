@@ -60,15 +60,11 @@ void display_screen_main(time_struct dt, circularBuffer_t* ring_metrics) {
 	//Paint_ClearWindows(SCREEN_X, _y, SCREEN_X + Font24.Width * 8, 40 + Font24.Height, WHITE);
 	Paint_DrawTime(SCREEN_X, _y, &sPaint_time, &Font24, WHITE, BLACK);
 
-	//uint16_t tvoc = ens160_getTVOC();
-	//uint16_t eco2 = ens160_getECO2();
 	metrics_t *m = circularBuffer_current(ring_metrics);
 	uint8_t data_status = ens160_checkDataStatus();
 	int ens_status = ens160_getFlags();
 	float ens160_comp_temp = ens160_getTempCelsius();
-	//mcp9808_get_temperature(temp2_str);
-	//sprintf(temp_str, "Temp: %s C", temp2_str);
-	sprintf(temp_str, "%02x/%d TVOC:%d CO2:%d T:%0.1f", data_status, ens_status, m->tvoc, m->eco2, ens160_comp_temp);
+	sprintf(temp_str, "%d/%0.0f TVOC:%d CO2:%d %0.1fC", ens_status, ens160_comp_temp, m->tvoc, m->eco2, m->temp);
 	_y += Font24.Height + 2;
 	Paint_DrawString_EN(SCREEN_X, _y, temp_str, &Font12, WHITE, BLACK);
 

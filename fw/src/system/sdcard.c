@@ -458,7 +458,7 @@ SD_Error sdcard_init()
 		return SD_RESPONSE_FAILURE;
 	}
 
-	debug_printf("\r\n [TEST] SD Card detected\r\n");
+	debug_printf("SD Card detected\r\n");
 
 	/* step 2:
 	 * Card is now powered up (i.e. 1ms at least elapsed at 0.5V),
