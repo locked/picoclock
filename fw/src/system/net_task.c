@@ -266,8 +266,8 @@ void build_json(char* dest) {
 			metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
 			if (m->eco2 > 0 && m->ens160_status == 0) {
 				dest = json_objOpen(dest, NULL, &remLen);
-				sprintf(date, "20%d%02d%02d_%02d%02d", m->year, m->month, m->day, m->hour, m->min);
-				dest = json_str(dest, "date", date, &remLen);
+				sprintf(date, "%d%02d%02d%02d%02d", m->year, m->month, m->day, m->hour, m->min);
+				dest = json_str(dest, "ts", date, &remLen);
 				dest = json_int(dest, "tvoc", m->tvoc, &remLen);
 				dest = json_int(dest, "co2", m->eco2, &remLen);
 				dest = json_int(dest, "st", m->ens160_status, &remLen);
@@ -281,7 +281,7 @@ void build_json(char* dest) {
 	dest = json_end(dest, &remLen);
 }
 
-void remote_sync() {
+int remote_sync() {
 	printf("remote_sync() Connecting to wifi [%s][%s]...\r\n", global_config.wifi_ssid, global_config.wifi_key);
 	int ret = wifi_connect(global_config.wifi_ssid, global_config.wifi_key);
 	printf("remote_sync() ret:[%d]...\r\n", ret);
@@ -317,4 +317,5 @@ void remote_sync() {
 	printf("remote_sync() Disconnect...\r\n");
 	wifi_disconnect();
 	printf("remote_sync() Disconnected from wifi, ret:[%d]\r\n", ret);
+	return ret;
 }

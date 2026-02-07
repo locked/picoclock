@@ -252,8 +252,14 @@ void system_initialize() {
 	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
 	printf("[picoclock] START PICO_RP2350A=%d\r\n", PICO_RP2350A);
 
+	// Init UART for ESP32 com
+	uart_init(UART_ESP32_UART_ID, 9600);
+	gpio_set_function(UART_ESP32_TX_PIN, GPIO_FUNC_UART);
+	gpio_set_function(UART_ESP32_RX_PIN, GPIO_FUNC_UART);
+	uart_puts(uart1, "END\n");
+
 	// Init ring buffer for metrics
-	ring_metrics = circularBuffer_create(ring_metrics, 120, sizeof(metrics_t));
+	ring_metrics = circularBuffer_create(ring_metrics, 90, sizeof(metrics_t));
 
 	// Init I2C
 	init_i2c();
@@ -409,7 +415,11 @@ void core1_entry() {
 				sync_requested = false;
 				last_sync = ts;
 				printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
-				remote_sync();
+				int ret = remote_sync();
+				if (ret == 1) {
+					// On error, retry earlier
+					last_sync = dt.hour * TRIGGER_SYNC_EVERY_SEC + dt.min * 5 + dt.sec;
+				}
 				sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
 				printf("sync trigger done\r\n");
 			}
@@ -452,7 +462,7 @@ int main() {
 	strncpy(global_config.wifi_ssid, WIFI_SSID, 50);
 	strncpy(global_config.wifi_key, WIFI_PASSWORD, 50);
 	strncpy(global_config.remote_host, SERVER_IP, 50);
-	strncpy(global_config.screen, "4", 2); // "4" (color) or "B" (B/W)
+	strncpy(global_config.screen, "4", 2); // "4" (B/W) or "B" (Color)
 
 	// Filesystem / SDCard initialization
 	printf("[picoclock] Check SD card\r\n");
@@ -466,11 +476,9 @@ int main() {
 	if (DEV_Module_Init() == 0) {
 		if (strcmp(global_config.screen, "B") == 0) {
 			printf("[picoclock] e-Paper module: B\r\n");
-			//EPD_2IN13BC_Init();
-			EPD_2IN13B_V4_Init();
+			//EPD_2IN13B_V4_Init();
 			printf("[picoclock] e-Paper module: B init OK\r\n");
-			//EPD_2IN13BC_Clear();
-			EPD_2IN13B_V4_Clear();
+			//EPD_2IN13B_V4_Clear();
 			printf("[picoclock] e-Paper module: B clear OK\r\n");
 			DEV_Delay_ms(500);
 		} else {

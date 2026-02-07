@@ -3,6 +3,6 @@
 
 #include <stdint.h>
 
-void remote_sync();
+int remote_sync();
 
 #endif // NET_TASK_H

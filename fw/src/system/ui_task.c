@@ -193,9 +193,10 @@ void ui_btn_click(int btn, time_struct dt) {
 		refresh_screen = true;
 		refresh_screen_clear = false;
 	} else if (btn == 4) {
-		if (!audio_ctx.playing) {
-			char SoundFile[260] = "Tellement.wav";
-			fs_task_sound_start(SoundFile);
+		if (gpio_get(I2S_SELECT_PIN) == 0) {
+			gpio_put(I2S_SELECT_PIN, 1);	// 0 select I2S from pico, 1 from ESP32
+			gpio_put(AUDIO_MUTE_PIN, 1);	// Unmute
+			uart_puts(UART_ESP32_UART_ID, "START\n");
 		} else {
 			mcp4551_set_wiper(mcp4551_read_wiper() + 20);
 		}

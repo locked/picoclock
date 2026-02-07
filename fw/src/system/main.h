@@ -28,6 +28,11 @@ extern "C"
 #define BAUD_RATE 115200
 #define UART_TX_PIN 0
 
+// UART for ESP32 communication
+#define UART_ESP32_UART_ID uart1
+#define UART_ESP32_TX_PIN 36
+#define UART_ESP32_RX_PIN 37
+
 // Can be:
 // 1, 2, mini
 #define PCB_VERSION_1 1
