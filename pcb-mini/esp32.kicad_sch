@@ -1908,6 +1908,28 @@
 			)
 		)
 	)
+	(global_label "ESP32_UART1_RX"
+		(shape input)
+		(at 219.71 48.26 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "acd72e53-f730-4b75-a878-4e25bc962ca4")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 239.0236 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "BT_I2S_SCK"
 		(shape input)
 		(at 161.29 82.55 0)
@@ -1943,6 +1965,28 @@
 		(uuid "c3dd3371-d7c6-444a-ac3d-49ea17384640")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 183.2041 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "ESP32_UART1_TX"
+		(shape input)
+		(at 219.71 50.8 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "d5428da0-aea4-411d-b9f9-d5b5396f927c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 238.7212 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2913,6 +2957,74 @@
 			(project "picoclock"
 				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9/1300d4ba-b6e1-492a-b576-039297edc301"
 					(reference "#PWR0108")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:Conn_01x02_Pin")
+		(at 214.63 48.26 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "e70d24b6-d4b4-46c1-b856-834ee3e51d87")
+		(property "Reference" "J11"
+			(at 215.265 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "ESP32_UART1"
+			(at 215.265 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+			(at 214.63 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 214.63 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 214.63 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "45a7c9d1-f9ef-4694-b427-e6840ebcb798")
+		)
+		(pin "2"
+			(uuid "d76de4ec-8971-4d4f-9564-03ff106c58e4")
+		)
+		(instances
+			(project "picoclock"
+				(path "/3b9dec0e-e0b7-4565-afc9-c4692f41aea9/1300d4ba-b6e1-492a-b576-039297edc301"
+					(reference "J11")
 					(unit 1)
 				)
 			)
