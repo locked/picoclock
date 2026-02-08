@@ -252,12 +252,6 @@ void system_initialize() {
 	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
 	printf("[picoclock] START PICO_RP2350A=%d\r\n", PICO_RP2350A);
 
-	// Init UART for ESP32 com
-	uart_init(UART_ESP32_UART_ID, 9600);
-	gpio_set_function(UART_ESP32_TX_PIN, GPIO_FUNC_UART);
-	gpio_set_function(UART_ESP32_RX_PIN, GPIO_FUNC_UART);
-	uart_puts(uart1, "END\n");
-
 	// Init ring buffer for metrics
 	ring_metrics = circularBuffer_create(ring_metrics, 90, sizeof(metrics_t));
 
@@ -311,6 +305,12 @@ void system_initialize() {
 
 	// Init gaz sensor
 	ens160_init(I2C_CHANNEL);
+
+	// Init UART for ESP32 com
+	uart_init(UART_ESP32_UART_ID, 9600);
+	gpio_set_function(UART_ESP32_TX_PIN, GPIO_FUNC_UART);
+	gpio_set_function(UART_ESP32_RX_PIN, GPIO_FUNC_UART);
+	uart_puts(uart1, "END\n");
 
 	printf("[picoclock] System Clock: %lu\n", clock_get_hz(clk_sys));
 }
