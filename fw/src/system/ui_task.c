@@ -202,6 +202,7 @@ void ui_btn_click(int btn, time_struct dt) {
 		}
 	} else if (btn == 5) {
 		if (!audio_ctx.playing) {
+			gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
 			char SoundFile[260] = "Tellement.wav";
 			fs_task_sound_start(SoundFile);
 		} else {

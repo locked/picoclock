@@ -45,6 +45,7 @@
 #include "pcf8563/pcf8563.h"
 #include "ens160/ens160.h"
 #include "mcp9808/mcp9808.h"
+#include "senseair.h"
 
 #include "circularBuffer.h"
 
@@ -248,12 +249,13 @@ void system_initialize() {
 	set_sys_clock_khz(150000, true);
 
 	// Init UART
-	uart_init(UART_ID, BAUD_RATE);
 	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+	gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
+	uart_init(UART_ID, 9600);
 	printf("[picoclock] START PICO_RP2350A=%d\r\n", PICO_RP2350A);
 
 	// Init ring buffer for metrics
-	ring_metrics = circularBuffer_create(ring_metrics, 90, sizeof(metrics_t));
+	ring_metrics = circularBuffer_create(ring_metrics, 65, sizeof(metrics_t));
 
 	// Init I2C
 	init_i2c();
@@ -394,8 +396,15 @@ void core1_entry() {
 			ens160_setTempCompensationCelsius(metrics.temp);
 			metrics.tvoc = ens160_getTVOC();
 			metrics.eco2 = ens160_getECO2();
+			metrics.co2 = get_co2_reading();
+			printf("co2:\n", metrics.co2);
 			metrics.ens160_status = ens160_getFlags();
 			circularBuffer_insert(ring_metrics, &metrics);
+			for (uint8_t i = 0; i < ring_metrics->num; i++) {
+				metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
+				printf("co2:%d eco2:%d ens160_status:%d ", m->co2, m->eco2, m->ens160_status);
+			}
+			printf("\n");
 
 			refresh_screen = true;
 			refresh_screen_clear = false;
@@ -418,7 +427,7 @@ void core1_entry() {
 				int ret = remote_sync();
 				if (ret == 1) {
 					// On error, retry earlier
-					last_sync = dt.hour * TRIGGER_SYNC_EVERY_SEC + dt.min * 5 + dt.sec;
+					last_sync = ts - TRIGGER_SYNC_EVERY_SEC + 5 * 60;
 				}
 				sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
 				printf("sync trigger done\r\n");

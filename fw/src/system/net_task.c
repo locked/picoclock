@@ -46,14 +46,14 @@ static void* response_realloc(void* opaque, void* ptr, int size) {
 }
 static void response_body(void* opaque, const char* data, int size) {
     struct HttpResponse* response = (struct HttpResponse*)opaque;
-    //debug_printf("[NET] ADD [%d] BYTES TO BODY:[%s]\r\n", size, data);
+    //printf("[NET] ADD [%d] BYTES TO BODY:[%s]\r\n", size, data);
     strncpy(response->body, data, size+1);
 }
 static void response_header(void* opaque, const char* ckey, int nkey, const char* cvalue, int nvalue) {
 }
 static void response_code(void* opaque, int code) {
     struct HttpResponse* response = (struct HttpResponse*)opaque;
-    //debug_printf("[NET] SET CODE [%d]\r\n", code);
+    //printf("[NET] SET CODE [%d]\r\n", code);
     response->code = code;
 }
 static const struct http_funcs responseFuncs = {
@@ -64,28 +64,28 @@ static const struct http_funcs responseFuncs = {
 };
 
 int parse_http_response(char *http_response, struct HttpResponse *response) {
-    debug_printf("[NET] PARSE HTTP:[%s]\r\n", http_response);
+    printf("[NET] PARSE HTTP:[%s]\r\n", http_response);
 
     //struct HttpResponse* response = (struct HttpResponse*)opaque;
     response->code = 0;
 
     struct http_roundtripper rt;
     http_init(&rt, responseFuncs, response);
-    //debug_printf("[NET] PARSE HTTP: INIT OK\r\n");
+    //printf("[NET] PARSE HTTP: INIT OK\r\n");
     int read;
     int ndata = strlen(http_response);
     http_data(&rt, http_response, ndata, &read);
-    //debug_printf("[NET] PARSE HTTP: http_data OK\r\n");
+    //printf("[NET] PARSE HTTP: http_data OK\r\n");
 
     http_free(&rt);
 
     if (http_iserror(&rt)) {
-        debug_printf("Error parsing data\r\n");
+        printf("Error parsing data\r\n");
         return -1;
     }
 
     if (strlen(response->body) > 0) {
-        debug_printf("CODE:[%d] BODY:[%s]\r\n", response->code, response->body);
+        printf("CODE:[%d] BODY:[%s]\r\n", response->code, response->body);
         return 0;
     }
 
@@ -93,30 +93,30 @@ int parse_http_response(char *http_response, struct HttpResponse *response) {
 }
 
 int parse_json_response(char *response) {
-    debug_printf("[NET] PARSE JSON:[%s]\r\n", response);
+    printf("[NET] PARSE JSON:[%s]\r\n", response);
 	enum { MAX_FIELDS = 100 };
 	json_t pool[MAX_FIELDS];
 
 	json_t const* root_elem = json_create(response, pool, MAX_FIELDS);
     if (root_elem == NULL) {
-        debug_printf("[NET] Error parsing json: root_elem not found\r\n");
+        printf("[NET] Error parsing json: root_elem not found\r\n");
         return -1;
     }
     json_t const* status_elem = json_getProperty(root_elem, "status");
     if (status_elem == NULL) {
-        debug_printf("[NET] Error parsing json: status_elem not found\r\n");
+        printf("[NET] Error parsing json: status_elem not found\r\n");
         return -1;
     }
 	int status = json_getInteger(status_elem);
-	debug_printf("Parsing date from [%s]...\r\n", response);
+	printf("Parsing date from [%s]...\r\n", response);
 	json_t const* date_elem = json_getProperty(root_elem, "date");
     if (date_elem == NULL) {
-        debug_printf("[NET] Error parsing json: date_elem not found\r\n");
+        printf("[NET] Error parsing json: date_elem not found\r\n");
         return -1;
     }
 	json_t const* year_elem = json_getProperty(date_elem, "year");
     if (year_elem == NULL) {
-        debug_printf("[NET] Error parsing json: year_elem not found in date\r\n");
+        printf("[NET] Error parsing json: year_elem not found in date\r\n");
         return -1;
     }
 	int year_full = json_getInteger(year_elem);
@@ -255,7 +255,7 @@ void build_json(char* dest) {
 	uint8_t metrics_count = 0;
 	for (uint8_t i = 0; i < ring_metrics->num; i++) {
 		metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
-		if (m->eco2 > 0 && m->ens160_status == 0) {
+		if (m->co2 > 100 || (m->eco2 > 100 && m->ens160_status == 0)) {
 			metrics_count++;
 		}
 	}
@@ -264,12 +264,13 @@ void build_json(char* dest) {
 		char date[12];
 		for (uint8_t i = 0; i < ring_metrics->num; i++) {
 			metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
-			if (m->eco2 > 0 && m->ens160_status == 0) {
+			if (m->co2 > 100 || (m->eco2 > 100 && m->ens160_status == 0)) {
 				dest = json_objOpen(dest, NULL, &remLen);
 				sprintf(date, "%d%02d%02d%02d%02d", m->year, m->month, m->day, m->hour, m->min);
 				dest = json_str(dest, "ts", date, &remLen);
 				dest = json_int(dest, "tvoc", m->tvoc, &remLen);
-				dest = json_int(dest, "co2", m->eco2, &remLen);
+				dest = json_int(dest, "eco2", m->eco2, &remLen);
+				dest = json_int(dest, "co2", m->co2, &remLen);
 				dest = json_int(dest, "st", m->ens160_status, &remLen);
 				dest = json_int(dest, "t", m->temp, &remLen);
 				dest = json_objClose(dest, &remLen);
@@ -303,7 +304,7 @@ int remote_sync() {
 		watchdog_update();
 		ret = send_tcp(global_config.remote_host, 80, query, strlen(query), http_buffer);
 		watchdog_update();
-		//debug_printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\r\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
+		//printf("RESPONSE FROM SERVER ret:[%d] Server:[%s:%d] => [%s]\r\n", ret, SERVER_IP, atoi(SERVER_PORT), response);
 		if (ret == 0 && strlen(http_buffer) < 10) {
 			ret = 1;
 		} else {
