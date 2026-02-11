@@ -185,11 +185,11 @@ static SD_Error SD_WaitReady(void)
 	{
 		if (SD_SpiWriteByte(0xFF) == 0xFF)
 		{
-			// debug_printf( " [[ WAIT delay %d ]] ", SD_NUM_TRIES - i );
+			// printf( " [[ WAIT delay %d ]] ", SD_NUM_TRIES - i );
 			return SD_RESPONSE_NO_ERROR;
 		}
 	}
-	// debug_printf( " [[ WAIT delay was not enough ]] " );
+	// printf( " [[ WAIT delay was not enough ]] " );
 	return SD_RESPONSE_FAILURE;
 }
 
@@ -232,9 +232,9 @@ static uint8_t SD_WaitBytesRead(void)
 	} while (b == 0xFF && i-- > 0);
 
 	// if (b != 0xFF)
-	// 	debug_printf(" [[ READ delay %d ]] ", SD_NUM_TRIES_READ - i);
+	// 	printf(" [[ READ delay %d ]] ", SD_NUM_TRIES_READ - i);
 	// else
-	// 	debug_printf(" [[ READ delay was not enough ]] ");
+	// 	printf(" [[ READ delay was not enough ]] ");
 
 	return b;
 }
@@ -251,11 +251,11 @@ static SD_Error SD_WaitBytesWritten(void)
 	{
 		if (SD_SpiWriteByte(0xFF) == 0xFF)
 		{
-			//	debug_printf(" [[ WRITE delay %lu ]] ", SD_NUM_TRIES_WRITE - i);
+			//	printf(" [[ WRITE delay %lu ]] ", SD_NUM_TRIES_WRITE - i);
 			return SD_RESPONSE_NO_ERROR;
 		}
 	}
-	// debug_printf(" [[ WRITE delay was not enough ]] ");
+	// printf(" [[ WRITE delay was not enough ]] ");
 	return SD_RESPONSE_FAILURE;
 }
 
@@ -271,11 +271,11 @@ static SD_Error SD_WaitBytesErased(void)
 	{
 		if (SD_SpiWriteByte(0xFF) == 0xFF)
 		{
-			//		debug_printf(" [[ ERASE delay %lu ]] ", SD_NUM_TRIES_ERASE - i);
+			//		printf(" [[ ERASE delay %lu ]] ", SD_NUM_TRIES_ERASE - i);
 			return SD_RESPONSE_NO_ERROR;
 		}
 	}
-	//	debug_printf(" [[ ERASE delay was not enough ]] ");
+	//	printf(" [[ ERASE delay was not enough ]] ");
 	return SD_RESPONSE_FAILURE;
 }
 
@@ -425,23 +425,23 @@ static SD_Error SD_GoIdleState(void)
 	switch (cardType)
 	{
 	case SD_Card_SDSC_v1:
-		debug_printf("SDSC v1 (byte address)");
+		printf("SDSC v1 (byte address)");
 		break;
 	case SD_Card_SDSC_v2:
-		debug_printf("SDSC v2 (byte address)");
+		printf("SDSC v2 (byte address)");
 		break;
 	case SD_Card_SDHC:
-		debug_printf("SDHC (512-bytes sector address)");
+		printf("SDHC (512-bytes sector address)");
 		break;
 	case SD_Card_MMC:
-		debug_printf("MMC (byte address)");
+		printf("MMC (byte address)");
 		break;
 	default:
-		debug_printf("UNKNOWN");
+		printf("UNKNOWN");
 		break;
 	}
 
-	debug_printf(" card initialized successfully\r\n");
+	printf(" card initialized successfully\r\n");
 
 	return SD_RESPONSE_NO_ERROR;
 }
@@ -458,7 +458,7 @@ SD_Error sdcard_init()
 		return SD_RESPONSE_FAILURE;
 	}
 
-	debug_printf("SD Card detected\r\n");
+	printf("SD Card detected\r\n");
 
 	/* step 2:
 	 * Card is now powered up (i.e. 1ms at least elapsed at 0.5V),
@@ -506,7 +506,7 @@ SD_Error sdcard_sector_read(uint32_t readAddr, uint8_t *pBuffer)
 {
 	SD_Error state;
 
-	// debug_printf("--> reading sector %lu ...", readAddr);
+	// printf("--> reading sector %lu ...", readAddr);
 
 	/* non High Capacity cards use byte-oriented addresses */
 	if (cardType != SD_Card_SDHC)
@@ -525,9 +525,9 @@ SD_Error sdcard_sector_read(uint32_t readAddr, uint8_t *pBuffer)
 	SD_Bus_Release(); /* release SPI bus... */
 
 	// if (state == SD_RESPONSE_NO_ERROR)
-	// 	debug_printf("OK\r\n");
+	// 	printf("OK\r\n");
 	// else
-	// 	debug_printf("KO(%d)\r\n", state);
+	// 	printf("KO(%d)\r\n", state);
 
 	return state;
 }
@@ -545,7 +545,7 @@ SD_Error sdcard_sectors_read(uint32_t readAddr, uint8_t *pBuffer, uint32_t nbSec
 {
 	SD_Error state;
 
-	// debug_printf("--> reading %lu sectors from %lu ...", nbSectors, readAddr);
+	// printf("--> reading %lu sectors from %lu ...", nbSectors, readAddr);
 
 	/* non High Capacity cards use byte-oriented addresses */
 	if (cardType != SD_Card_SDHC)
@@ -574,9 +574,9 @@ SD_Error sdcard_sectors_read(uint32_t readAddr, uint8_t *pBuffer, uint32_t nbSec
 	SD_Bus_Release(); /* release SPI bus... */
 
 	// if (state == SD_RESPONSE_NO_ERROR)
-	// 	debug_printf("OK\r\n");
+	// 	printf("OK\r\n");
 	// else
-	// 	debug_printf("KO(%d)\r\n", state);
+	// 	printf("KO(%d)\r\n", state);
 
 	return state;
 }
@@ -595,7 +595,7 @@ SD_Error sdcard_sector_write(uint32_t writeAddr, const uint8_t *pBuffer)
 	SD_DataResponse res;
 	uint16_t BlockSize = SD_BLOCK_SIZE;
 
-	debug_printf("--> writing sector %lu ...", writeAddr);
+	printf("--> writing sector %lu ...", writeAddr);
 
 	/* non High Capacity cards use byte-oriented addresses */
 	if (cardType != SD_Card_SDHC)
@@ -633,9 +633,9 @@ SD_Error sdcard_sector_write(uint32_t writeAddr, const uint8_t *pBuffer)
 	SD_Bus_Release(); /* release SPI bus... */
 
 	// if (state == SD_RESPONSE_NO_ERROR)
-	// 	debug_printf("OK\r\n");
+	// 	printf("OK\r\n");
 	// else
-	// 	debug_printf("KO(%d)\r\n", state);
+	// 	printf("KO(%d)\r\n", state);
 
 	return state;
 }
@@ -655,7 +655,7 @@ SD_Error sdcard_sectors_write(uint32_t writeAddr, const uint8_t *pBuffer, uint32
 	SD_DataResponse res;
 	uint16_t BlockSize = SD_BLOCK_SIZE;
 
-	debug_printf("--> writing %lu sectors at %lu ...", nbSectors, writeAddr);
+	printf("--> writing %lu sectors at %lu ...", nbSectors, writeAddr);
 
 	/* non High Capacity cards use byte-oriented addresses */
 	if (cardType != SD_Card_SDHC)
@@ -715,9 +715,9 @@ SD_Error sdcard_sectors_write(uint32_t writeAddr, const uint8_t *pBuffer, uint32
 	SD_Bus_Release(); /* release SPI bus... */
 
 	if (state == SD_RESPONSE_NO_ERROR)
-		debug_printf("OK\n");
+		printf("OK\n");
 	else
-		debug_printf("KO(%d)\n", state);
+		printf("KO(%d)\n", state);
 
 	return state;
 }
@@ -736,11 +736,11 @@ SD_Error sdcard_sectors_erase(uint32_t eraseAddrFrom, uint32_t eraseAddrTo)
 
 	if (cardType == SD_Card_MMC)
 	{
-		debug_printf("--> erasing sectors is not supported for MMC cards\n");
+		printf("--> erasing sectors is not supported for MMC cards\n");
 		return SD_ILLEGAL_COMMAND;
 	}
 
-	// debug_printf("--> erasing sectors from %lu to %lu ...", eraseAddrFrom, eraseAddrTo);
+	// printf("--> erasing sectors from %lu to %lu ...", eraseAddrFrom, eraseAddrTo);
 
 	/* non High Capacity cards use byte-oriented addresses */
 	if (cardType != SD_Card_SDHC)
@@ -771,9 +771,9 @@ SD_Error sdcard_sectors_erase(uint32_t eraseAddrFrom, uint32_t eraseAddrTo)
 	SD_Bus_Release(); /* release SPI bus... */
 
 	// if (state == SD_RESPONSE_NO_ERROR)
-	// 	debug_printf("OK\r\n");
+	// 	printf("OK\r\n");
 	// else
-	// 	debug_printf("KO(%d)\r\n", state);
+	// 	printf("KO(%d)\r\n", state);
 
 	return state;
 }
@@ -923,7 +923,7 @@ static SD_Error SD_GetSCRRegister(SD_SCR *SD_scr)
 
 	if (cardType == SD_Card_MMC)
 	{
-		debug_printf("SCR Register is not available for MMC cards\n");
+		printf("SCR Register is not available for MMC cards\n");
 		return SD_ILLEGAL_COMMAND;
 	}
 
@@ -1011,412 +1011,412 @@ SD_Error sdcard_get_card_info(SD_CardInfo *cardinfo)
 void sdcard_dump_card_info(const SD_CardInfo *cardinfo)
 {
 	uint8_t is_OSRv1 = (cardinfo->SD_csd.CSDStruct == 0);
-	debug_printf("\nDumping SD Card information:\n\n    GLOBAL INFO\nSD Card type : ");
+	printf("\nDumping SD Card information:\n\n    GLOBAL INFO\nSD Card type : ");
 	/* some cards report wrong CSDStruct field in CSR register => use detected card type instead... */
 	if (is_OSRv1 != 0)
-		debug_printf("SDSC (v1 or v2)\n");
+		printf("SDSC (v1 or v2)\n");
 	else
-		debug_printf("SDHC or SDXC\n");
-	debug_printf("Card Capacity : %lu Kbytes\n", cardinfo->CardCapacity);
-	debug_printf("Card Block Size : %lu bytes\n", cardinfo->CardBlockSize);
+		printf("SDHC or SDXC\n");
+	printf("Card Capacity : %lu Kbytes\n", cardinfo->CardCapacity);
+	printf("Card Block Size : %lu bytes\n", cardinfo->CardBlockSize);
 
-	debug_printf("\n    Card identification register (CID)\n");
-	debug_printf("Manufacturer ID : %d\n", cardinfo->SD_cid.ManufacturerID);
-	debug_printf("OEM / Application ID : %c%c\n",
+	printf("\n    Card identification register (CID)\n");
+	printf("Manufacturer ID : %d\n", cardinfo->SD_cid.ManufacturerID);
+	printf("OEM / Application ID : %c%c\n",
 				 ((char *)&(cardinfo->SD_cid.OEM_AppliID))[1],
 				 ((char *)&(cardinfo->SD_cid.OEM_AppliID))[0]);
-	debug_printf("Product Name : %c%c%c%c%c\n",
+	printf("Product Name : %c%c%c%c%c\n",
 				 ((char *)&(cardinfo->SD_cid.ProdName1))[3],
 				 ((char *)&(cardinfo->SD_cid.ProdName1))[2],
 				 ((char *)&(cardinfo->SD_cid.ProdName1))[1],
 				 ((char *)&(cardinfo->SD_cid.ProdName1))[0],
 				 (char)(cardinfo->SD_cid.ProdName2));
-	debug_printf("Product Revision : %d.%d\n",
+	printf("Product Revision : %d.%d\n",
 				 (cardinfo->SD_cid.ProdRev & 0xF0) >> 4,
 				 (cardinfo->SD_cid.ProdRev & 0x0F));
-	debug_printf("Product Serial Number : %lu\n",
+	printf("Product Serial Number : %lu\n",
 				 cardinfo->SD_cid.ProdSN);
-	debug_printf("Manufacturing Date (YYYY-MM) : %d-%d\n",
+	printf("Manufacturing Date (YYYY-MM) : %d-%d\n",
 				 2000 + ((cardinfo->SD_cid.ManufactDate & 0x0FF0) >> 4),
 				 cardinfo->SD_cid.ManufactDate & 0x000F);
-	debug_printf("CID CRC : %d\n", cardinfo->SD_cid.CID_CRC & 0x7F);
+	printf("CID CRC : %d\n", cardinfo->SD_cid.CID_CRC & 0x7F);
 
-	debug_printf("\n    Card-specific data register (CSD)\n");
+	printf("\n    Card-specific data register (CSD)\n");
 	if (is_OSRv1 != 0)
 	{
-		debug_printf("Data read access-time : ");
+		printf("Data read access-time : ");
 		switch ((cardinfo->SD_csd.TAAC & 0x78) >> 3)
 		{
 		case 0x0:
-			debug_printf("0.0");
+			printf("0.0");
 			break;
 		case 0x1:
-			debug_printf("1.0");
+			printf("1.0");
 			break;
 		case 0x2:
-			debug_printf("1.2");
+			printf("1.2");
 			break;
 		case 0x3:
-			debug_printf("1.3");
+			printf("1.3");
 			break;
 		case 0x4:
-			debug_printf("1.5");
+			printf("1.5");
 			break;
 		case 0x5:
-			debug_printf("2.0");
+			printf("2.0");
 			break;
 		case 0x6:
-			debug_printf("2.5");
+			printf("2.5");
 			break;
 		case 0x7:
-			debug_printf("3.0");
+			printf("3.0");
 			break;
 		case 0x8:
-			debug_printf("3.5");
+			printf("3.5");
 			break;
 		case 0x9:
-			debug_printf("4.0");
+			printf("4.0");
 			break;
 		case 0xA:
-			debug_printf("4.5");
+			printf("4.5");
 			break;
 		case 0xB:
-			debug_printf("5.0");
+			printf("5.0");
 			break;
 		case 0xC:
-			debug_printf("5.5");
+			printf("5.5");
 			break;
 		case 0xD:
-			debug_printf("6.0");
+			printf("6.0");
 			break;
 		case 0xE:
-			debug_printf("7.0");
+			printf("7.0");
 			break;
 		case 0xF:
-			debug_printf("8.0");
+			printf("8.0");
 			break;
 		default:
 			break;
 		}
-		debug_printf(" x 1");
+		printf(" x 1");
 		switch (cardinfo->SD_csd.TAAC & 0x07)
 		{
 		case 0:
-			debug_printf("n");
+			printf("n");
 			break;
 		case 1:
-			debug_printf("0n");
+			printf("0n");
 			break;
 		case 2:
-			debug_printf("00n");
+			printf("00n");
 			break;
 		case 3:
-			debug_printf("u");
+			printf("u");
 			break;
 		case 4:
-			debug_printf("0u");
+			printf("0u");
 			break;
 		case 5:
-			debug_printf("00u");
+			printf("00u");
 			break;
 		case 6:
-			debug_printf("m");
+			printf("m");
 			break;
 		case 7:
-			debug_printf("0m");
+			printf("0m");
 			break;
 		default:
 			break;
 		}
-		debug_printf("s\nData read access-time in CLK cycles : %d\n", cardinfo->SD_csd.NSAC);
+		printf("s\nData read access-time in CLK cycles : %d\n", cardinfo->SD_csd.NSAC);
 	}
-	debug_printf("Max. bus clock frequency : %x", cardinfo->SD_csd.MaxBusClkFrec);
+	printf("Max. bus clock frequency : %x", cardinfo->SD_csd.MaxBusClkFrec);
 	switch (cardinfo->SD_csd.MaxBusClkFrec)
 	{
 	case 0x32:
-		debug_printf(" (25Mhz)\n");
+		printf(" (25Mhz)\n");
 		break;
 	case 0x5A:
-		debug_printf(" (50Mhz)\n");
+		printf(" (50Mhz)\n");
 		break;
 	case 0x0B:
-		debug_printf(" (100Mhz)\n");
+		printf(" (100Mhz)\n");
 		break;
 	case 0x2B:
-		debug_printf(" (200Mhz)\n");
+		printf(" (200Mhz)\n");
 		break;
 	default:
-		debug_printf("\n");
+		printf("\n");
 		break;
 	}
-	debug_printf("\nCard command classes :");
+	printf("\nCard command classes :");
 	if (cardinfo->SD_csd.CardComdClasses & (0x001))
-		debug_printf(" 0(basic)");
+		printf(" 0(basic)");
 	if (cardinfo->SD_csd.CardComdClasses & (1 << 1))
-		debug_printf(" 1");
+		printf(" 1");
 	if (cardinfo->SD_csd.CardComdClasses & (1 << 2))
-		debug_printf(" 2(read)");
+		printf(" 2(read)");
 	if (cardinfo->SD_csd.CardComdClasses & (1 << 3))
-		debug_printf(" 3");
+		printf(" 3");
 	if (cardinfo->SD_csd.CardComdClasses & (1 << 4))
-		debug_printf(" 4(write)");
+		printf(" 4(write)");
 	if (cardinfo->SD_csd.CardComdClasses & (1 << 5))
-		debug_printf(" 5(erase)");
+		printf(" 5(erase)");
 	if (cardinfo->SD_csd.CardComdClasses & (1 << 6))
-		debug_printf(" 6(protect)");
+		printf(" 6(protect)");
 	if (cardinfo->SD_csd.CardComdClasses & (1 << 7))
-		debug_printf(" 7(lock)");
+		printf(" 7(lock)");
 	if (cardinfo->SD_csd.CardComdClasses & (1 << 8))
-		debug_printf(" 8(app)");
+		printf(" 8(app)");
 	if (cardinfo->SD_csd.CardComdClasses & (1 << 9))
-		debug_printf(" 9(i/o)");
+		printf(" 9(i/o)");
 	if (cardinfo->SD_csd.CardComdClasses & (1 << 10))
-		debug_printf(" 10(switch)");
+		printf(" 10(switch)");
 	if (cardinfo->SD_csd.CardComdClasses & (1 << 11))
-		debug_printf(" 11");
-	debug_printf("\n");
+		printf(" 11");
+	printf("\n");
 
 	if (is_OSRv1 != 0)
 	{
-		debug_printf("Max. read data block length : %d ( %d bytes )\n",
+		printf("Max. read data block length : %d ( %d bytes )\n",
 					 cardinfo->SD_csd.RdBlockLen,
 					 1 << (cardinfo->SD_csd.RdBlockLen));
-		debug_printf("Partial blocks for read allowed : %d\n", cardinfo->SD_csd.PartBlockRead);
-		debug_printf("Write block misalignment : %d\n", cardinfo->SD_csd.WrBlockMisalign);
-		debug_printf("Read block misalignment : %d\n", cardinfo->SD_csd.RdBlockMisalign);
+		printf("Partial blocks for read allowed : %d\n", cardinfo->SD_csd.PartBlockRead);
+		printf("Write block misalignment : %d\n", cardinfo->SD_csd.WrBlockMisalign);
+		printf("Read block misalignment : %d\n", cardinfo->SD_csd.RdBlockMisalign);
 	}
 	else
 	{
-		debug_printf("Max. read data block length : always 512 bytes\n");
-		debug_printf("Partial blocks for read are not allowed\n");
-		debug_printf("Read/Write block misalignment is not allowed\n");
+		printf("Max. read data block length : always 512 bytes\n");
+		printf("Partial blocks for read are not allowed\n");
+		printf("Read/Write block misalignment is not allowed\n");
 	}
-	debug_printf("DSR implemented : %d\n", cardinfo->SD_csd.DSRImpl);
-	debug_printf("Device Size (4112 <= and <= 65375): %lu\n", cardinfo->SD_csd.DeviceSize);
+	printf("DSR implemented : %d\n", cardinfo->SD_csd.DSRImpl);
+	printf("Device Size (4112 <= and <= 65375): %lu\n", cardinfo->SD_csd.DeviceSize);
 
 	if (is_OSRv1 != 0)
 	{
-		debug_printf("Max. read current at VDD min : ");
+		printf("Max. read current at VDD min : ");
 		switch (cardinfo->SD_csd.MaxRdCurrentVDDMin)
 		{
 		case 0:
-			debug_printf("0.5");
+			printf("0.5");
 			break;
 		case 1:
-			debug_printf("1");
+			printf("1");
 			break;
 		case 2:
-			debug_printf("5");
+			printf("5");
 			break;
 		case 3:
-			debug_printf("10");
+			printf("10");
 			break;
 		case 4:
-			debug_printf("25");
+			printf("25");
 			break;
 		case 5:
-			debug_printf("35");
+			printf("35");
 			break;
 		case 6:
-			debug_printf("60");
+			printf("60");
 			break;
 		case 7:
-			debug_printf("100");
+			printf("100");
 			break;
 		default:
 			break;
 		}
-		debug_printf("mA\nMax. read current at VDD max : ");
+		printf("mA\nMax. read current at VDD max : ");
 		switch (cardinfo->SD_csd.MaxRdCurrentVDDMax)
 		{
 		case 0:
-			debug_printf("0.5");
+			printf("0.5");
 			break;
 		case 1:
-			debug_printf("1");
+			printf("1");
 			break;
 		case 2:
-			debug_printf("5");
+			printf("5");
 			break;
 		case 3:
-			debug_printf("10");
+			printf("10");
 			break;
 		case 4:
-			debug_printf("25");
+			printf("25");
 			break;
 		case 5:
-			debug_printf("35");
+			printf("35");
 			break;
 		case 6:
-			debug_printf("60");
+			printf("60");
 			break;
 		case 7:
-			debug_printf("100");
+			printf("100");
 			break;
 		default:
 			break;
 		}
-		debug_printf("mA\nMax. write current at VDD min : ");
+		printf("mA\nMax. write current at VDD min : ");
 		switch (cardinfo->SD_csd.MaxWrCurrentVDDMin)
 		{
 		case 0:
-			debug_printf("1");
+			printf("1");
 			break;
 		case 1:
-			debug_printf("5");
+			printf("5");
 			break;
 		case 2:
-			debug_printf("10");
+			printf("10");
 			break;
 		case 3:
-			debug_printf("25");
+			printf("25");
 			break;
 		case 4:
-			debug_printf("35");
+			printf("35");
 			break;
 		case 5:
-			debug_printf("45");
+			printf("45");
 			break;
 		case 6:
-			debug_printf("80");
+			printf("80");
 			break;
 		case 7:
-			debug_printf("200");
+			printf("200");
 			break;
 		default:
 			break;
 		}
-		debug_printf("mA\nMax. write current at VDD max : ");
+		printf("mA\nMax. write current at VDD max : ");
 		switch (cardinfo->SD_csd.MaxWrCurrentVDDMax)
 		{
 		case 0:
-			debug_printf("1");
+			printf("1");
 			break;
 		case 1:
-			debug_printf("5");
+			printf("5");
 			break;
 		case 2:
-			debug_printf("10");
+			printf("10");
 			break;
 		case 3:
-			debug_printf("25");
+			printf("25");
 			break;
 		case 4:
-			debug_printf("35");
+			printf("35");
 			break;
 		case 5:
-			debug_printf("45");
+			printf("45");
 			break;
 		case 6:
-			debug_printf("80");
+			printf("80");
 			break;
 		case 7:
-			debug_printf("200");
+			printf("200");
 			break;
 		default:
 			break;
 		}
-		debug_printf("mA\nDevice size multiplier : %d\n", cardinfo->SD_csd.DeviceSizeMul);
+		printf("mA\nDevice size multiplier : %d\n", cardinfo->SD_csd.DeviceSizeMul);
 		if (cardinfo->SD_csd.EraseBlockEnable == 0)
-			debug_printf("Erase size : 1 or more units of %d bytes each\n", cardinfo->SD_csd.EraseSectorSize);
+			printf("Erase size : 1 or more units of %d bytes each\n", cardinfo->SD_csd.EraseSectorSize);
 		else
-			debug_printf("Erase size : 1 or more blocks of 512 bytes each\n");
+			printf("Erase size : 1 or more blocks of 512 bytes each\n");
 
-		debug_printf("Write protect group size : %d\n", cardinfo->SD_csd.WrProtectGrSize);
-		debug_printf("Write protect group enable : %d\n", cardinfo->SD_csd.WrProtectGrEnable);
-		debug_printf("Write speed factor (Twrite/Tread) : %d\n", 1 << (cardinfo->SD_csd.WrSpeedFact & 0x3F));
-		debug_printf("Max. write data block length : %d\n", 1 << (cardinfo->SD_csd.MaxWrBlockLen & 0xF));
-		debug_printf("Partial blocks for write allowed : %d\n", cardinfo->SD_csd.WriteBlockPaPartial);
-		debug_printf("File format group : %d\n", cardinfo->SD_csd.FileFormatGroup);
+		printf("Write protect group size : %d\n", cardinfo->SD_csd.WrProtectGrSize);
+		printf("Write protect group enable : %d\n", cardinfo->SD_csd.WrProtectGrEnable);
+		printf("Write speed factor (Twrite/Tread) : %d\n", 1 << (cardinfo->SD_csd.WrSpeedFact & 0x3F));
+		printf("Max. write data block length : %d\n", 1 << (cardinfo->SD_csd.MaxWrBlockLen & 0xF));
+		printf("Partial blocks for write allowed : %d\n", cardinfo->SD_csd.WriteBlockPaPartial);
+		printf("File format group : %d\n", cardinfo->SD_csd.FileFormatGroup);
 	}
 	else
 	{
-		debug_printf("Erase size : 1 or more blocks of 512 bytes each\n");
-		debug_printf("Write protect group disabled\n");
-		debug_printf("Write timeout : 250ms\n");
-		debug_printf("Max. write data block length : 512 bytes\n");
-		debug_printf("Partial blocks for write are not allowed\n");
+		printf("Erase size : 1 or more blocks of 512 bytes each\n");
+		printf("Write protect group disabled\n");
+		printf("Write timeout : 250ms\n");
+		printf("Max. write data block length : 512 bytes\n");
+		printf("Partial blocks for write are not allowed\n");
 	}
-	debug_printf("Copy flag (OTP) : %d\n", cardinfo->SD_csd.CopyFlag);
-	debug_printf("Permanent write protection : %d\n", cardinfo->SD_csd.PermWrProtect);
-	debug_printf("Temporary write protection : %d\n", cardinfo->SD_csd.TempWrProtect);
+	printf("Copy flag (OTP) : %d\n", cardinfo->SD_csd.CopyFlag);
+	printf("Permanent write protection : %d\n", cardinfo->SD_csd.PermWrProtect);
+	printf("Temporary write protection : %d\n", cardinfo->SD_csd.TempWrProtect);
 
 	if (is_OSRv1 != 0)
 	{
-		debug_printf("File Format : ");
+		printf("File Format : ");
 		switch (cardinfo->SD_csd.FileFormat)
 		{
 		case 0:
-			debug_printf("HDD-like file system with partition table\n");
+			printf("HDD-like file system with partition table\n");
 			break;
 		case 1:
-			debug_printf("DOS FAT (FDD-like) with boot sector only (no partition table)\n");
+			printf("DOS FAT (FDD-like) with boot sector only (no partition table)\n");
 			break;
 		case 2:
-			debug_printf("Universal File Format\n");
+			printf("Universal File Format\n");
 			break;
 		case 3:
-			debug_printf("Others/Unknown\n");
+			printf("Others/Unknown\n");
 			break;
 		default:
 			break;
 		}
 	}
-	debug_printf("CSD CRC : %d\n", cardinfo->SD_csd.CSD_CRC);
+	printf("CSD CRC : %d\n", cardinfo->SD_csd.CSD_CRC);
 
 	if (cardType != SD_Card_MMC)
 	{
-		debug_printf("\n    SD Card configuration register (SCR)\n");
-		debug_printf("SCR structure version : %d\n", cardinfo->SD_scr.SCR_Version);
-		debug_printf("Physical layer specification version number : ");
+		printf("\n    SD Card configuration register (SCR)\n");
+		printf("SCR structure version : %d\n", cardinfo->SD_scr.SCR_Version);
+		printf("Physical layer specification version number : ");
 		switch (cardinfo->SD_scr.SpecVersion)
 		{
 		case 0:
-			debug_printf("Version 1.0 and 1.01");
+			printf("Version 1.0 and 1.01");
 			break;
 		case 1:
-			debug_printf("Version 1.10");
+			printf("Version 1.10");
 			break;
 		case 2:
-			debug_printf("Version %s", (cardinfo->SD_scr.SpecVersion3 == 0) ? "2.00" : "3.0x");
+			printf("Version %s", (cardinfo->SD_scr.SpecVersion3 == 0) ? "2.00" : "3.0x");
 			break;
 		default:
-			debug_printf("reserved");
+			printf("reserved");
 			break;
 		}
-		debug_printf("\nState of bits after sector erase : 0x%s\n", cardinfo->SD_scr.StateAfterErase ? "FF" : "00");
-		debug_printf("CPRM security version : ");
+		printf("\nState of bits after sector erase : 0x%s\n", cardinfo->SD_scr.StateAfterErase ? "FF" : "00");
+		printf("CPRM security version : ");
 		switch (cardinfo->SD_scr.Security)
 		{
 		case 0:
-			debug_printf("no security");
+			printf("no security");
 			break;
 		case 1:
-			debug_printf("not used");
+			printf("not used");
 			break;
 		case 2:
-			debug_printf("SDSC security ver 1.01");
+			printf("SDSC security ver 1.01");
 			break;
 		case 3:
-			debug_printf("SDHC security ver 2.00");
+			printf("SDHC security ver 2.00");
 			break;
 		case 4:
-			debug_printf("SDXC security ver 3.xx");
+			printf("SDXC security ver 3.xx");
 			break;
 		default:
-			debug_printf("reserved");
+			printf("reserved");
 			break;
 		}
-		debug_printf("\nSupported data bus width :");
+		printf("\nSupported data bus width :");
 		if (cardinfo->SD_scr.BusWidth & 0x01)
-			debug_printf(" 1 bit");
+			printf(" 1 bit");
 		if (cardinfo->SD_scr.BusWidth & 0x04)
-			debug_printf(" 4 bit");
-		debug_printf("\nExtended security is%s supported\n", (cardinfo->SD_scr.ExSecurity == 0) ? " not" : "");
-		debug_printf("Support of CMD23 (set block count) : %c\n", cardinfo->SD_scr.CmdSupport1 ? 'Y' : 'N');
-		debug_printf("Support of CMD20 (speed class control) : %c\n", cardinfo->SD_scr.CmdSupport2 ? 'Y' : 'N');
+			printf(" 4 bit");
+		printf("\nExtended security is%s supported\n", (cardinfo->SD_scr.ExSecurity == 0) ? " not" : "");
+		printf("Support of CMD23 (set block count) : %c\n", cardinfo->SD_scr.CmdSupport1 ? 'Y' : 'N');
+		printf("Support of CMD20 (speed class control) : %c\n", cardinfo->SD_scr.CmdSupport2 ? 'Y' : 'N');
 	}
-	debug_printf("\nDONE\n");
+	printf("\nDONE\n");
 }
 
 /**
@@ -1426,171 +1426,171 @@ void sdcard_dump_card_info(const SD_CardInfo *cardinfo)
  */
 void sdcard_dump_status(const SD_Status *SD_status)
 {
-	debug_printf("\nDumping SD Card status information:\n\n");
+	printf("\nDumping SD Card status information:\n\n");
 	if (cardType != SD_Card_MMC)
 	{
-		debug_printf("Bus width : ");
+		printf("Bus width : ");
 		switch (SD_status->BusWidth)
 		{
 		case 0x00:
-			debug_printf("1 bit");
+			printf("1 bit");
 			break;
 		case 0x02:
-			debug_printf("4 bits");
+			printf("4 bits");
 			break;
 		default:
-			debug_printf("reserved");
+			printf("reserved");
 			break;
 		}
-		debug_printf("\nSD card is%s in secured mode\n", SD_status->InSecuredMode ? "" : " not");
-		debug_printf("Card Type : ");
+		printf("\nSD card is%s in secured mode\n", SD_status->InSecuredMode ? "" : " not");
+		printf("Card Type : ");
 		switch (SD_status->CardType)
 		{
 		case 0x0000:
-			debug_printf("Regular SD card");
+			printf("Regular SD card");
 			break;
 		case 0x0001:
-			debug_printf("SD ROM card");
+			printf("SD ROM card");
 			break;
 		case 0x0002:
-			debug_printf("OTP card");
+			printf("OTP card");
 			break;
 		default:
-			debug_printf("other card");
+			printf("other card");
 			break;
 		}
-		debug_printf("\nSize of protected area : %lu\n", SD_status->SizeProtectedArea);
-		debug_printf("Speed class : ");
+		printf("\nSize of protected area : %lu\n", SD_status->SizeProtectedArea);
+		printf("Speed class : ");
 		switch (SD_status->SpeedClass)
 		{
 		case 0x00:
-			debug_printf("Class 0");
+			printf("Class 0");
 			break;
 		case 0x01:
-			debug_printf("Class 2");
+			printf("Class 2");
 			break;
 		case 0x02:
-			debug_printf("Class 4");
+			printf("Class 4");
 			break;
 		case 0x03:
-			debug_printf("Class 6");
+			printf("Class 6");
 			break;
 		case 0x04:
-			debug_printf("Class 10");
+			printf("Class 10");
 			break;
 		default:
-			debug_printf("Reserved");
+			printf("Reserved");
 			break;
 		}
-		debug_printf("\nPerformance move : ");
+		printf("\nPerformance move : ");
 		switch (SD_status->PerformanceMove)
 		{
 		case 0x00:
-			debug_printf("Sequential write");
+			printf("Sequential write");
 			break;
 		case 0xFF:
-			debug_printf("Infinity");
+			printf("Infinity");
 			break;
 		default:
-			debug_printf("%d Mb/sec", SD_status->PerformanceMove);
+			printf("%d Mb/sec", SD_status->PerformanceMove);
 			break;
 		}
-		debug_printf("\nAllocation Unit size : ");
+		printf("\nAllocation Unit size : ");
 		switch (SD_status->AU_Size)
 		{
 		case 0x00:
-			debug_printf("not defined");
+			printf("not defined");
 			break;
 		case 0x01:
-			debug_printf("16 Kb");
+			printf("16 Kb");
 			break;
 		case 0x02:
-			debug_printf("32 Kb");
+			printf("32 Kb");
 			break;
 		case 0x03:
-			debug_printf("64 Kb");
+			printf("64 Kb");
 			break;
 		case 0x04:
-			debug_printf("128 Kb");
+			printf("128 Kb");
 			break;
 		case 0x05:
-			debug_printf("256 Kb");
+			printf("256 Kb");
 			break;
 		case 0x06:
-			debug_printf("512 Kb");
+			printf("512 Kb");
 			break;
 		case 0x07:
-			debug_printf("1 Mb");
+			printf("1 Mb");
 			break;
 		case 0x08:
-			debug_printf("2 Mb");
+			printf("2 Mb");
 			break;
 		case 0x09:
-			debug_printf("4 Mb");
+			printf("4 Mb");
 			break;
 		case 0x0A:
-			debug_printf("8 Mb");
+			printf("8 Mb");
 			break;
 		case 0x0B:
-			debug_printf("12 Mb");
+			printf("12 Mb");
 			break;
 		case 0x0C:
-			debug_printf("16 Mb");
+			printf("16 Mb");
 			break;
 		case 0x0D:
-			debug_printf("24 Mb");
+			printf("24 Mb");
 			break;
 		case 0x0E:
-			debug_printf("32 Mb");
+			printf("32 Mb");
 			break;
 		case 0x0F:
-			debug_printf("64 Mb");
+			printf("64 Mb");
 			break;
 		default:
 			break;
 		}
-		debug_printf("\nErase Size : %d AU blocks\n", SD_status->EraseSize);
-		debug_printf("Erase Timeout : %d seconds\n", SD_status->EraseTimeout);
-		debug_printf("Erase Offset : %d seconds\n", SD_status->EraseOffset);
-		debug_printf("Speed Grade for UHS mode : %s\n",
+		printf("\nErase Size : %d AU blocks\n", SD_status->EraseSize);
+		printf("Erase Timeout : %d seconds\n", SD_status->EraseTimeout);
+		printf("Erase Offset : %d seconds\n", SD_status->EraseOffset);
+		printf("Speed Grade for UHS mode : %s\n",
 					 (SD_status->UHS_SpeedGrade == 0) ? "< 10 Mb/sec" : "> 10 Mb/sec");
-		debug_printf("Allocation Unit size for UHS mode : ");
+		printf("Allocation Unit size for UHS mode : ");
 		switch (SD_status->UHS_AU_Size)
 		{
 		case 0x00:
-			debug_printf("not defined");
+			printf("not defined");
 			break;
 		case 0x07:
-			debug_printf("1 Mb");
+			printf("1 Mb");
 			break;
 		case 0x08:
-			debug_printf("2 Mb");
+			printf("2 Mb");
 			break;
 		case 0x09:
-			debug_printf("4 Mb");
+			printf("4 Mb");
 			break;
 		case 0x0A:
-			debug_printf("8 Mb");
+			printf("8 Mb");
 			break;
 		case 0x0B:
-			debug_printf("12 Mb");
+			printf("12 Mb");
 			break;
 		case 0x0C:
-			debug_printf("16 Mb");
+			printf("16 Mb");
 			break;
 		case 0x0D:
-			debug_printf("24 Mb");
+			printf("24 Mb");
 			break;
 		case 0x0E:
-			debug_printf("32 Mb");
+			printf("32 Mb");
 			break;
 		case 0x0F:
-			debug_printf("64 Mb");
+			printf("64 Mb");
 			break;
 		default:
-			debug_printf("not used");
+			printf("not used");
 			break;
 		}
 	}
-	debug_printf("\n\nDONE\n");
+	printf("\n\nDONE\n");
 }
