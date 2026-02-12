@@ -161,7 +161,9 @@ void ui_btn_click(int btn, time_struct dt) {
 	// On any button click, stop alarm
 	if (current_screen == SCREEN_ALARM) {
 		main_audio_stop();
-		ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 1;  // Force reset in 1 s
+		current_screen = SCREEN_MAIN;
+		refresh_screen = true;
+		return;
 	}
 
 	if (btn == 0) {

@@ -378,7 +378,7 @@ void core1_entry() {
 		// Check alarm
 		if (dt.min != last_min) {
 			if (check_alarm(dt) == 1) {
-				ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 300;  // To reset screen after a while
+				ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 10;  // To reset screen after a while
 
 				// Set screen to alarm
 				current_screen = SCREEN_ALARM;
@@ -400,11 +400,11 @@ void core1_entry() {
 			printf("co2:\n", metrics.co2);
 			metrics.ens160_status = ens160_getFlags();
 			circularBuffer_insert(ring_metrics, &metrics);
-			for (uint8_t i = 0; i < ring_metrics->num; i++) {
+			/*for (uint8_t i = 0; i < ring_metrics->num; i++) {
 				metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
 				printf("co2:%d eco2:%d ens160_status:%d ", m->co2, m->eco2, m->ens160_status);
 			}
-			printf("\n");
+			printf("\n");*/
 
 			refresh_screen = true;
 			refresh_screen_clear = false;
@@ -414,7 +414,7 @@ void core1_entry() {
 
 		if (!dt.volt_low) {
 			// Trigger sync periodically
-			int ts = dt.hour * TRIGGER_SYNC_EVERY_SEC + dt.min * 60 + dt.sec;
+			int ts = dt.hour * 3600 + dt.min * 60 + dt.sec;
 			if (last_sync == -1) {
 				// First run, initialize as if sync nearly 1 hour ago
 				last_sync = ts - TRIGGER_SYNC_EVERY_SEC + 30;
