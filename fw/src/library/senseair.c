@@ -35,9 +35,9 @@ uint16_t get_co2_reading() {
 	// Basic Modbus validation: Check function code and byte count
 	if (response[1] == 0x04 && response[2] == 0x02) {
 		uint16_t co2 = (uint16_t)response[3] << 8 | response[4];
-		printf("CO2: %u ppm\n", co2);
+		printf("[senseair] CO2: %u ppm\n", co2);
 		return co2;
 	}
-	printf("Error: Invalid Modbus response received.\n");
+	printf("[senseair] Error: Invalid Modbus response received.\n");
 	return 0;
 }

@@ -397,7 +397,6 @@ void core1_entry() {
 			metrics.tvoc = ens160_getTVOC();
 			metrics.eco2 = ens160_getECO2();
 			metrics.co2 = get_co2_reading();
-			printf("co2:\n", metrics.co2);
 			metrics.ens160_status = ens160_getFlags();
 			circularBuffer_insert(ring_metrics, &metrics);
 			/*for (uint8_t i = 0; i < ring_metrics->num; i++) {
