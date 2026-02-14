@@ -3,4 +3,5 @@
   (lib (name "Lunasys_Library")(type "KiCad")(uri "${KIPRJMOD}/../../common/Lunasys_Library.kicad_sym")(options "")(descr ""))
   (lib (name "SOP65P780X200-20N")(type "KiCad")(uri "${KIPRJMOD}/SJ2-35863B1-SMT-TR.kicad_sym")(options "")(descr ""))
   (lib (name "ENS160")(type "KiCad")(uri "${KIPRJMOD}/ENS160.kicad_sym")(options "")(descr ""))
+  (lib (name "senseair_S8")(type "KiCad")(uri "${KIPRJMOD}/senseair_S8.kicad_sym")(options "")(descr ""))
 )
