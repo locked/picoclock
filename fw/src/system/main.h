@@ -25,8 +25,10 @@ extern "C"
 #define MAX_SCREEN_ID 4
 
 #define UART_ID uart0
-#define BAUD_RATE 115200
+//#define BAUD_RATE 115200
+#define BAUD_RATE 9600
 #define UART_TX_PIN 0
+#define UART_RX_PIN 1
 
 // UART for ESP32 communication
 #define UART_ESP32_UART_ID uart1
@@ -172,6 +174,7 @@ typedef struct {
 	uint8_t min;
 	uint16_t tvoc;
 	uint16_t eco2;
+	uint16_t co2;
 	uint8_t ens160_status;
 	float temp;
 } metrics_t;

@@ -45,6 +45,7 @@
 #include "pcf8563/pcf8563.h"
 #include "ens160/ens160.h"
 #include "mcp9808/mcp9808.h"
+#include "senseair.h"
 
 #include "circularBuffer.h"
 
@@ -248,12 +249,13 @@ void system_initialize() {
 	set_sys_clock_khz(150000, true);
 
 	// Init UART
-	uart_init(UART_ID, BAUD_RATE);
 	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+	gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
+	uart_init(UART_ID, 9600);
 	printf("[picoclock] START PICO_RP2350A=%d\r\n", PICO_RP2350A);
 
 	// Init ring buffer for metrics
-	ring_metrics = circularBuffer_create(ring_metrics, 90, sizeof(metrics_t));
+	ring_metrics = circularBuffer_create(ring_metrics, 65, sizeof(metrics_t));
 
 	// Init I2C
 	init_i2c();
@@ -376,7 +378,7 @@ void core1_entry() {
 		// Check alarm
 		if (dt.min != last_min) {
 			if (check_alarm(dt) == 1) {
-				ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 300;  // To reset screen after a while
+				ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 10;  // To reset screen after a while
 
 				// Set screen to alarm
 				current_screen = SCREEN_ALARM;
@@ -394,8 +396,14 @@ void core1_entry() {
 			ens160_setTempCompensationCelsius(metrics.temp);
 			metrics.tvoc = ens160_getTVOC();
 			metrics.eco2 = ens160_getECO2();
+			metrics.co2 = get_co2_reading();
 			metrics.ens160_status = ens160_getFlags();
 			circularBuffer_insert(ring_metrics, &metrics);
+			/*for (uint8_t i = 0; i < ring_metrics->num; i++) {
+				metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
+				printf("co2:%d eco2:%d ens160_status:%d ", m->co2, m->eco2, m->ens160_status);
+			}
+			printf("\n");*/
 
 			refresh_screen = true;
 			refresh_screen_clear = false;
@@ -405,7 +413,7 @@ void core1_entry() {
 
 		if (!dt.volt_low) {
 			// Trigger sync periodically
-			int ts = dt.hour * TRIGGER_SYNC_EVERY_SEC + dt.min * 60 + dt.sec;
+			int ts = dt.hour * 3600 + dt.min * 60 + dt.sec;
 			if (last_sync == -1) {
 				// First run, initialize as if sync nearly 1 hour ago
 				last_sync = ts - TRIGGER_SYNC_EVERY_SEC + 30;
@@ -418,7 +426,7 @@ void core1_entry() {
 				int ret = remote_sync();
 				if (ret == 1) {
 					// On error, retry earlier
-					last_sync = dt.hour * TRIGGER_SYNC_EVERY_SEC + dt.min * 5 + dt.sec;
+					last_sync = ts - TRIGGER_SYNC_EVERY_SEC + 5 * 60;
 				}
 				sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
 				printf("sync trigger done\r\n");

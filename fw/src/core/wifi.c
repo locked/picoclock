@@ -92,17 +92,17 @@ static err_t tcp_client_sent(void *arg, struct tcp_pcb *tpcb, u16_t len) {
 
     if (state->sent_len >= BUF_SIZE) {
         state->run_count++;
-
-        tcp_result(arg, 0);
-        return ERR_OK;
+        if (state->run_count >= TEST_ITERATIONS) {
+            tcp_result(arg, 0);
+            return ERR_OK;
+        }
 
         // We should receive a new buffer from the server
-        //state->buffer_len = 0;
-        //state->sent_len = 0;
-        //DEBUG_printf("Waiting for buffer from server\n");
+        state->buffer_len = 0;
+        state->sent_len = 0;
+        DEBUG_printf("Waiting for buffer from server\n");
     }
 
-    //tcp_result(arg, 0);
     return ERR_OK;
 }
 
