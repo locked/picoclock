@@ -1,4 +1,4 @@
-26583525997669088
+26587068182882744
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -105293,3 +105293,17 @@ Micro SD
 0
 16
 11
+senseair
+Senseair_S8_Down
+Sensair S8 Series CO2 sensor, 1kHz PWM output, Modbus, THT
+co2 gas sensor pwm modbus
+0
+9
+9
+senseair
+Senseair_S8_Up
+Sensair S8 Series CO2 sensor, 1kHz PWM output, Modbus, THT
+co2 gas sensor pwm modbus
+0
+9
+9
