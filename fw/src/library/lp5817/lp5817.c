@@ -10,17 +10,18 @@ void lp5817_init(i2c_inst_t *i2c) {
 }
 
 uint8_t lp5817_enable(bool on) {
-	printf("Setting enable to %d\r\n", on);
+	printf("[lp5817] Setting enable to %d...\r\n", on);
 	uint8_t packet[2];
 	packet[0] = LP5817_CHIP_EN;
 	packet[1] = 0x01; //on ? 0x01 : 0x00;
 	int result = i2c_write_blocking(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false);
+	printf("[lp5817] Enable set to %d\r\n", on);
 	return result != 2;
 }
 
 // ch = 0 to 2
 uint8_t lp5817_set_dot_current(uint8_t ch, uint8_t value) {
-	printf("Setting dot-current (DC) of channel %d to %d\r\n", ch, value);
+	printf("[lp5817] Setting dot-current (DC) of channel %d to %d\r\n", ch, value);
 	uint8_t packet[2];
 	if (ch == 0) {
 		packet[0] = LP5817_OUT0_DC;
@@ -36,7 +37,7 @@ uint8_t lp5817_set_dot_current(uint8_t ch, uint8_t value) {
 
 // ch = 0 to 2
 uint8_t lp5817_set_pwm(uint8_t ch, uint8_t value) {
-	printf("Setting dot-current (DC) of channel %d to %d\r\n", ch, value);
+	printf("[lp5817] Setting dot-current (DC) of channel %d to %d\r\n", ch, value);
 	uint8_t packet[2];
 	if (ch == 0) {
 		packet[0] = LP5817_OUT0_MANUAL_PWM;
@@ -51,7 +52,7 @@ uint8_t lp5817_set_pwm(uint8_t ch, uint8_t value) {
 }
 
 uint8_t lp5817_set_max_current_code() {
-	printf("Set max current\r\n");
+	printf("[lp5817] Set max current\r\n");
 	uint8_t packet[2];
 	packet[0] = LP5817_DEV_CONFIG0;
 	packet[1] = 0x01;
@@ -60,7 +61,7 @@ uint8_t lp5817_set_max_current_code() {
 }
 
 uint8_t lp5817_set_output_enable_all() {
-	printf("Enable output ON\r\n");
+	printf("[lp5817] Enable output ON\r\n");
 	uint8_t packet[2];
 	packet[0] = LP5817_DEV_CONFIG1;
 	packet[1] = 0x07;
@@ -70,7 +71,7 @@ uint8_t lp5817_set_output_enable_all() {
 
 // ch = 0 to 2
 uint8_t lp5817_set_output_enable(uint8_t ch) {
-	printf("Enable output channel %d\r\n", ch);
+	printf("[lp5817] Enable output channel %d\r\n", ch);
 	uint8_t packet[2];
 	packet[0] = LP5817_DEV_CONFIG1;
 	packet[1] = 1 << ch;
@@ -79,7 +80,7 @@ uint8_t lp5817_set_output_enable(uint8_t ch) {
 }
 
 uint8_t lp5817_update() {
-	printf("Update\r\n");
+	printf("[lp5817] Update\r\n");
 	uint8_t packet[2];
 	packet[0] = LP5817_UPDATE_CMD;
 	packet[1] = 0x55;

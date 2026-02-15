@@ -282,6 +282,7 @@ void system_initialize() {
 	mcp4551_init(I2C_CHANNEL);
 	mcp4551_set_wiper(MCP4551_WIPER_MID); // 0 => high vol, 0xff => low vol
 
+	printf("[picoclock] init sound...\r\n");
 	i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
 	audio_init(&audio_ctx);
 	printf("[picoclock] init sound OK\r\n");
