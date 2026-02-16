@@ -379,7 +379,7 @@ void core1_entry() {
 		// Check alarm
 		if (dt.min != last_min) {
 			if (check_alarm(dt) == 1) {
-				ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 10;  // To reset screen after a while
+				ts_reset_alarm_screen = dt.hour * 3600 + dt.min * 60 + dt.sec + 120;  // To reset screen after a while
 
 				// Set screen to alarm
 				current_screen = SCREEN_ALARM;
@@ -453,6 +453,7 @@ void core1_entry() {
 			refresh_screen = false;
 		}
 		sleep_ms(50);
+		screen_anim();
 		watchdog_update();
 	}
 }

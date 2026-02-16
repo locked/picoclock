@@ -22,7 +22,7 @@ extern "C"
 // unreachable screens
 #define SCREEN_ALARM 10
 
-#define MAX_SCREEN_ID 4
+#define MAX_SCREEN_ID 3
 
 #define UART_ID uart0
 //#define BAUD_RATE 115200

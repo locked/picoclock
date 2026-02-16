@@ -65,6 +65,10 @@ int loop_count = 0;
 bool backlight_on = false;
 UBYTE *BlackImage;
 
+uint8_t current_rgb_color = 0;
+uint8_t rgb_intensity[3] = {0, 0, 0};
+uint8_t rgb_change[3] = {0, 0, 0};
+
 
 // UI (user interface, buttons manager, LCD)
 void init_ui() {
@@ -157,6 +161,31 @@ void ui_refresh_screen(bool message_clear, time_struct dt) {
 }
 
 
+void screen_anim() {
+	if (current_screen == SCREEN_WEATHER) {
+		if (rgb_intensity[0] > 250) {
+			rgb_change[0] = -rand() % 4;
+		} else if (rgb_intensity[0] < 5) {
+			rgb_change[0] = rand() % 4;
+		}
+		if (rgb_intensity[1] > 250) {
+			rgb_change[1] = -rand() % 4;
+		} else if (rgb_intensity[1] < 5) {
+			rgb_change[1] = rand() % 4;
+		}
+		if (rgb_intensity[2] > 250) {
+			rgb_change[2] = -rand() % 4;
+		} else if (rgb_intensity[2] < 5) {
+			rgb_change[2] = rand() % 4;
+		}
+		for (uint8_t i = 0; i < 3; i++) {
+			rgb_intensity[i] += rgb_change[i];
+		}
+		lp5817_turn_on(rgb_intensity[0], rgb_intensity[1], rgb_intensity[2]);
+	}
+}
+
+
 void ui_btn_click(int btn, time_struct dt) {
 	// On any button click, stop alarm
 	if (current_screen == SCREEN_ALARM) {
@@ -167,6 +196,9 @@ void ui_btn_click(int btn, time_struct dt) {
 	}
 
 	if (btn == 0) {
+		//  *     [*]
+		//  *      *
+		//  *      *
 		if (current_screen < 3) {
 			if (backlight_on) {
 				printf("Backlight OFF\r\n");
@@ -179,12 +211,24 @@ void ui_btn_click(int btn, time_struct dt) {
 				lp5817_turn_on(0x20, 0xff, 0x30);
 				backlight_on = true;
 			}
+		} else if (current_screen == SCREEN_DEBUG) {
+			rgb_intensity[current_rgb_color] += 20;
+			lp5817_turn_on(rgb_intensity[0], rgb_intensity[1], rgb_intensity[2]);
 		}
 	} else if (btn == 1) {
+		//  *      *
+		//  *     [*]
+		//  *      *
 		if (current_screen < 3) {
 			sync_requested = true;
+		} else if (current_screen == SCREEN_DEBUG) {
+			rgb_intensity[current_rgb_color] -= 20;
+			lp5817_turn_on(rgb_intensity[0], rgb_intensity[1], rgb_intensity[2]);
 		}
 	} else if (btn == 2 || btn == 3) {
+		//  *      *
+		//  *      *
+		// [*]    [*]
 		current_screen += btn == 2 ? 1 : -1;
 		if (current_screen > MAX_SCREEN_ID) {
 			current_screen = 0;
@@ -192,23 +236,54 @@ void ui_btn_click(int btn, time_struct dt) {
 		if (current_screen < 0) {
 			current_screen = MAX_SCREEN_ID;
 		}
+		if (current_screen == SCREEN_WEATHER) {
+			// Init random rgb values
+			rgb_intensity[0] = rand() % 255;
+			rgb_intensity[1] = rand() % 255;
+			rgb_intensity[2] = rand() % 255;
+			rgb_change[0] = rand() % 2;
+			rgb_change[1] = rand() % 3;
+			rgb_change[2] = rand() % 4;
+		}
 		refresh_screen = true;
 		refresh_screen_clear = false;
 	} else if (btn == 4) {
-		if (gpio_get(I2S_SELECT_PIN) == 0) {
-			gpio_put(I2S_SELECT_PIN, 1);	// 0 select I2S from pico, 1 from ESP32
-			gpio_put(AUDIO_MUTE_PIN, 1);	// Unmute
-			uart_puts(UART_ESP32_UART_ID, "START\n");
+		//  *      *
+		// [*]     *
+		//  *      *
+		if (current_screen == SCREEN_DEBUG) {
+			// Change led
+			current_rgb_color++;
+			if (current_rgb_color > 2) {
+				current_rgb_color = 0;
+			}
 		} else {
-			mcp4551_set_wiper(mcp4551_read_wiper() + 20);
+			if (gpio_get(I2S_SELECT_PIN) == 0) {
+				gpio_put(I2S_SELECT_PIN, 1);	// 0 select I2S from pico, 1 from ESP32
+				gpio_put(AUDIO_MUTE_PIN, 1);	// Unmute
+				uart_puts(UART_ESP32_UART_ID, "START\n");
+			} else {
+				mcp4551_set_wiper(mcp4551_read_wiper() + 20);
+			}
 		}
 	} else if (btn == 5) {
-		if (!audio_ctx.playing) {
-			gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
-			char SoundFile[260] = "Tellement.wav";
-			fs_task_sound_start(SoundFile);
+		// [*]     *
+		//  *      *
+		//  *      *
+		if (current_screen == SCREEN_DEBUG) {
+			// Change led
+			current_rgb_color--;
+			if (current_rgb_color > 2) {
+				current_rgb_color = 0;
+			}
 		} else {
-			mcp4551_set_wiper(mcp4551_read_wiper() - 20);
+			if (!audio_ctx.playing) {
+				gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
+				char SoundFile[260] = "Tellement.wav";
+				fs_task_sound_start(SoundFile);
+			} else {
+				mcp4551_set_wiper(mcp4551_read_wiper() - 20);
+			}
 		}
 	}
 }
