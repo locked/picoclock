@@ -281,11 +281,59 @@ module speaker_grid() {
     }
     for (x = [startx:step:endx]) {
         for (y = [starty:step:endy]) {
-            translate([x, y, -back[2]])
-            cube([width,width,t]);
+            if (speaker_at_bottom) {
+                rotate([90]) translate([x, -y, -t]) cube([width,width,t]);
+            } else {
+                translate([x, y, -back[2]]) cube([width,width,t]);
+            }
         }
     }
 }
+
+module airvents() {
+    airvents = [20, 20];
+    startx = (back[2]-airvents[0])/2 - t/2 + 2;
+    endx = startx + airvents[0];
+    starty = (back[1]-airvents[1])/2;
+    endy = starty + airvents[1];
+    step = 6;
+    width = 2.8;
+    if (support_large_speaker) {
+        startx = (back[0]-airvents[0])/2 - t/2;
+        endx = startx + airvents[0];
+        starty = (back[1]-airvents[0])/2 + airvents[0] * 0.14;
+        endy = starty + airvents[0] * 0.7;
+        step = 5;
+        width = 2;
+    }
+    for (x = [startx:step:endx]) {
+        for (y = [starty:step:endy]) {
+            rotate([0, 90]) translate([x, y, 0]) cube([width,width,t]);
+            rotate([0, 90]) translate([x, y, front[0]-t]) cube([width,width,t]);
+        }
+    }
+}
+
+module airvents_walls() {
+    starty = pcb_support[0]+t;
+    endy = front[1] - pcb_support[0] * 2 - t * 2;
+    step = 10;
+    shiftz = 46;
+    depth = 30;
+    x1 = pcb_support[0] / 2;
+    x2 = front[0] - pcb_support[0] / 2 - t;
+    rotate([90]) translate([x1, starty, -shiftz])
+        cube([1.4, front[1] - pcb_support[0] * 2 - t * 2, depth]);
+    rotate([90]) translate([x2, starty, -shiftz])
+        cube([1.4, endy, depth]);
+    for (y = [starty+step-2:step:endy+1]) {
+        rotate([90]) translate([x1, y, -front[1]-t])
+            cube([1.4, 2, front[1]-shiftz+t]);
+        rotate([90]) translate([x2, y, -front[1]-t])
+            cube([1.4, 2, front[1]-shiftz+t]);
+    }
+}
+
 module speaker_supports_holes() {
     rotate([90]) translate([
         pcb_support[0]+t+3+1,
@@ -340,7 +388,12 @@ module back() {
         if (support_large_speaker) {
             speaker_supports_holes();
         }
-        translate([back[0]/2, back[1]/2, -back[2] + t + speaker2_support[2]]) speaker2_holes();
+        if (speaker_at_bottom) {
+            rotate([-90]) translate([back[0]/2, back[1]/2, t + speaker2_support[2]]) speaker2_holes();
+        } else {
+            translate([back[0]/2, back[1]/2, -back[2] + t + speaker2_support[2]]) speaker2_holes();
+        }
+        airvents();
     }
 
     // add PCB support (cannot do it earlier
@@ -363,7 +416,14 @@ module back() {
         front_joint(0.5, 0.8);
     }
 
-    rotate([90]) translate([back[0]/2, back[1]/2, -back[2] + t]) speaker2_support();
+    // wall to block lights from going out by the air vents
+    airvents_walls();
+
+    if (speaker_at_bottom) {
+        translate([back[0]/2, back[1]/2, t]) speaker2_support();
+    } else {
+        rotate([90]) translate([back[0]/2, back[1]/2, -back[2] + t]) speaker2_support();
+    }
 
     if (support_large_speaker) {
         speaker_supports();
@@ -375,6 +435,8 @@ module back() {
 //front();
 
 //rotate([90]) translate([front[0]/2, front[1]/2, 6]) screen_holder();
+
+speaker_at_bottom = true;
 
 back();
 
