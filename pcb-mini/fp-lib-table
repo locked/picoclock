@@ -10,4 +10,5 @@
   (lib (name "ENS160")(type "KiCad")(uri "${KIPRJMOD}/ENS160.pretty")(options "")(descr ""))
   (lib (name "LTST-C19HE1WT")(type "KiCad")(uri "${KIPRJMOD}/LTST-C19HE1WT.pretty")(options "")(descr ""))
   (lib (name "senseair")(type "KiCad")(uri "${KIPRJMOD}/senseair.pretty")(options "")(descr ""))
+  (lib (name "stcc4")(type "KiCad")(uri "${KIPRJMOD}/stcc4.pretty")(options "")(descr ""))
 )
