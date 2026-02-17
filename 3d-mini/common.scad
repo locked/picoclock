@@ -4,7 +4,7 @@ pcb_screw_diam = 3.6;
 pcb_screw_pos = [4, 4];
 pcb_bolt_diam = 6.5;
 pcb_bolt_depth = 3.2;
-pcb_bolt_length = 40;
+pcb_bolt_length = 30;
 pcb_image = "picoclock_scaled.png";
 pcb_margin = 0.4;
 
@@ -12,7 +12,7 @@ pcb_margin = 0.4;
 t = 1.5;
 
 front = [pcb[0] + t * 2, pcb[1] + t * 2, 12];
-back = [pcb[0] + t * 2, pcb[1] + t * 2, 50];
+back = [pcb[0] + t * 2, pcb[1] + t * 2, 60];
 pcb_bolt_back_depth = back[2] - pcb_bolt_length + t + pcb_bolt_depth + front[2];
 
 pcb_support = [pcb_screw_pos[0]*2+pcb_margin/2, pcb_screw_pos[0]*2+pcb_margin/2, front[2] - pcb[2] - t];
