@@ -121,7 +121,7 @@ void ui_refresh_screen(bool message_clear, time_struct dt) {
 	} else if (current_screen == SCREEN_LIST_ALARMS) {
 		display_screen_alarms();
 	} else if (current_screen == SCREEN_DEBUG) {
-		display_screen_debug(last_sync_str);
+		display_screen_debug(last_sync_str, current_rgb_color, rgb_intensity);
 	} else if (current_screen == SCREEN_ALARM) {
 		display_screen_alarm();
 	} else if (current_screen == SCREEN_METRIC) {
@@ -214,6 +214,7 @@ void ui_btn_click(int btn, time_struct dt) {
 		} else if (current_screen == SCREEN_DEBUG) {
 			rgb_intensity[current_rgb_color] += 20;
 			lp5817_turn_on(rgb_intensity[0], rgb_intensity[1], rgb_intensity[2]);
+			refresh_screen = true;
 		}
 	} else if (btn == 1) {
 		//  *      *
@@ -224,6 +225,7 @@ void ui_btn_click(int btn, time_struct dt) {
 		} else if (current_screen == SCREEN_DEBUG) {
 			rgb_intensity[current_rgb_color] -= 20;
 			lp5817_turn_on(rgb_intensity[0], rgb_intensity[1], rgb_intensity[2]);
+			refresh_screen = true;
 		}
 	} else if (btn == 2 || btn == 3) {
 		//  *      *
@@ -257,6 +259,7 @@ void ui_btn_click(int btn, time_struct dt) {
 			if (current_rgb_color > 2) {
 				current_rgb_color = 0;
 			}
+			refresh_screen = true;
 		} else {
 			if (gpio_get(I2S_SELECT_PIN) == 0) {
 				gpio_put(I2S_SELECT_PIN, 1);	// 0 select I2S from pico, 1 from ESP32
@@ -272,10 +275,11 @@ void ui_btn_click(int btn, time_struct dt) {
 		//  *      *
 		if (current_screen == SCREEN_DEBUG) {
 			// Change led
-			current_rgb_color--;
-			if (current_rgb_color > 2) {
-				current_rgb_color = 0;
+			if (current_rgb_color == 0) {
+				current_rgb_color = 3;
 			}
+			current_rgb_color--;
+			refresh_screen = true;
 		} else {
 			if (!audio_ctx.playing) {
 				gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32

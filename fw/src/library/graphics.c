@@ -141,7 +141,7 @@ void display_screen_alarms() {
 }
 
 
-void display_screen_debug(char *last_sync_str) {
+void display_screen_debug(char *last_sync_str, uint8_t current_rgb_color, uint8_t* rgb_intensity) {
     char temp_str[50];
 	int _y = SCREEN_Y;
 
@@ -159,6 +159,9 @@ void display_screen_debug(char *last_sync_str) {
 
 	sprintf(temp_str, "Mem(free/tot): %d/%d", getFreeHeap(), getTotalHeap());
 	Paint_DrawString_EN(SCREEN_X, _y + Font12.Height * 2, temp_str, &Font12, WHITE, BLACK);
+
+	sprintf(temp_str, "B:%02x G:%02x R:%02x Sel:%02x", rgb_intensity[0], rgb_intensity[1], rgb_intensity[2], current_rgb_color);
+	Paint_DrawString_EN(SCREEN_X, _y + Font12.Height * 3, temp_str, &Font12, WHITE, BLACK);
 }
 
 

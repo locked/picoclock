@@ -13,7 +13,7 @@ uint8_t lp5817_enable(bool on) {
 	printf("[lp5817] Setting enable to %d...\r\n", on);
 	uint8_t packet[2];
 	packet[0] = LP5817_CHIP_EN;
-	packet[1] = 0x01; //on ? 0x01 : 0x00;
+	packet[1] = on ? 0x01 : 0x00;
 	int result = i2c_write_blocking(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false);
 	printf("[lp5817] Enable set to %d\r\n", on);
 	return result != 2;
@@ -37,7 +37,6 @@ uint8_t lp5817_set_dot_current(uint8_t ch, uint8_t value) {
 
 // ch = 0 to 2
 uint8_t lp5817_set_pwm(uint8_t ch, uint8_t value) {
-	printf("[lp5817] Setting dot-current (DC) of channel %d to %d\r\n", ch, value);
 	uint8_t packet[2];
 	if (ch == 0) {
 		packet[0] = LP5817_OUT0_MANUAL_PWM;
@@ -47,6 +46,7 @@ uint8_t lp5817_set_pwm(uint8_t ch, uint8_t value) {
 		packet[0] = LP5817_OUT2_MANUAL_PWM;
 	}
 	packet[1] = value;
+	printf("[lp5817] Setting dot-current (DC) of channel %d to %d packet:[%02d:%02d]\r\n", ch, value, packet[0], packet[1]);
 	int result = i2c_write_blocking(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false);
 	return result != 2;
 }
