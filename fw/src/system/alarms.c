@@ -6,6 +6,8 @@
 #include <string.h>
 
 
+extern char request_audio_start_file[260];
+
 wakeup_alarm_struct wakeup_alarms[10];
 int wakeup_alarms_count = 10;
 
@@ -56,10 +58,11 @@ void get_next_alarm(wakeup_alarm_struct **next_alarm, time_struct dt) {
 void ring_alarm(wakeup_alarm_struct *alarm) {
 	// Set volume
 	mcp4551_set_wiper(0x10);
-	set_audio_volume_factor(50);
+	set_audio_volume_factor(70);
 
 	// Start sound
-	fs_task_sound_start(alarm->chime);
+	sprintf(request_audio_start_file, alarm->chime);
+	//fs_task_sound_start(alarm->chime);
 }
 
 

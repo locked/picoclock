@@ -56,6 +56,7 @@ extern bool refresh_screen_clear;
 extern int ts_reset_alarm_screen;
 extern bool sync_requested;
 extern circularBuffer_t* ring_metrics;
+extern char request_audio_start_file[260];
 
 extern audio_ctx_t audio_ctx;
 
@@ -282,9 +283,7 @@ void ui_btn_click(int btn, time_struct dt) {
 			refresh_screen = true;
 		} else {
 			if (!audio_ctx.playing) {
-				gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
-				char SoundFile[260] = "Tellement.wav";
-				fs_task_sound_start(SoundFile);
+				sprintf(request_audio_start_file, "Tellement.wav");
 			} else {
 				mcp4551_set_wiper(mcp4551_read_wiper() - 20);
 			}

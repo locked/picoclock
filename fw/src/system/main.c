@@ -81,6 +81,7 @@ volatile uint8_t last_btn_values[6] = {1, 1, 1, 1, 1, 1};
 static struct repeating_timer timer;
 volatile int request_btn_push = -1;
 volatile int request_audio_read = -1;
+volatile char request_audio_start_file[260] = "";
 
 bool datetime_update_requested = true;
 static struct repeating_timer timer_datetime;
@@ -124,6 +125,8 @@ static void audio_callback(void) {
 }
 
 void main_audio_play(const char *filename) {
+	set_sys_clock_khz(CPU_CLOCK_MAX, true);
+
 	printf("audio_play... [%s]\r\n", filename);
 	audio_play(&audio_ctx, filename);
 	config.freq = audio_ctx.audio_info.sample_rate;
@@ -152,6 +155,8 @@ void main_audio_stop() {
 	memset(i2s.out_ctrl_blocks[1], 0, STEREO_BUFFER_SIZE * sizeof(uint32_t));
 	audio_stop(&audio_ctx);
 	i2s_stop(&i2s);
+
+	set_sys_clock_khz(CPU_CLOCK_IDLE, true);
 }
 
 int main_audio_process() {
@@ -246,7 +251,7 @@ void i2c_bus_scan() {
 void system_initialize() {
 	stdio_init_all();
 
-	set_sys_clock_khz(150000, true);
+	set_sys_clock_khz(CPU_CLOCK_IDLE, true);
 
 	// Init UART
 	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
@@ -428,6 +433,8 @@ void core1_entry() {
 				if (ret == 1) {
 					// On error, retry earlier
 					last_sync = ts - TRIGGER_SYNC_EVERY_SEC + 5 * 60;
+				} else {
+					refresh_screen = true;
 				}
 				sprintf(last_sync_str, "%02d:%02d:%02d", dt.hour, dt.min, dt.sec);
 				printf("sync trigger done\r\n");
@@ -515,6 +522,12 @@ int main() {
 			sleep_dur = 50;		// I2S audio data cannot wait
 		}
 		sleep_us(sleep_dur);
+		if (strcmp(request_audio_start_file, "") != 0) {
+			printf("[picoclock] found file to play:[%s]\r\n", request_audio_start_file);
+			gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
+			fs_task_sound_start(request_audio_start_file);
+			sprintf(request_audio_start_file, "");
+		}
 		if (request_audio_read > 0) {
 			fs_audio_next_samples();
 			request_audio_read = -1;

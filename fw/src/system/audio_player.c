@@ -87,48 +87,48 @@ static int load_next_file(audio_ctx_t *ctx, const char *fname_ptr) {
 	if (strncmp(&fname_ptr[len - 4], ".wav", 4) == 0 || strncmp(&fname_ptr[len - 4], ".WAV", 4) == 0) {
 		memcpy(ctx->audio_info.filename, fname_ptr, 256);
 		ctx->audio_info.info_start = 0;
-		debug_printf("load_next_file: open file\r\n");
+		printf("[audio_player] load_next_file: open file\r\n");
 		fr = f_open(&ctx->fil, ctx->audio_info.filename, FA_READ);
 		if (fr != FR_OK) {
-			debug_printf("ERROR: f_open %d for file: %s\n\r", (int)fr, fname_ptr);
+			printf("[audio_player] ERROR: f_open %d for file: %s\n\r", (int)fr, fname_ptr);
 		}
 		ctx->idx_play++;
 		FRESULT res = f_read(&ctx->fil, ctx->header, sizeof(ctx->header), &br);
-		debug_printf("load_next_file: read ok\r\n");
+		printf("[audio_player] load_next_file: read ok\r\n");
 
 		ctx->audio_info.channels = leu16_get(&ctx->header[22]);
 		ctx->audio_info.sample_rate = leu32_get(&ctx->header[24]);
 		// Find 'data' chunk
 		offset = 0;
-		debug_printf("load_next_file: loop\r\n");
+		printf("[audio_player] load_next_file: loop\r\n");
 		while (1) {
 			res = f_read(&ctx->fil, chunk_id, 4, &br);
 			res = f_read(&ctx->fil, &size, 4, &br);
-			debug_printf("load_next_file: loop read offset:[%d]\r\n", offset);
+			printf("[audio_player] load_next_file: loop read offset:[%d]\r\n", offset);
 			offset += 8;
 			if (res == FR_OK) {
 				if (memcmp(chunk_id, "data", 4) == 0 || memcmp(chunk_id, "DATA", 4) == 0) {
 					break;
 				}
 			} else {
-				debug_printf("[AUDIO_PLAYER] Data not found, invalid file\r\n");
+				printf("[audio_player] Data not found, invalid file\r\n");
 				return 0;
 				break;
 			}
 		}
 
 		if (size == 0) {
-			debug_printf("[AUDIO_PLAYER] Empty audio file\r\n");
+			printf("[audio_player] Empty audio file\r\n");
 			return 0;
 		} else {
-			debug_printf("[AUDIO_PLAYER] Load WAV: \r\n - Channels: %d\r\n - Sample rate: %d\r\n", ctx->audio_info.channels, ctx->audio_info.sample_rate);
+			printf("[audio_player] Load WAV: \r\n - Channels: %d\r\n - Sample rate: %d\r\n", ctx->audio_info.channels, ctx->audio_info.sample_rate);
 			ctx->audio_info.data_size = size;
 			// printf("Audio data size = %d\n\r", (int) audio_info.data_size);
 			ctx->audio_info.data_start = offset;
 			ctx->audio_info.data_offset = 0;
 			return 1;
 		}
-		debug_printf("load_next_file: end\r\n");
+		printf("[audio_player] load_next_file: end\r\n");
 
 		return 0;
 	}
@@ -180,7 +180,7 @@ static int get_audio_buf(audio_ctx_t *ctx, int32_t *buf_32b) {
 			number += trans;
 			ctx->audio_info.data_offset += trans;
 		} else {
-			debug_printf("ERROR: f_read %d, data_offset = %d\n\r", (int)fr, (int)ctx->audio_info.data_offset);
+			printf("[audio_player] ERROR: f_read %d, data_offset = %d\n\r", (int)fr, (int)ctx->audio_info.data_offset);
 			f_close(&ctx->fil);
 			ctx->transfer_size = number / 4;
 			return 1;
@@ -246,13 +246,13 @@ int audio_play(audio_ctx_t *ctx, const char *fname_ptr) {
 	if (ctx->playing)
 		return 0;
 
-	debug_printf("audio_play [0]\r\n");
+	printf("[audio_player] audio_play [0]\r\n");
 	memset(ctx->audio_info.filename, 0, sizeof(ctx->audio_info.filename));
 	if (!load_next_file(ctx, fname_ptr)) {
 		ctx->finished = 1;
 		return 0;
 	}
-	debug_printf("audio_play [1]\r\n");
+	printf("[audio_player] audio_play [1]\r\n");
 	memset(ctx->audio_info.artist, 0, sizeof(ctx->audio_info.artist));
 	memset(ctx->audio_info.title, 0, sizeof(ctx->audio_info.title));
 	memset(ctx->audio_info.album, 0, sizeof(ctx->audio_info.album));
