@@ -49,6 +49,8 @@
 
 #include "circularBuffer.h"
 
+#include "sensirion/sensirion.h"
+
 // Audio (PIO)
 #include "audio_player.h"
 #include "pico_i2s.h"
@@ -81,6 +83,7 @@ volatile uint8_t last_btn_values[6] = {1, 1, 1, 1, 1, 1};
 static struct repeating_timer timer;
 volatile int request_btn_push = -1;
 volatile int request_audio_read = -1;
+volatile bool request_audio_start = false;
 volatile char request_audio_start_file[260] = "";
 
 bool datetime_update_requested = true;
@@ -248,6 +251,7 @@ void i2c_bus_scan() {
 	printf("Done.\n");
 }
 
+
 void system_initialize() {
 	stdio_init_all();
 
@@ -264,6 +268,12 @@ void system_initialize() {
 
 	// Init I2C
 	init_i2c();
+	sleep_ms(1500);
+
+	sensirion_init(I2C_CHANNEL);
+	sensirion_scd43_init();
+	sensirion_stcc4_init();
+
 	printf("[picoclock] init_i2c OK\r\n");
 	i2c_bus_scan();
 
@@ -319,6 +329,9 @@ void system_initialize() {
 	gpio_set_function(UART_ESP32_TX_PIN, GPIO_FUNC_UART);
 	gpio_set_function(UART_ESP32_RX_PIN, GPIO_FUNC_UART);
 	uart_puts(uart1, "END\n");
+
+	sensirion_scd43_read();
+	sensirion_stcc4_read();
 
 	printf("[picoclock] System Clock: %lu\n", clock_get_hz(clk_sys));
 }
@@ -392,6 +405,9 @@ void core1_entry() {
 				refresh_screen_clear = true;
 			}
 
+			int16_t scd43_co2 = sensirion_scd43_read();
+			int16_t stcc4_co2 = sensirion_stcc4_read();
+
 			// Collect metrics
 			metrics.year = dt.year;
 			metrics.month = dt.month;
@@ -403,6 +419,8 @@ void core1_entry() {
 			metrics.tvoc = ens160_getTVOC();
 			metrics.eco2 = ens160_getECO2();
 			metrics.co2 = get_co2_reading();
+			metrics.scd43_co2 = scd43_co2;
+			metrics.stcc4_co2 = stcc4_co2;
 			metrics.ens160_status = ens160_getFlags();
 			circularBuffer_insert(ring_metrics, &metrics);
 			/*for (uint8_t i = 0; i < ring_metrics->num; i++) {
@@ -522,11 +540,10 @@ int main() {
 			sleep_dur = 50;		// I2S audio data cannot wait
 		}
 		sleep_us(sleep_dur);
-		if (strcmp(request_audio_start_file, "") != 0) {
+		if (request_audio_start) {
 			printf("[picoclock] found file to play:[%s]\r\n", request_audio_start_file);
-			gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
 			fs_task_sound_start(request_audio_start_file);
-			sprintf(request_audio_start_file, "");
+			request_audio_start = false;
 		}
 		if (request_audio_read > 0) {
 			fs_audio_next_samples();

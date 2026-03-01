@@ -12,6 +12,8 @@
 #include "fs_task.h"
 #include "sdcard.h"
 
+#include "pico/stdlib.h"
+
 // ===========================================================================================================
 // DEFINITIONS
 // ===========================================================================================================
@@ -57,6 +59,8 @@ void fs_task_read_block(uint32_t addr, uint8_t *block, fs_result_cb_t cb) {
 }
 
 void fs_task_sound_start(char *sound) {
+	gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
+
 	sprintf(ScratchFile, "%s%s", ASSETS_DIR, sound);
 
 	debug_printf("--------------------------\r\nPlaying: %s\r\n", ScratchFile);

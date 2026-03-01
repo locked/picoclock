@@ -178,6 +178,8 @@ typedef struct {
 	uint16_t tvoc;
 	uint16_t eco2;
 	uint16_t co2;
+	int16_t scd43_co2;
+	int16_t stcc4_co2;
 	uint8_t ens160_status;
 	float temp;
 } metrics_t;

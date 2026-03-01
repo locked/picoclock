@@ -7,6 +7,7 @@
 
 
 extern char request_audio_start_file[260];
+extern bool request_audio_start;
 
 wakeup_alarm_struct wakeup_alarms[10];
 int wakeup_alarms_count = 10;
@@ -62,7 +63,7 @@ void ring_alarm(wakeup_alarm_struct *alarm) {
 
 	// Start sound
 	sprintf(request_audio_start_file, alarm->chime);
-	//fs_task_sound_start(alarm->chime);
+	request_audio_start = true;
 }
 
 

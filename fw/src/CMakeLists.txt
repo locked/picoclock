@@ -54,6 +54,7 @@ set(OST_SRCS
     library/json-maker.c
     library/senseair.c
     library/ens160/ens160.c
+    library/sensirion/sensirion.c
     library/mcp9808/mcp9808.c
     library/pcf8563/pcf8563.c
     library/mcp46XX/mcp45XX.c
@@ -126,7 +127,7 @@ pico_add_extra_outputs(${PROJECT_NAME})
 pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/library/pico_i2s.pio)
 
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
-pico_enable_stdio_uart(${PROJECT_NAME} 0)
+pico_enable_stdio_uart(${PROJECT_NAME} 1)
 
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE

@@ -255,7 +255,7 @@ void build_json(char* dest) {
 	uint8_t metrics_count = 0;
 	for (uint8_t i = 0; i < ring_metrics->num; i++) {
 		metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
-		if (m->co2 > 100 || (m->eco2 > 100 && m->ens160_status == 0)) {
+		if (m->co2 > 100 || m->stcc4_co2 > 100 || m->scd43_co2 > 100 || (m->eco2 > 100 && m->ens160_status == 0)) {
 			metrics_count++;
 		}
 	}
@@ -264,14 +264,24 @@ void build_json(char* dest) {
 		char date[12];
 		for (uint8_t i = 0; i < ring_metrics->num; i++) {
 			metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
-			if (m->co2 > 100 || (m->eco2 > 100 && m->ens160_status == 0)) {
+			if (m->co2 > 100 || m->stcc4_co2 > 100 || m->scd43_co2 > 100 || (m->eco2 > 100 && m->ens160_status == 0)) {
 				dest = json_objOpen(dest, NULL, &remLen);
 				sprintf(date, "%d%02d%02d%02d%02d", m->year, m->month, m->day, m->hour, m->min);
 				dest = json_str(dest, "ts", date, &remLen);
-				dest = json_int(dest, "tvoc", m->tvoc, &remLen);
-				dest = json_int(dest, "eco2", m->eco2, &remLen);
-				dest = json_int(dest, "co2", m->co2, &remLen);
-				dest = json_int(dest, "st", m->ens160_status, &remLen);
+				if (m->eco2 > 100 && m->ens160_status == 0) {
+					dest = json_int(dest, "tvoc", m->tvoc, &remLen);
+					dest = json_int(dest, "eco2", m->eco2, &remLen);
+					dest = json_int(dest, "st", m->ens160_status, &remLen);
+				}
+				if (m->co2 > 100) {
+					dest = json_int(dest, "co2", m->co2, &remLen);
+				}
+				if (m->scd43_co2 > 100) {
+					dest = json_int(dest, "scd43_co2", m->scd43_co2, &remLen);
+				}
+				if (m->stcc4_co2 > 100) {
+					dest = json_int(dest, "stcc4_co2", m->stcc4_co2, &remLen);
+				}
 				dest = json_int(dest, "t", m->temp, &remLen);
 				dest = json_objClose(dest, &remLen);
 			}

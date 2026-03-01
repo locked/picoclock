@@ -57,6 +57,7 @@ extern int ts_reset_alarm_screen;
 extern bool sync_requested;
 extern circularBuffer_t* ring_metrics;
 extern char request_audio_start_file[260];
+extern bool request_audio_start;
 
 extern audio_ctx_t audio_ctx;
 
@@ -284,6 +285,7 @@ void ui_btn_click(int btn, time_struct dt) {
 		} else {
 			if (!audio_ctx.playing) {
 				sprintf(request_audio_start_file, "Tellement.wav");
+				request_audio_start = true;
 			} else {
 				mcp4551_set_wiper(mcp4551_read_wiper() - 20);
 			}
