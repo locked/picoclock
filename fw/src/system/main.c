@@ -70,7 +70,7 @@ weather_struct weather = {"", "", "", ""};
 config_struct global_config;
 features_t features;
 volatile int current_screen = 0;
-volatile char last_sync_str[9] = "";
+char last_sync_str[9] = "";
 volatile int reboot_requested = 0;
 volatile bool refresh_screen = false;
 volatile bool refresh_screen_clear = false;

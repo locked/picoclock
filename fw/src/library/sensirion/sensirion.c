@@ -67,8 +67,11 @@ int8_t sensirion_i2c_check_crc(const uint8_t* data, uint16_t count,
         return CRC_ERROR;
     return NO_ERROR;
 }
+int8_t sensirion_i2c_hal_write(uint8_t address, uint8_t* data, uint8_t count) {
+	return i2c_write_timeout_us(sensirion_i2c, address, data, count, false, SENSIRION_I2C_TIMEOUT);
+}
 int8_t sensirion_i2c_hal_read(uint8_t address, uint8_t* data, uint8_t count) {
-    if (i2c_read_timeout_us(sensirion_i2c, address, data, count, false, 200000) != count) {
+    if (i2c_read_timeout_us(sensirion_i2c, address, data, count, false, SENSIRION_I2C_TIMEOUT) != count) {
         return I2C_READ_FAILED;
     }
     return 0;
@@ -115,15 +118,15 @@ bool sensirion_stcc4_init() {
 	// stop continuous measurement
 	packet[0] = 0x3f;
 	packet[1] = 0x86;
-	result = i2c_write_timeout_us(sensirion_i2c, 0x64, packet, 2, false, 200000);
+	result = sensirion_i2c_hal_write(STCC4_ADDR, packet, 2);
 	sleep_ms(1200);
 
 	// get product id & serial
 	packet[0] = 0x36;
 	packet[1] = 0x5b;
-	result = i2c_write_timeout_us(sensirion_i2c, 0x64, packet, 2, false, 200000);
+	result = sensirion_i2c_hal_write(STCC4_ADDR, packet, 2);
 	sleep_ms(1);
-	result = sensirion_i2c_read_data_inplace(0x64, rxdata, 12);
+	result = sensirion_i2c_read_data_inplace(STCC4_ADDR, rxdata, 12);
 	product_id = sensirion_common_bytes_to_uint32_t(&rxdata[0]);
 	sensirion_common_to_integer(&rxdata[4], (uint8_t*)&serial_number, LONG_INTEGER, 8);
 	printf("[picoclock] STCC4 product_id:[%d] rx:[%02x%02x%02x%02x] [%02x%02x%02x%02x] [%02x%02x%02x%02x] serial:[%" PRIx64 "]\r\n",
@@ -143,14 +146,14 @@ bool sensirion_stcc4_init() {
 		serial_number
 	);
 
-	if (product_id != 151060874) {
+	if (product_id != STCC4_PRODUCT_ID) {
 		return false;
 	}
 
 	// start continuous measurement
 	packet[0] = 0x21;
 	packet[1] = 0x8b;
-	result = i2c_write_timeout_us(sensirion_i2c, 0x64, packet, 2, false, 200000);
+	result = sensirion_i2c_hal_write(STCC4_ADDR, packet, 2);
 	sleep_ms(100);
 	return true;
 }
@@ -166,9 +169,9 @@ int16_t sensirion_stcc4_read() {
 		// read measurement
 		packet[0] = 0xec;
 		packet[1] = 0x05;
-		result = i2c_write_timeout_us(sensirion_i2c, 0x64, packet, 2, false, 200000);
+		result = sensirion_i2c_hal_write(STCC4_ADDR, packet, 2);
 		sleep_ms(1);
-		result = sensirion_i2c_read_data_inplace(0x64, rxdata, 8);
+		result = sensirion_i2c_read_data_inplace(STCC4_ADDR, rxdata, 8);
 		co2 = sensirion_common_bytes_to_uint16_t(&rxdata[0]);
 		float temp = stcc4_signal_temperature(sensirion_common_bytes_to_uint16_t(&rxdata[2]));
 		float rh = stcc4_signal_relative_humidity(sensirion_common_bytes_to_uint16_t(&rxdata[4]));
@@ -193,7 +196,7 @@ bool sensirion_scd43_init() {
 	printf("[picoclock] SCD4X wake up...\r\n");
 	packet[0] = 0x36;
 	packet[1] = 0xf6;
-	result = i2c_write_timeout_us(sensirion_i2c, 0x62, packet, 2, false, 200000);
+	result = sensirion_i2c_hal_write(SCD43_ADDR, packet, 2);
 	if (result < 2) {
 		return false;
 	}
@@ -204,7 +207,7 @@ bool sensirion_scd43_init() {
 	printf("[picoclock] SCD4X stop periodic measurement...\r\n");
 	packet[0] = 0x3f;
 	packet[1] = 0x86;
-	result = i2c_write_timeout_us(sensirion_i2c, 0x62, packet, 2, false, 200000);
+	result = sensirion_i2c_hal_write(SCD43_ADDR, packet, 2);
 	if (result < 2) {
 		return false;
 	}
@@ -215,7 +218,7 @@ bool sensirion_scd43_init() {
 	printf("[picoclock] SCD4X reinit...\r\n");
 	packet[0] = 0x36;
 	packet[1] = 0x46;
-	result = i2c_write_timeout_us(sensirion_i2c, 0x62, packet, 2, false, 200000);
+	result = sensirion_i2c_hal_write(SCD43_ADDR, packet, 2);
 	if (result < 2) {
 		return false;
 	}
@@ -226,12 +229,12 @@ bool sensirion_scd43_init() {
 	printf("[picoclock] SCD4X get serial...\r\n");
 	packet[0] = 0x36;
 	packet[1] = 0x82;
-	result = i2c_write_timeout_us(sensirion_i2c, 0x62, packet, 2, false, 200000);
+	result = sensirion_i2c_hal_write(SCD43_ADDR, packet, 2);
 	if (result < 2) {
 		return false;
 	}
 	sleep_ms(1);
-	result = sensirion_i2c_read_data_inplace(0x62, rxdata, 6);
+	result = sensirion_i2c_read_data_inplace(SCD43_ADDR, rxdata, 6);
 	sensirion_common_to_integer(&rxdata[0], (uint8_t*)&serial_number, LONG_INTEGER, 6);
 	printf("[picoclock] SCD4X rx:[%02x%02x%02x%02x%02x%02x] [%" PRIx64 "] [%" PRIu64 "] [%lld]\r\n",
 		rxdata[0],
@@ -249,7 +252,7 @@ bool sensirion_scd43_init() {
 	printf("[picoclock] SCD4X start periodic measurement...\r\n");
 	packet[0] = 0x21;
 	packet[1] = 0xb1;
-	result = i2c_write_timeout_us(sensirion_i2c, 0x62, packet, 2, false, 200000);
+	result = sensirion_i2c_hal_write(SCD43_ADDR, packet, 2);
 	if (result < 2) {
 		return false;
 	}
@@ -270,9 +273,9 @@ int16_t sensirion_scd43_read() {
 	do {
 		packet[0] = 0xe4;
 		packet[1] = 0xb8;
-		result = i2c_write_timeout_us(sensirion_i2c, 0x62, packet, 2, false, 200000);
+		result = sensirion_i2c_hal_write(SCD43_ADDR, packet, 2);
 		sleep_ms(1);
-		result = sensirion_i2c_read_data_inplace(0x62, rxdata, 2);
+		result = sensirion_i2c_read_data_inplace(SCD43_ADDR, rxdata, 2);
 		uint16_t data_ready_status = sensirion_common_bytes_to_uint16_t(&rxdata[0]);
 		ready = (data_ready_status & 2047) != 0;
 		printf("[picoclock] SCD43 raw status:[%i] [%d]\r\n", data_ready_status, ready);
@@ -284,9 +287,9 @@ int16_t sensirion_scd43_read() {
 	// read measurement
 	packet[0] = 0xec;
 	packet[1] = 0x05;
-	result = i2c_write_timeout_us(sensirion_i2c, 0x62, packet, 2, false, 200000);
+	result = sensirion_i2c_hal_write(SCD43_ADDR, packet, 2);
 	sleep_ms(3);
-	sensirion_i2c_read_data_inplace(0x62, rxdata, 6);
+	sensirion_i2c_read_data_inplace(SCD43_ADDR, rxdata, 6);
 	int16_t co2 = sensirion_common_bytes_to_uint16_t(&rxdata[0]);
 	float temp = stcc4_signal_temperature(sensirion_common_bytes_to_uint16_t(&rxdata[2]));
 	float rh = stcc4_signal_relative_humidity(sensirion_common_bytes_to_uint16_t(&rxdata[4]));
