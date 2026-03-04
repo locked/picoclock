@@ -8451,7 +8451,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10K"
+		(property "Value" "4K7"
 			(at 267.208 160.782 90)
 			(effects
 				(font
@@ -8478,15 +8478,15 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "ok LCSC"
-			(at 272.796 166.37 0)
+		(property "Description" "LCSC TODO /!\\"
+			(at 273.304 169.926 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "LCSC" "C25744"
+		(property "LCSC" ""
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -8725,7 +8725,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10K"
+		(property "Value" "4K7"
 			(at 274.828 159.512 90)
 			(effects
 				(font
@@ -8761,7 +8761,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25744"
+		(property "LCSC" ""
 			(at 276.86 161.29 0)
 			(effects
 				(font
