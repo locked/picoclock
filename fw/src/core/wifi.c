@@ -140,7 +140,7 @@ err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err
     cyw43_arch_lwip_check();
     if (p->tot_len > 0) {
         DEBUG_printf("[wifi] recv %d err %d\n", p->tot_len, err);
-        DEBUG_printf("[wifi] buffer %s\n", p->payload, err);
+        //DEBUG_printf("[wifi] buffer %s\n", p->payload, err);
         for (struct pbuf *q = p; q != NULL; q = q->next) {
             DUMP_BYTES(q->payload, q->len);
         }

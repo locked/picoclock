@@ -37,6 +37,12 @@ void floatToString(char *str, float f, char size) {
 }
 
 
+bool mcp9808_detect() {
+	int ret;
+	uint8_t rxdata;
+	return i2c_write_blocking(i2c1, MCP9808_I2C_ADDR, &rxdata, 1, false) > 0;
+}
+
 float mcp9808_get_temperature() {
     int result;
     uint8_t addr = MCP9808_TA_REGISTER_ADDR;

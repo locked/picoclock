@@ -6,6 +6,7 @@
 
 #define MCP9808_I2C_ADDR 0x18
 
+bool mcp9808_detect();
 float mcp9808_get_temperature();
 
 #endif

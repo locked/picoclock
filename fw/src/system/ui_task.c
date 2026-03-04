@@ -189,6 +189,8 @@ void screen_anim() {
 
 
 void ui_btn_click(int btn, time_struct dt) {
+	printf("[picoclock] btn clicked: %d current_screen:[%d]\r\n", btn, current_screen);
+
 	// On any button click, stop alarm
 	if (current_screen == SCREEN_ALARM) {
 		main_audio_stop();

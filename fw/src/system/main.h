@@ -13,7 +13,7 @@ extern "C"
 
 #define GPIO_PWM 16
 
-#define CPU_CLOCK_IDLE 100000
+#define CPU_CLOCK_IDLE 150000
 #define CPU_CLOCK_MAX 200000
 
 // normal screens
@@ -28,8 +28,8 @@ extern "C"
 #define MAX_SCREEN_ID 3
 
 #define UART_ID uart0
-//#define BAUD_RATE 115200
-#define BAUD_RATE 9600
+//#define UART_BAUD_RATE 115200
+#define UART_BAUD_RATE 9600
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
 
@@ -89,7 +89,7 @@ extern "C"
 #define I2C_SCL 19
 #define I2C_CHANNEL i2c1
 #endif
-#define I2C_BAUD_RATE 100000
+#define I2C_BAUD_RATE 50000
 //#define I2C_BAUD_RATE 400000
 
 
@@ -177,13 +177,22 @@ typedef struct {
 	uint8_t min;
 	uint16_t tvoc;
 	uint16_t eco2;
-	uint16_t co2;
+	uint16_t s88_co2;
 	int16_t scd43_co2;
 	int16_t stcc4_co2;
 	uint8_t ens160_status;
 	float temp;
+	bool sent;
+	bool tosend;
 } metrics_t;
 
+typedef struct {
+	bool has_mcp9808;
+	bool has_ens160;
+	bool has_s88;
+	bool has_stcc4;
+	bool has_scd43;
+} features_t;
 
 // ----------------------------------------------------------------------------
 // HIGH LEVEL API

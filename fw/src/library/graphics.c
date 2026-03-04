@@ -61,10 +61,22 @@ void display_screen_main(time_struct dt, circularBuffer_t* ring_metrics) {
 	Paint_DrawTime(SCREEN_X, _y, &sPaint_time, &Font24, WHITE, BLACK);
 
 	metrics_t *m = circularBuffer_current(ring_metrics);
-	uint8_t data_status = ens160_checkDataStatus();
-	int ens_status = ens160_getFlags();
-	float ens160_comp_temp = ens160_getTempCelsius();
-	sprintf(temp_str, "%d/%0.0f TVOC:%d CO2:%d %0.1fC", ens_status, ens160_comp_temp, m->tvoc, m->co2 > 100 ? m->co2 : m->eco2, m->temp);
+	int16_t co2 = 0;
+	char co2_src[10] = "";
+	if (m->scd43_co2 > 0) {
+		co2 = m->scd43_co2;
+		sprintf(co2_src, "scd43");
+	} else if (m->s88_co2 > 0) {
+		co2 = m->s88_co2;
+		sprintf(co2_src, "s88");
+	} else if (m->stcc4_co2 > 0) {
+		co2 = m->stcc4_co2;
+		sprintf(co2_src, "stcc4");
+	} else if (m->eco2 > 0) {
+		co2 = m->eco2;
+		sprintf(co2_src, "ens160");
+	}
+	sprintf(temp_str, "CO2:%d (%s) %0.1fC", co2, co2_src, m->temp);
 	_y += Font24.Height + 2;
 	Paint_DrawString_EN(SCREEN_X, _y, temp_str, &Font12, WHITE, BLACK);
 

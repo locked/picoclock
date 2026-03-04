@@ -64,7 +64,7 @@ static const struct http_funcs responseFuncs = {
 };
 
 int parse_http_response(char *http_response, struct HttpResponse *response) {
-    printf("[NET] PARSE HTTP:[%s]\r\n", http_response);
+    //printf("[NET] PARSE HTTP:[%s]\r\n", http_response);
 
     //struct HttpResponse* response = (struct HttpResponse*)opaque;
     response->code = 0;
@@ -85,7 +85,7 @@ int parse_http_response(char *http_response, struct HttpResponse *response) {
     }
 
     if (strlen(response->body) > 0) {
-        printf("CODE:[%d] BODY:[%s]\r\n", response->code, response->body);
+        //printf("CODE:[%d] BODY:[%s]\r\n", response->code, response->body);
         return 0;
     }
 
@@ -243,6 +243,15 @@ int parse_json_response(char *response) {
 }
 
 
+void metrics_mark_as_sent() {
+	for (uint8_t i = 0; i < ring_metrics->num; i++) {
+		metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
+		if (m->tosend) {
+			m->sent = true;
+		}
+	}
+}
+
 void build_json(char* dest) {
 	char board_id[20];
 	get_uniq_id(board_id);
@@ -252,19 +261,16 @@ void build_json(char* dest) {
 	dest = json_str(dest, "board_id", board_id, &remLen);
 	dest = json_int(dest, "uptime", uptime, &remLen);
 
-	uint8_t metrics_count = 0;
+	char date[12];
+
+	dest = json_arrOpen(dest, "metrics", &remLen);
 	for (uint8_t i = 0; i < ring_metrics->num; i++) {
 		metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
-		if (m->co2 > 100 || m->stcc4_co2 > 100 || m->scd43_co2 > 100 || (m->eco2 > 100 && m->ens160_status == 0)) {
-			metrics_count++;
+		if (m->sent) {
+			continue;
 		}
-	}
-	if (metrics_count > 0) {
-		dest = json_arrOpen(dest, "metrics", &remLen);
-		char date[12];
-		for (uint8_t i = 0; i < ring_metrics->num; i++) {
-			metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
-			if (m->co2 > 100 || m->stcc4_co2 > 100 || m->scd43_co2 > 100 || (m->eco2 > 100 && m->ens160_status == 0)) {
+		if (m->s88_co2 > 100 || m->stcc4_co2 > 100 || m->scd43_co2 > 100 || (m->eco2 > 100 && m->ens160_status == 0)) {
+			m->tosend = true;
 				dest = json_objOpen(dest, NULL, &remLen);
 				sprintf(date, "%d%02d%02d%02d%02d", m->year, m->month, m->day, m->hour, m->min);
 				dest = json_str(dest, "ts", date, &remLen);
@@ -273,8 +279,8 @@ void build_json(char* dest) {
 					dest = json_int(dest, "eco2", m->eco2, &remLen);
 					dest = json_int(dest, "st", m->ens160_status, &remLen);
 				}
-				if (m->co2 > 100) {
-					dest = json_int(dest, "co2", m->co2, &remLen);
+				if (m->s88_co2 > 100) {
+					dest = json_int(dest, "s88_co2", m->s88_co2, &remLen);
 				}
 				if (m->scd43_co2 > 100) {
 					dest = json_int(dest, "scd43_co2", m->scd43_co2, &remLen);
@@ -284,23 +290,39 @@ void build_json(char* dest) {
 				}
 				dest = json_int(dest, "t", m->temp, &remLen);
 				dest = json_objClose(dest, &remLen);
-			}
+		} else {
+			m->tosend = false;
 		}
-		dest = json_arrClose(dest, &remLen);
 	}
+	dest = json_arrClose(dest, &remLen);
+
+	/*
+	dest = json_arrOpen(dest, "ts", &remLen);
+	for (uint8_t i = 0; i < ring_metrics->num; i++) {
+		metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
+		if (m->tosend) {
+			// list of dates
+			sprintf(date, "%d%02d%02d%02d%02d", m->year, m->month, m->day, m->hour, m->min);
+		dest = json_str(dest, NULL, date, &remLen);
+		}
+	}
+	dest = json_arrClose(dest, &remLen);
+	*/
+
 	dest = json_objClose(dest, &remLen);
 	dest = json_end(dest, &remLen);
 }
 
 int remote_sync() {
-	printf("remote_sync() Connecting to wifi [%s][%s]...\r\n", global_config.wifi_ssid, global_config.wifi_key);
+	printf("[net] remote_sync() Connecting to wifi [%s][%s]...\r\n", global_config.wifi_ssid, global_config.wifi_key);
+	watchdog_update();
 	int ret = wifi_connect(global_config.wifi_ssid, global_config.wifi_key);
-	printf("remote_sync() ret:[%d]...\r\n", ret);
+	printf("[net] remote_sync() ret:[%d]...\r\n", ret);
 	watchdog_update();
 	if (ret == 0) {
 		char board_id[20];
 		get_uniq_id(board_id);
-		printf("remote_sync() board_id:[%s]\r\n", board_id);
+		printf("[net] remote_sync() board_id:[%s]\r\n", board_id);
 
 		char json[8000] = "";
 		remLen = sizeof(json);
@@ -308,7 +330,7 @@ int remote_sync() {
 
 		char query[8500];
 		sprintf(query, "POST /clock.php?id=%s HTTP/1.0\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s", board_id, strlen(json), json);
-		printf("remote_sync() send_tcp [%s] [%d]...\r\n", global_config.remote_host, atoi(SERVER_PORT));
+		printf("[net] remote_sync() send_tcp [%s] [%d]...\r\n", global_config.remote_host, atoi(SERVER_PORT));
 
 		char http_buffer[4096] = "";
 		watchdog_update();
@@ -321,12 +343,13 @@ int remote_sync() {
 			struct HttpResponse response;
 			if (parse_http_response(http_buffer, &response) == 0) {
 				parse_json_response(response.body);
+				metrics_mark_as_sent();
 			}
 		}
 	}
 	watchdog_update();
-	printf("remote_sync() Disconnect...\r\n");
+	printf("[net] remote_sync() Disconnect...\r\n");
 	wifi_disconnect();
-	printf("remote_sync() Disconnected from wifi, ret:[%d]\r\n", ret);
+	printf("[net] remote_sync() Disconnected from wifi, ret:[%d]\r\n", ret);
 	return ret;
 }

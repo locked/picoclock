@@ -5,6 +5,6 @@
 #include <stdio.h>
 #include "main.h"
 
-uint16_t get_co2_reading();
+uint16_t s88_get_co2();
 
 #endif

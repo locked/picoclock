@@ -67,14 +67,15 @@ static audio_i2s_config_t config = {
 
 // Globals
 weather_struct weather = {"", "", "", ""};
-int current_screen = 0;
 config_struct global_config;
-int reboot_requested = 0;
-char last_sync_str[9] = "";
-bool refresh_screen = false;
-bool refresh_screen_clear = false;
-int ts_reset_alarm_screen = 0;
-bool sync_requested = false;
+features_t features;
+volatile int current_screen = 0;
+volatile char last_sync_str[9] = "";
+volatile int reboot_requested = 0;
+volatile bool refresh_screen = false;
+volatile bool refresh_screen_clear = false;
+volatile int ts_reset_alarm_screen = 0;
+volatile bool sync_requested = false;
 circularBuffer_t* ring_metrics;
 
 // CONSTANTS / DEFINES
@@ -260,7 +261,7 @@ void system_initialize() {
 	// Init UART
 	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
 	gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
-	uart_init(UART_ID, 9600);
+	uart_init(UART_ID, UART_BAUD_RATE);
 	printf("[picoclock] START PICO_RP2350A=%d\r\n", PICO_RP2350A);
 
 	// Init ring buffer for metrics
@@ -271,8 +272,17 @@ void system_initialize() {
 	sleep_ms(1500);
 
 	sensirion_init(I2C_CHANNEL);
-	sensirion_scd43_init();
-	sensirion_stcc4_init();
+	printf("[picoclock] Init SCD43\r\n");
+	features.has_scd43 = sensirion_scd43_init();
+	printf("[picoclock] Init STCC4\r\n");
+	features.has_stcc4 = sensirion_stcc4_init();
+
+	/*if (features.has_scd43) {
+		sensirion_scd43_read();
+	}
+	if (features.has_stcc4) {
+		sensirion_stcc4_read();
+	}*/
 
 	printf("[picoclock] init_i2c OK\r\n");
 	i2c_bus_scan();
@@ -323,6 +333,8 @@ void system_initialize() {
 
 	// Init gaz sensor
 	ens160_init(I2C_CHANNEL);
+	uint8_t ens160_status = ens160_getFlags();
+	features.has_ens160 = ens160_status == 0 || ens160_status == 1 || ens160_status == 2;
 
 	// Init UART for ESP32 com
 	uart_init(UART_ESP32_UART_ID, 9600);
@@ -330,8 +342,21 @@ void system_initialize() {
 	gpio_set_function(UART_ESP32_RX_PIN, GPIO_FUNC_UART);
 	uart_puts(uart1, "END\n");
 
-	sensirion_scd43_read();
-	sensirion_stcc4_read();
+	features.has_mcp9808 = mcp9808_detect();
+
+	if (UART_BAUD_RATE == 9600) {
+		features.has_s88 = s88_get_co2() > 100;
+	} else {
+		features.has_s88 = false;
+	}
+
+	printf("[picoclock] features mcp9808:[%d] ens160:[%d] s88:[%d] stcc4:[%d] scd43:[%d]\r\n",
+		features.has_mcp9808,
+		features.has_ens160,
+		features.has_s88,
+		features.has_stcc4,
+		features.has_scd43
+	);
 
 	printf("[picoclock] System Clock: %lu\n", clock_get_hz(clk_sys));
 }
@@ -405,23 +430,27 @@ void core1_entry() {
 				refresh_screen_clear = true;
 			}
 
-			int16_t scd43_co2 = sensirion_scd43_read();
-			int16_t stcc4_co2 = sensirion_stcc4_read();
-
 			// Collect metrics
 			metrics.year = dt.year;
 			metrics.month = dt.month;
 			metrics.day = dt.day;
 			metrics.hour = dt.hour;
 			metrics.min = dt.min;
-			metrics.temp = mcp9808_get_temperature();
-			ens160_setTempCompensationCelsius(metrics.temp);
-			metrics.tvoc = ens160_getTVOC();
-			metrics.eco2 = ens160_getECO2();
-			metrics.co2 = get_co2_reading();
-			metrics.scd43_co2 = scd43_co2;
-			metrics.stcc4_co2 = stcc4_co2;
-			metrics.ens160_status = ens160_getFlags();
+			metrics.temp = features.has_mcp9808 ? mcp9808_get_temperature() : -9999;
+			if (features.has_ens160) {
+				ens160_setTempCompensationCelsius(metrics.temp);
+				metrics.tvoc = ens160_getTVOC();
+				metrics.eco2 = ens160_getECO2();
+				metrics.ens160_status = ens160_getFlags();
+			} else {
+				metrics.tvoc = -1;
+				metrics.eco2 = -1;
+				metrics.ens160_status = -1;
+			}
+			metrics.s88_co2 = features.has_s88 ? s88_get_co2() : 0;
+			metrics.scd43_co2 = features.has_scd43 ? sensirion_scd43_read() : -1;
+			metrics.stcc4_co2 = features.has_stcc4 ? sensirion_stcc4_read() : -1;
+			metrics.sent = false;
 			circularBuffer_insert(ring_metrics, &metrics);
 			/*for (uint8_t i = 0; i < ring_metrics->num; i++) {
 				metrics_t *m = (metrics_t*)circularBuffer_getElement(ring_metrics, i);
@@ -501,9 +530,12 @@ int main() {
 
 	// Filesystem / SDCard initialization
 	printf("[picoclock] Check SD card\r\n");
+	watchdog_update();
 	filesystem_mount();
 	// List files on sdcard (test)
 	filesystem_read_config_file();
+
+	watchdog_enable(8200, false);
 
 	// Init screen
 	//------------------- Init LCD
@@ -518,14 +550,15 @@ int main() {
 			DEV_Delay_ms(500);
 		} else {
 			printf("[picoclock] e-Paper module: V4\r\n");
+			watchdog_update();
 			EPD_2in13_V4_Init();
 			printf("[picoclock] e-Paper module: V4 init OK\r\n");
+			watchdog_update();
 			EPD_2in13_V4_Clear();
 			printf("[picoclock] e-Paper module: V4 clear OK\r\n");
 		}
 	}
 
-	watchdog_enable(8200, false);
 	printf("[picoclock] Init UI\r\n");
 	init_ui();
 

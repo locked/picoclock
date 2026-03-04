@@ -3,7 +3,7 @@
 #include "pico/time.h"
 #include <stdio.h>
 
-uint16_t get_co2_reading() {
+uint16_t s88_get_co2() {
 	uint8_t cmd[] = {0xFE, 0x04, 0x00, 0x03, 0x00, 0x01, 0xD5, 0xC5};
 	uint8_t response[7];
 	int bytes_read = 0;
@@ -26,7 +26,7 @@ uint16_t get_co2_reading() {
 
 		if (count_wait++ > 100) {
 			printf("[senseair] UART Timeout - Sensor not responding.\n");
-			return bytes_read;
+			return 1;
 		}
 		sleep_ms(1);
 	}
