@@ -108,7 +108,7 @@ static SDCardType cardType;
  */
 uint8_t SD_Detect(void)
 { /* check GPIO to detect SD */
-	if (ost_hal_sdcard_get_presence())
+	if (hal_sdcard_get_presence())
 	{
 		return SD_PRESENT;
 	}
@@ -127,7 +127,7 @@ static void SD_Bus_Hold(void)
 
 static uint8_t SD_SpiWriteByte(uint8_t byte)
 {
-	ost_hal_sdcard_spi_exchange(&byte, &byte, 1);
+	hal_sdcard_spi_exchange(&byte, &byte, 1);
 	return byte;
 }
 
@@ -304,7 +304,7 @@ static SD_Error SD_ReceiveData(uint8_t *data, uint16_t len)
 		/* receive the rest of data... */
 		// for (i = 1; i < len; ++i)
 		// 	data[i] = SD_SpiWriteByte(0xFF);
-		ost_hal_sdcard_spi_read(&data[1], (len - 1));
+		hal_sdcard_spi_read(&data[1], (len - 1));
 
 		/* get CRC bytes (not really needed by us, but required by SD) */
 		SD_SpiWriteByte(0xFF);

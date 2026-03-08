@@ -388,16 +388,16 @@ void hal_sdcard_cs_high() {
 void hal_sdcard_cs_low() {
 	gpio_put(SD_CARD_CS, 0);
 }
-void ost_hal_sdcard_spi_exchange(const uint8_t *buffer, uint8_t *out, uint32_t size) {
+void hal_sdcard_spi_exchange(const uint8_t *buffer, uint8_t *out, uint32_t size) {
 	spi_write_read_blocking(spi1, buffer, out, size);
 }
-void ost_hal_sdcard_spi_write(const uint8_t *buffer, uint32_t size) {
+void hal_sdcard_spi_write(const uint8_t *buffer, uint32_t size) {
 	spi_write_blocking(spi1, buffer, size);
 }
-void ost_hal_sdcard_spi_read(uint8_t *out, uint32_t size) {
+void hal_sdcard_spi_read(uint8_t *out, uint32_t size) {
 	spi_read_blocking(spi1, 0xFF, out, size);
 }
-uint8_t ost_hal_sdcard_get_presence() {
+uint8_t hal_sdcard_get_presence() {
 	return 1; // TODO
 }
 

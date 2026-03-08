@@ -197,12 +197,12 @@ void hal_sdcard_cs_high();
 void hal_sdcard_cs_low();
 
 // We have a separated API here to allow specific optimizations such as the use of DMA
-void ost_hal_sdcard_spi_exchange(const uint8_t *buffer, uint8_t *out, uint32_t size);
-void ost_hal_sdcard_spi_write(const uint8_t *buffer, uint32_t size);
-void ost_hal_sdcard_spi_read(uint8_t *out, uint32_t size);
+void hal_sdcard_spi_exchange(const uint8_t *buffer, uint8_t *out, uint32_t size);
+void hal_sdcard_spi_write(const uint8_t *buffer, uint32_t size);
+void hal_sdcard_spi_read(uint8_t *out, uint32_t size);
 
 // Return 1 if the SD card is physically inserted, otherwise 0
-uint8_t ost_hal_sdcard_get_presence();
+uint8_t hal_sdcard_get_presence();
 
 #ifdef __cplusplus
 }
