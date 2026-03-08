@@ -273,14 +273,6 @@ void system_initialize() {
 	printf("[picoclock] Init STCC4\r\n");
 	features.has_stcc4 = sensirion_stcc4_init();
 
-	printf("[picoclock] features mcp9808:[%s] ens160:[%s] s88:[%s] stcc4:[%s] scd43:[%s]\r\n",
-		features.has_mcp9808 ? "yes" : "no",
-		features.has_ens160 ? "yes" : "no",
-		features.has_s88 ? "yes" : "no",
-		features.has_stcc4 ? "yes" : "no",
-		features.has_scd43 ? "yes" : "no"
-	);
-
 	/*if (features.has_scd43) {
 		sensirion_scd43_read();
 	}
@@ -296,7 +288,6 @@ void system_initialize() {
 		features.has_scd43 ? "yes" : "no"
 	);
 
-	printf("[picoclock] init_i2c OK\r\n");
 	//i2c_bus_scan();
 
 	pcf8563_set_i2c(I2C_CHANNEL);
@@ -319,20 +310,19 @@ void system_initialize() {
 	mcp4551_init(I2C_CHANNEL);
 	mcp4551_set_wiper(MCP4551_WIPER_MID); // 0 => high vol, 0xff => low vol
 
-	printf("[picoclock] init sound...\r\n");
 	i2s_program_setup(pio0, audio_i2s_dma_irq_handler, &i2s, &config);
 	audio_init(&audio_ctx);
-	printf("[picoclock] init sound OK\r\n");
+	printf("[picoclock] Init sound OK\r\n");
 
 	// Init SDCARD
 	gpio_init(SD_CARD_CS);
 	gpio_put(SD_CARD_CS, 1);
 	gpio_set_dir(SD_CARD_CS, GPIO_OUT);
-	//gpio_init(SD_CARD_PRESENCE);
-	//gpio_set_dir(SD_CARD_PRESENCE, GPIO_IN);
+	gpio_init(SD_CARD_PRESENCE);
+	gpio_set_dir(SD_CARD_PRESENCE, GPIO_IN);
 
+	// Init SPI
 	spi_init(spi1, 1000 * 1000); // slow clock
-
 	spi_set_format(spi1, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 
 	gpio_set_function(SDCARD_SCK, GPIO_FUNC_SPI);
@@ -398,7 +388,7 @@ void hal_sdcard_spi_read(uint8_t *out, uint32_t size) {
 	spi_read_blocking(spi1, 0xFF, out, size);
 }
 uint8_t hal_sdcard_get_presence() {
-	return 1; // TODO
+	return gpio_get(SD_CARD_PRESENCE);
 }
 
 
