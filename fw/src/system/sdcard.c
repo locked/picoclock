@@ -122,7 +122,7 @@ uint8_t SD_Detect(void)
  */
 static void SD_Bus_Hold(void)
 { /* Select SD Card: set SD chip select pin low */
-	ost_hal_sdcard_cs_low();
+	hal_sdcard_cs_low();
 }
 
 static uint8_t SD_SpiWriteByte(uint8_t byte)
@@ -138,7 +138,7 @@ static uint8_t SD_SpiWriteByte(uint8_t byte)
  */
 static void SD_Bus_Release(void)
 { /* Deselect SD Card: set SD chip select pin high */
-	ost_hal_sdcard_cs_high();
+	hal_sdcard_cs_high();
 	SD_SpiWriteByte(0xFF); /* send dummy byte: 8 Clock pulses of delay */
 }
 
@@ -468,7 +468,7 @@ SD_Error sdcard_init()
 	 * Chip Select pin should be set HIGH too. */
 
 	/* set SD chip select pin high */
-	ost_hal_sdcard_cs_high();
+	hal_sdcard_cs_high();
 
 	/* send dummy byte 0xFF (rise MOSI high for 2500*8 SPI bus clock cycles) */
 	while (i++ < SD_NUM_TRIES_RUMPUP)

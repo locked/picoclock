@@ -96,10 +96,6 @@ void dma_init();
 void __isr __time_critical_func(audio_i2s_dma_irq_handler)();
 
 
-void ost_system_delay_ms(uint32_t delay) {
-	busy_wait_ms(delay);
-}
-
 void check_buttons() {
 	for (uint8_t btn=0; btn<6; btn++) {
 		uint8_t btn_value = gpio_get(BUTTONS[btn]);
@@ -328,9 +324,6 @@ void system_initialize() {
 	audio_init(&audio_ctx);
 	printf("[picoclock] init sound OK\r\n");
 
-	// Negative delay means "run every X ms from the start of the last run"
-	add_repeating_timer_ms(-10, timer_callback, NULL, &timer);
-
 	// Init SDCARD
 	gpio_init(SD_CARD_CS);
 	gpio_put(SD_CARD_CS, 1);
@@ -382,19 +375,17 @@ void system_putc(char ch) {
 }
 
 
-// ----------------------------------------------------------------------------
 // SDCARD HAL
-// ----------------------------------------------------------------------------
-void ost_hal_sdcard_set_slow_clock() {
+void hal_sdcard_set_slow_clock() {
 	spi_set_baudrate(spi1, 1000000UL);
 }
-void ost_hal_sdcard_set_fast_clock() {
+void hal_sdcard_set_fast_clock() {
 	spi_set_baudrate(spi1, 40000000UL);
 }
-void ost_hal_sdcard_cs_high() {
+void hal_sdcard_cs_high() {
 	gpio_put(SD_CARD_CS, 1);
 }
-void ost_hal_sdcard_cs_low() {
+void hal_sdcard_cs_low() {
 	gpio_put(SD_CARD_CS, 0);
 }
 void ost_hal_sdcard_spi_exchange(const uint8_t *buffer, uint8_t *out, uint32_t size) {
@@ -423,6 +414,9 @@ void core1_entry() {
 		printf("[core1] check RTC => low volt, trigger sync\r\n");
 		remote_sync();
 	}
+
+	// Negative delay means "run every X ms from the start of the last run"
+	add_repeating_timer_ms(-10, timer_callback, NULL, &timer);
 
 	add_repeating_timer_ms(-1000, timer_datetime_callback, NULL, &timer_datetime);
 

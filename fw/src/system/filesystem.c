@@ -82,7 +82,7 @@ void filesystem_mount() {
     FRESULT fr;
     do {
         fr = f_mount(&fs, "", 1); // 0: mount successful ; 1: mount failed
-        ost_system_delay_ms(10);
+        busy_wait_ms(10);
     } while (--retries && fr);
 
     if (fr) {

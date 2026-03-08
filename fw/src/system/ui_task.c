@@ -33,18 +33,6 @@
 #include "circularBuffer.h"
 
 
-typedef struct {
-    uint8_t ev;
-    uint32_t btn;
-    bool clear;
-} ost_ui_event_t;
-
-// GLOBAL VARIABLES
-static ost_ui_event_t UiEvent;
-static ost_ui_event_t *UiQueue[10];
-static ost_system_state_t OstState = OST_SYS_NO_EVENT;
-static ost_context_t OstContext;
-
 // Externs
 extern weather_struct weather;
 extern int current_screen;

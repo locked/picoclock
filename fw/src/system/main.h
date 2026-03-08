@@ -1,5 +1,5 @@
-#ifndef OST_HAL_H
-#define OST_HAL_H
+#ifndef MAIN_H
+#define MAIN_H
 
 #ifdef __cplusplus
 extern "C"
@@ -123,23 +123,6 @@ extern "C"
 
 #define TRIGGER_SYNC_EVERY_SEC 1800
 
-typedef struct
-{
-	uint8_t ev;
-	uint8_t song;
-} ost_net_event_t;
-
-typedef enum
-{
-	OST_SYS_NO_EVENT,
-	OST_SYS_BUTTON,
-	OST_SYS_REFRESH_SCREEN,
-	OST_SYS_ALARM,
-	OST_SYS_UPDATE_TIME,
-	OST_SYS_PLAY_SOUND,
-	OST_SYS_DISP_MSG
-} ost_system_state_t;
-
 typedef struct {
 	char code_desc[100];
 	char temperature_2m[20];
@@ -187,20 +170,16 @@ typedef struct {
 } metrics_t;
 
 typedef struct {
-	bool has_mcp9808;
-	bool has_ens160;
-	bool has_s88;
-	bool has_stcc4;
-	bool has_scd43;
+	int has_mcp9808;
+	int has_ens160;
+	int has_s88;
+	int has_stcc4;
+	int has_scd43;
 } features_t;
 
-// ----------------------------------------------------------------------------
-// HIGH LEVEL API
-// ----------------------------------------------------------------------------
 // System API
 void system_initialize();
 void system_putc(char ch);
-void ost_system_delay_ms(uint32_t delay);
 
 // Audio API
 void main_audio_play(const char *filename);
@@ -208,42 +187,25 @@ void main_audio_stop();
 int main_audio_process();
 void main_audio_new_frame(const void *buffer, int size);
 
-// ----------------------------------------------------------------------------
 // SDCARD HAL
-// ----------------------------------------------------------------------------
+void hal_sdcard_set_slow_clock(void);
+void hal_sdcard_set_fast_clock(void);
 
-void ost_hal_sdcard_set_slow_clock(void);
-void ost_hal_sdcard_set_fast_clock(void);
-
-/**
- * @brief Deselect the SD-Card by driving the Chip Select to high level (eg: 3.3V)
- *
- */
-void ost_hal_sdcard_cs_high();
-
-/**
- * @brief Deselect the SD-Card by driving the Chip Select to low level (eg: 0V)
- *
- */
-void ost_hal_sdcard_cs_low();
+// Deselect the SD-Card by driving the Chip Select to high level (eg: 3.3V)
+void hal_sdcard_cs_high();
+// Deselect the SD-Card by driving the Chip Select to low level (eg: 0V)
+void hal_sdcard_cs_low();
 
 // We have a separated API here to allow specific optimizations such as the use of DMA
-
 void ost_hal_sdcard_spi_exchange(const uint8_t *buffer, uint8_t *out, uint32_t size);
-
 void ost_hal_sdcard_spi_write(const uint8_t *buffer, uint32_t size);
-
 void ost_hal_sdcard_spi_read(uint8_t *out, uint32_t size);
 
-/**
- * @brief Return 1 if the SD card is physically inserted, otherwise 0
- *
- * @return uint8_t SD card is present or not
- */
+// Return 1 if the SD card is physically inserted, otherwise 0
 uint8_t ost_hal_sdcard_get_presence();
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // OST_HAL_H
+#endif // MAIN_H

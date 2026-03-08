@@ -34,11 +34,11 @@ DSTATUS disk_initialize(
 {
 	if (drv)
 		return STA_NOINIT;
-	ost_hal_sdcard_set_slow_clock(); // detect using a slow SPI clock for more robustness
+	hal_sdcard_set_slow_clock(); // detect using a slow SPI clock for more robustness
 	if (sdcard_init() != SD_RESPONSE_NO_ERROR)
 		return STA_NOINIT;
 
-	ost_hal_sdcard_set_fast_clock(); // Then switch to fast clock!
+	hal_sdcard_set_fast_clock(); // Then switch to fast clock!
 	return 0;
 }
 
