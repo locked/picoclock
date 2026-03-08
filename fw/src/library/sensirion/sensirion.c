@@ -113,20 +113,20 @@ bool sensirion_stcc4_init() {
 	uint64_t serial_number = 0;
 	uint8_t packet[2];
 	int8_t result;
-	uint8_t rxdata[12];
+	uint8_t rxdata[18];
 
 	// stop continuous measurement
 	packet[0] = 0x3f;
 	packet[1] = 0x86;
-	sensirion_i2c_hal_write(STCC4_ADDR, packet, 2);
+	sensirion_i2c_hal_write(STCC4_ADDR, packet, sizeof(packet));
 	sleep_ms(1200);
 
 	// get product id & serial
 	packet[0] = 0x36;
 	packet[1] = 0x5b;
-	sensirion_i2c_hal_write(STCC4_ADDR, packet, 2);
+	sensirion_i2c_hal_write(STCC4_ADDR, packet, sizeof(packet));
 	sleep_ms(1);
-	sensirion_i2c_read_data_inplace(STCC4_ADDR, rxdata, 12);
+	sensirion_i2c_read_data_inplace(STCC4_ADDR, rxdata, sizeof(rxdata));
 	product_id = sensirion_common_bytes_to_uint32_t(&rxdata[0]);
 	sensirion_common_to_integer(&rxdata[4], (uint8_t*)&serial_number, LONG_INTEGER, 8);
 	printf("[picoclock] STCC4 product_id:[%d] serial:[%" PRIx64 "]\r\n",
@@ -143,7 +143,7 @@ bool sensirion_stcc4_init() {
 	packet[0] = 0x21;
 	packet[1] = 0x8b;
 	// this breaks 'features' structure
-	//sensirion_i2c_hal_write(STCC4_ADDR, packet, 2);
+	sensirion_i2c_hal_write(STCC4_ADDR, packet, sizeof(packet));
 	sleep_ms(100);
 
 	printf("[picoclock] STCC4 present\r\n");
