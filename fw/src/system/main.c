@@ -388,7 +388,8 @@ void hal_sdcard_spi_read(uint8_t *out, uint32_t size) {
 	spi_read_blocking(spi1, 0xFF, out, size);
 }
 uint8_t hal_sdcard_get_presence() {
-	return gpio_get(SD_CARD_PRESENCE);
+	printf("[sdcard] gpio_get(SD_CARD_PRESENCE):[%d]\r\n", gpio_get(SD_CARD_PRESENCE));
+	return 1; //gpio_get(SD_CARD_PRESENCE);
 }
 
 
