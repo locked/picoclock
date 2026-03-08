@@ -4,6 +4,8 @@
 #include "hardware/i2c.h"
 #include <stdint.h>
 
+#define LP5817_I2C_TIMEOUT 5000000
+
 // From https://github.com/esp-cpp/espp/blob/69721957/components/lp5817/include/lp5817.hpp
 #define LP5817_DEFAULT_ADDRESS 0x2D
 #define LP5817_BROADCAST_ADDRESS 0x34

@@ -14,7 +14,7 @@ uint8_t lp5817_enable(bool on) {
 	uint8_t packet[2];
 	packet[0] = LP5817_CHIP_EN;
 	packet[1] = on ? 0x01 : 0x00;
-	int result = i2c_write_blocking(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false);
+	int result = i2c_write_timeout_us(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false, LP5817_I2C_TIMEOUT);
 	printf("[lp5817] Enable set to %d\r\n", on);
 	return result != 2;
 }
@@ -31,7 +31,7 @@ uint8_t lp5817_set_dot_current(uint8_t ch, uint8_t value) {
 		packet[0] = LP5817_OUT2_DC;
 	}
 	packet[1] = value;
-	int result = i2c_write_blocking(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false);
+	int result = i2c_write_timeout_us(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false, LP5817_I2C_TIMEOUT);
 	return result != 2;
 }
 
@@ -47,7 +47,7 @@ uint8_t lp5817_set_pwm(uint8_t ch, uint8_t value) {
 	}
 	packet[1] = value;
 	printf("[lp5817] Setting dot-current (DC) of channel %d to %d packet:[%02d:%02d]\r\n", ch, value, packet[0], packet[1]);
-	int result = i2c_write_blocking(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false);
+	int result = i2c_write_timeout_us(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false, LP5817_I2C_TIMEOUT);
 	return result != 2;
 }
 
@@ -56,7 +56,7 @@ uint8_t lp5817_set_max_current_code() {
 	uint8_t packet[2];
 	packet[0] = LP5817_DEV_CONFIG0;
 	packet[1] = 0x01;
-	int result = i2c_write_blocking(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false);
+	int result = i2c_write_timeout_us(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false, LP5817_I2C_TIMEOUT);
 	return result != 2;
 }
 
@@ -65,7 +65,7 @@ uint8_t lp5817_set_output_enable_all() {
 	uint8_t packet[2];
 	packet[0] = LP5817_DEV_CONFIG1;
 	packet[1] = 0x07;
-	int result = i2c_write_blocking(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false);
+	int result = i2c_write_timeout_us(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false, LP5817_I2C_TIMEOUT);
 	return result != 2;
 }
 
@@ -75,7 +75,7 @@ uint8_t lp5817_set_output_enable(uint8_t ch) {
 	uint8_t packet[2];
 	packet[0] = LP5817_DEV_CONFIG1;
 	packet[1] = 1 << ch;
-	int result = i2c_write_blocking(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false);
+	int result = i2c_write_timeout_us(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false, LP5817_I2C_TIMEOUT);
 	return result != 2;
 }
 
@@ -84,7 +84,7 @@ uint8_t lp5817_update() {
 	uint8_t packet[2];
 	packet[0] = LP5817_UPDATE_CMD;
 	packet[1] = 0x55;
-	int result = i2c_write_blocking(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false);
+	int result = i2c_write_timeout_us(lp5817_i2c, LP5817_DEFAULT_ADDRESS, packet, 2, false, LP5817_I2C_TIMEOUT);
 	return result != 2;
 }
 

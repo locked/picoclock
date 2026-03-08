@@ -13,7 +13,7 @@ extern "C"
 
 #define GPIO_PWM 16
 
-#define CPU_CLOCK_IDLE 150000
+#define CPU_CLOCK_IDLE 100000
 #define CPU_CLOCK_MAX 200000
 
 // normal screens
@@ -89,7 +89,7 @@ extern "C"
 #define I2C_SCL 19
 #define I2C_CHANNEL i2c1
 #endif
-#define I2C_BAUD_RATE 50000
+#define I2C_BAUD_RATE 100000
 //#define I2C_BAUD_RATE 400000
 
 

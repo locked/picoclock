@@ -72,9 +72,12 @@ void display_screen_main(time_struct dt, circularBuffer_t* ring_metrics) {
 	} else if (m->stcc4_co2 > 0) {
 		co2 = m->stcc4_co2;
 		sprintf(co2_src, "stcc4");
-	} else if (m->eco2 > 0) {
+	} else if (m->eco2 > 0 && m->eco2 < 8000) {
 		co2 = m->eco2;
 		sprintf(co2_src, "ens160");
+	} else {
+		co2 = -1;
+		sprintf(co2_src, "none");
 	}
 	sprintf(temp_str, "CO2:%d (%s) %0.1fC", co2, co2_src, m->temp);
 	_y += Font24.Height + 2;

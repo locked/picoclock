@@ -40,25 +40,27 @@ void floatToString(char *str, float f, char size) {
 bool mcp9808_detect() {
 	int ret;
 	uint8_t rxdata;
-	return i2c_write_blocking(i2c1, MCP9808_I2C_ADDR, &rxdata, 1, false) > 0;
+	return i2c_write_timeout_us(i2c1, MCP9808_I2C_ADDR, &rxdata, 1, true, 50000) > 0;
 }
 
 float mcp9808_get_temperature() {
     int result;
     uint8_t addr = MCP9808_TA_REGISTER_ADDR;
 
-    result = i2c_write_blocking(i2c1, MCP9808_I2C_ADDR, &addr, 1, false);
+    result = i2c_write_timeout_us(i2c1, MCP9808_I2C_ADDR, &addr, 1, true, 50000);
     if (result != 1) {
         printf("[mcp9808] failed to write Ta register address\n");
         return result;
     }
+	sleep_ms(1);
 
     uint8_t measure_data[2];
-    result = i2c_read_blocking(i2c1, MCP9808_I2C_ADDR, measure_data, sizeof(measure_data), false);
+    result = i2c_read_timeout_us(i2c1, MCP9808_I2C_ADDR, measure_data, sizeof(measure_data), true, 50000);
     if (result != sizeof(measure_data)) {
         printf("[mcp9808] failed to read measure data\n");
         return result;
     }
+	sleep_ms(1);
 
     measure_data[0] &= 0x1F;
 

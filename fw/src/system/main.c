@@ -68,7 +68,7 @@ static audio_i2s_config_t config = {
 // Globals
 weather_struct weather = {"", "", "", ""};
 config_struct global_config;
-features_t features;
+volatile features_t features = {false, false, false, false, false};
 volatile int current_screen = 0;
 char last_sync_str[9] = "";
 volatile int reboot_requested = 0;
@@ -277,6 +277,14 @@ void system_initialize() {
 	printf("[picoclock] Init STCC4\r\n");
 	features.has_stcc4 = sensirion_stcc4_init();
 
+	printf("[picoclock] features mcp9808:[%s] ens160:[%s] s88:[%s] stcc4:[%s] scd43:[%s]\r\n",
+		features.has_mcp9808 ? "yes" : "no",
+		features.has_ens160 ? "yes" : "no",
+		features.has_s88 ? "yes" : "no",
+		features.has_stcc4 ? "yes" : "no",
+		features.has_scd43 ? "yes" : "no"
+	);
+
 	/*if (features.has_scd43) {
 		sensirion_scd43_read();
 	}
@@ -284,8 +292,16 @@ void system_initialize() {
 		sensirion_stcc4_read();
 	}*/
 
+	printf("[picoclock] features mcp9808:[%s] ens160:[%s] s88:[%s] stcc4:[%s] scd43:[%s]\r\n",
+		features.has_mcp9808 ? "yes" : "no",
+		features.has_ens160 ? "yes" : "no",
+		features.has_s88 ? "yes" : "no",
+		features.has_stcc4 ? "yes" : "no",
+		features.has_scd43 ? "yes" : "no"
+	);
+
 	printf("[picoclock] init_i2c OK\r\n");
-	i2c_bus_scan();
+	//i2c_bus_scan();
 
 	pcf8563_set_i2c(I2C_CHANNEL);
 	printf("[picoclock] pcf8563_set_i2c OK\r\n");
@@ -342,23 +358,23 @@ void system_initialize() {
 	gpio_set_function(UART_ESP32_RX_PIN, GPIO_FUNC_UART);
 	uart_puts(uart1, "END\n");
 
-	features.has_mcp9808 = mcp9808_detect();
-
 	if (UART_BAUD_RATE == 9600) {
 		features.has_s88 = s88_get_co2() > 100;
 	} else {
 		features.has_s88 = false;
 	}
 
-	printf("[picoclock] features mcp9808:[%d] ens160:[%d] s88:[%d] stcc4:[%d] scd43:[%d]\r\n",
-		features.has_mcp9808,
-		features.has_ens160,
-		features.has_s88,
-		features.has_stcc4,
-		features.has_scd43
-	);
+	features.has_mcp9808 = mcp9808_detect() ? true : false;
 
 	printf("[picoclock] System Clock: %lu\n", clock_get_hz(clk_sys));
+
+	printf("[picoclock] features mcp9808:[%s] ens160:[%s] s88:[%s] stcc4:[%s] scd43:[%s]\r\n",
+		features.has_mcp9808 ? "yes" : "no",
+		features.has_ens160 ? "yes" : "no",
+		features.has_s88 ? "yes" : "no",
+		features.has_stcc4 ? "yes" : "no",
+		features.has_scd43 ? "yes" : "no"
+	);
 }
 
 void system_putc(char ch) {
@@ -431,6 +447,13 @@ void core1_entry() {
 			}
 
 			// Collect metrics
+			printf("[picoclock] features mcp9808:[%s] ens160:[%s] s88:[%s] stcc4:[%s] scd43:[%s]\r\n",
+				features.has_mcp9808 ? "yes" : "no",
+				features.has_ens160 ? "yes" : "no",
+				features.has_s88 ? "yes" : "no",
+				features.has_stcc4 ? "yes" : "no",
+				features.has_scd43 ? "yes" : "no"
+			);
 			metrics.year = dt.year;
 			metrics.month = dt.month;
 			metrics.day = dt.day;
@@ -518,6 +541,14 @@ void core1_entry() {
 int main() {
 	// Call the platform initialization
 	system_initialize();
+
+	printf("[picoclock] main(0) features mcp9808:[%s] ens160:[%s] s88:[%s] stcc4:[%s] scd43:[%s]\r\n",
+		features.has_mcp9808 ? "yes" : "no",
+		features.has_ens160 ? "yes" : "no",
+		features.has_s88 ? "yes" : "no",
+		features.has_stcc4 ? "yes" : "no",
+		features.has_scd43 ? "yes" : "no"
+	);
 
 	// Test the printf output
 	printf("[picoclock] Starting: V%d.%d\r\n", 1, 0);
