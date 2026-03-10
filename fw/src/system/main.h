@@ -164,6 +164,7 @@ typedef struct {
 	int16_t scd43_co2;
 	int16_t stcc4_co2;
 	uint8_t ens160_status;
+	uint32_t mem_free;
 	float temp;
 	bool sent;
 	bool tosend;

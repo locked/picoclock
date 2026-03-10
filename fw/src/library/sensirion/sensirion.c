@@ -142,7 +142,6 @@ bool sensirion_stcc4_init() {
 	// start continuous measurement
 	packet[0] = 0x21;
 	packet[1] = 0x8b;
-	// this breaks 'features' structure
 	sensirion_i2c_hal_write(STCC4_ADDR, packet, sizeof(packet));
 	sleep_ms(100);
 
@@ -261,7 +260,7 @@ int16_t sensirion_scd43_read() {
 	// get data ready status
 	bool ready = false;
 	uint16_t retries = 0;
-	uint16_t max_retries = 20;
+	uint16_t max_retries = 10;
 	do {
 		packet[0] = 0xe4;
 		packet[1] = 0xb8;
@@ -280,7 +279,7 @@ int16_t sensirion_scd43_read() {
 	packet[0] = 0xec;
 	packet[1] = 0x05;
 	result = sensirion_i2c_hal_write(SCD43_ADDR, packet, 2);
-	sleep_ms(3);
+	sleep_ms(1);
 	sensirion_i2c_read_data_inplace(SCD43_ADDR, rxdata, 6);
 	int16_t co2 = sensirion_common_bytes_to_uint16_t(&rxdata[0]);
 	float temp = stcc4_signal_temperature(sensirion_common_bytes_to_uint16_t(&rxdata[2]));

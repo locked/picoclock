@@ -288,6 +288,7 @@ void build_json(char* dest) {
 				if (m->stcc4_co2 > 100) {
 					dest = json_int(dest, "stcc4_co2", m->stcc4_co2, &remLen);
 				}
+				dest = json_int(dest, "mf", m->mem_free/1024, &remLen);
 				dest = json_int(dest, "t", m->temp, &remLen);
 				dest = json_objClose(dest, &remLen);
 		} else {

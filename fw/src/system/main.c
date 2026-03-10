@@ -16,6 +16,7 @@
 #include "net_task.h"
 #include "alarms.h"
 #include "fs_task.h"
+#include "utils.h"
 
 // Raspberry Pico SDK
 #include "pico/stdlib.h"
@@ -458,6 +459,7 @@ void core1_entry() {
 			metrics.s88_co2 = features.has_s88 ? s88_get_co2() : 0;
 			metrics.scd43_co2 = features.has_scd43 ? sensirion_scd43_read() : -1;
 			metrics.stcc4_co2 = features.has_stcc4 ? sensirion_stcc4_read() : -1;
+			metrics.mem_free = getFreeHeap();
 			metrics.sent = false;
 			circularBuffer_insert(ring_metrics, &metrics);
 			/*for (uint8_t i = 0; i < ring_metrics->num; i++) {
