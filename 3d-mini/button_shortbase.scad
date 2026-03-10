@@ -5,12 +5,12 @@ outer_diam = 6;   // pcb holes are 5mm
 inner_diam = 5;   // pcb holes are 5mm
 depth = 6 + 1.6 + 1;
 depth_blocker = 5.5 - 2.3 + 1;
-depth_visible = 3.8;
+depth_visible = 5.2;
 sphere_visible = 0.4;
 
 //btn_size = 2.4;	// Ok, tight
 btn_size = 2.5;	// Ok, loose
-btn = [btn_size, btn_size, 3];
+btn = [btn_size, btn_size, 2.6];
 fente = [1.4, 0.5, 3];
 
 module body() {
