@@ -33,14 +33,21 @@ void loop() {
     delay(50);
     String in = Serial1.readString();
     in.trim();
-    if (in == "START") {
+    if (in.substring(0, 5) == "START") {
+      Serial.println("Received:"+in);
+      String bt_name = in.substring(6, in.length());
+      Serial.println("Received cut:"+bt_name);
       Serial.println("Starting...");
-      a2dp_sink.start("Picoclock");
+      a2dp_sink.start(bt_name.c_str());
       Serial1.println("OK");
     } else if (in == "END") {
       Serial.println("Ending...");
       a2dp_sink.end();
       Serial1.println("OK");
+    } else if (in == "STATUS") {
+      String peer_name = a2dp_sink.get_peer_name();
+      Serial.println("Return status:"+peer_name);
+      Serial1.println(peer_name);
     } else {
       Serial.println("Received:"+in);
       Serial1.println("UNKNOWN");
