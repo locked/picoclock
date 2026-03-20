@@ -340,7 +340,7 @@ void system_initialize() {
 	uart_init(UART_ESP32_UART_ID, 9600);
 	gpio_set_function(UART_ESP32_TX_PIN, GPIO_FUNC_UART);
 	gpio_set_function(UART_ESP32_RX_PIN, GPIO_FUNC_UART);
-	uart_puts(uart1, "END\n");
+	uart_puts(UART_ESP32_UART_ID, "END\n");
 
 	if (UART_BAUD_RATE == 9600) {
 		features.has_s88 = s88_get_co2() > 100;
@@ -389,8 +389,8 @@ void hal_sdcard_spi_read(uint8_t *out, uint32_t size) {
 	spi_read_blocking(spi1, 0xFF, out, size);
 }
 uint8_t hal_sdcard_get_presence() {
-	printf("[sdcard] gpio_get(SD_CARD_PRESENCE):[%d]\r\n", gpio_get(SD_CARD_PRESENCE));
-	return 1; //gpio_get(SD_CARD_PRESENCE);
+	printf("[sdcard] gpio_get(SD_CARD_PRESENCE):[%d] (0==present)\r\n", gpio_get(SD_CARD_PRESENCE));
+	return gpio_get(SD_CARD_PRESENCE) == 0;
 }
 
 
@@ -458,7 +458,9 @@ void core1_entry() {
 			}
 			metrics.s88_co2 = features.has_s88 ? s88_get_co2() : 0;
 			metrics.scd43_co2 = features.has_scd43 ? sensirion_scd43_read() : -1;
-			metrics.stcc4_co2 = features.has_stcc4 ? sensirion_stcc4_read() : -1;
+			if (to_ms_since_boot(get_absolute_time()) > 180000) {	// Do not store values just after boot
+				metrics.stcc4_co2 = features.has_stcc4 ? sensirion_stcc4_read() : -1;
+			}
 			metrics.mem_free = getFreeHeap();
 			metrics.sent = false;
 			circularBuffer_insert(ring_metrics, &metrics);

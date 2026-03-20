@@ -114,8 +114,8 @@ void ui_refresh_screen(bool message_clear, time_struct dt) {
 		display_screen_debug(last_sync_str, current_rgb_color, rgb_intensity);
 	} else if (current_screen == SCREEN_ALARM) {
 		display_screen_alarm();
-	} else if (current_screen == SCREEN_METRIC) {
-		display_screen_metrics(ring_metrics);
+	} else if (current_screen == SCREEN_MUSIC || current_screen == SCREEN_MUSIC_BT) {
+		display_screen_music(current_screen == SCREEN_MUSIC_BT);
 	}
 	if (message_clear) {
 		if (strcmp(global_config.screen, "B") == 0) {
@@ -203,6 +203,9 @@ void ui_btn_click(int btn, time_struct dt) {
 				lp5817_turn_on(0x20, 0xff, 0x30);
 				backlight_on = true;
 			}
+		} else if (current_screen == SCREEN_MUSIC || current_screen == SCREEN_MUSIC_BT) {
+			// Increase volume
+			mcp4551_set_wiper(mcp4551_read_wiper() - 20);
 		} else if (current_screen == SCREEN_DEBUG) {
 			rgb_intensity[current_rgb_color] += 20;
 			lp5817_turn_on(rgb_intensity[0], rgb_intensity[1], rgb_intensity[2]);
@@ -214,6 +217,9 @@ void ui_btn_click(int btn, time_struct dt) {
 		//  *      *
 		if (current_screen < 3) {
 			sync_requested = true;
+		} else if (current_screen == SCREEN_MUSIC || current_screen == SCREEN_MUSIC_BT) {
+			// Decrease volume
+			mcp4551_set_wiper(mcp4551_read_wiper() + 20);
 		} else if (current_screen == SCREEN_DEBUG) {
 			rgb_intensity[current_rgb_color] -= 20;
 			lp5817_turn_on(rgb_intensity[0], rgb_intensity[1], rgb_intensity[2]);
@@ -252,14 +258,30 @@ void ui_btn_click(int btn, time_struct dt) {
 				current_rgb_color = 0;
 			}
 			refresh_screen = true;
-		} else {
-			if (gpio_get(I2S_SELECT_PIN) == 0) {
-				gpio_put(I2S_SELECT_PIN, 1);	// 0 select I2S from pico, 1 from ESP32
-				gpio_put(AUDIO_MUTE_PIN, 1);	// Unmute
-				uart_puts(UART_ESP32_UART_ID, "START\n");
+		} else if (current_screen == SCREEN_MUSIC || current_screen == SCREEN_MUSIC_BT) {
+			current_screen = current_screen == SCREEN_MUSIC ? SCREEN_MUSIC_BT : SCREEN_MUSIC;
+			refresh_screen = true;
+			if (current_screen == SCREEN_MUSIC_BT) {
+				uart_puts(UART_ESP32_UART_ID, "STATUS\n");
+				char res[100] = "";
+				while (uart_is_readable(UART_ESP32_UART_ID) && strlen(res) < 100) {
+					sprintf(res, "%s%c", res, uart_getc(UART_ESP32_UART_ID));
+				}
+				printf("received:[%s]", res);
 			} else {
-				mcp4551_set_wiper(mcp4551_read_wiper() + 20);
+				//uart_puts(UART_ESP32_UART_ID, "END\n");
+				gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
 			}
+		} else {
+			current_screen = SCREEN_MUSIC_BT;
+			refresh_screen = true;
+			gpio_put(I2S_SELECT_PIN, 1);	// 0 select I2S from pico, 1 from ESP32
+			gpio_put(AUDIO_MUTE_PIN, 1);	// Unmute
+			char board_id[20];
+			char cmd[30];
+			get_uniq_id(board_id);
+			sprintf(cmd, "START:PicoClk%.4s\n", board_id);
+			uart_puts(UART_ESP32_UART_ID, cmd);
 		}
 	} else if (btn == 5) {
 		// [*]     *
@@ -272,12 +294,21 @@ void ui_btn_click(int btn, time_struct dt) {
 			}
 			current_rgb_color--;
 			refresh_screen = true;
+		} else if (current_screen == SCREEN_MUSIC || current_screen == SCREEN_MUSIC_BT) {
+			main_audio_stop();
+			if (current_screen == SCREEN_MUSIC_BT) {
+				uart_puts(UART_ESP32_UART_ID, "END\n");
+			}
+			gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
+			current_screen = SCREEN_MAIN;
+			refresh_screen = true;
 		} else {
+			current_screen = SCREEN_MUSIC;
+			refresh_screen = true;
+			gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
 			if (!audio_ctx.playing) {
 				sprintf(request_audio_start_file, "Tellement.wav");
 				request_audio_start = true;
-			} else {
-				mcp4551_set_wiper(mcp4551_read_wiper() - 20);
 			}
 		}
 	}

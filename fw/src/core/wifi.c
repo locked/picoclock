@@ -11,6 +11,7 @@
 
 #include "pico/stdlib.h"
 #include <pico/cyw43_arch.h>
+#include "hardware/watchdog.h"
 
 #include "lwip/pbuf.h"
 #include "lwip/tcp.h"
@@ -89,6 +90,8 @@ static err_t tcp_client_sent(void *arg, struct tcp_pcb *tpcb, u16_t len) {
     TCP_CLIENT_T *state = (TCP_CLIENT_T*)arg;
     DEBUG_printf("[wifi] tcp_client_sent %u\n", len);
     state->sent_len += len;
+
+    watchdog_update();
 
     if (state->sent_len >= BUF_SIZE) {
         state->run_count++;

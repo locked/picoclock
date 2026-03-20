@@ -21,9 +21,10 @@ extern "C"
 #define SCREEN_WEATHER 1
 #define SCREEN_LIST_ALARMS 2
 #define SCREEN_DEBUG 3
-#define SCREEN_METRIC 4
 // unreachable screens
 #define SCREEN_ALARM 10
+#define SCREEN_MUSIC 11
+#define SCREEN_MUSIC_BT 12
 
 #define MAX_SCREEN_ID 3
 

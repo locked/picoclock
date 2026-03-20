@@ -218,3 +218,11 @@ void display_screen_metrics(circularBuffer_t* ring_metrics) {
 		Paint_DrawLine(x, y, x, endy, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
 	}
 }
+
+void display_screen_music(bool is_bt) {
+	if (is_bt) {
+		Paint_DrawString_EN(50, 10, "BT", &Font12, WHITE, BLACK);
+	}
+	Paint_DrawString_EN(200, 10, "+", &Font24, WHITE, BLACK);
+	Paint_DrawString_EN(200, 50, "-", &Font24, WHITE, BLACK);
+}

@@ -37,5 +37,6 @@ void display_screen_alarms();
 void display_screen_debug(char *last_sync_str, uint8_t current_rgb_color, uint8_t* rgb_intensity);
 void display_screen_alarm();
 void display_screen_metrics(circularBuffer_t* ring_metrics);
+void display_screen_music(bool is_bt);
 
 #endif // GRAPHICS_LIB_H
