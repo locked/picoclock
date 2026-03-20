@@ -47,6 +47,7 @@
 #include "ens160/ens160.h"
 #include "mcp9808/mcp9808.h"
 #include "senseair.h"
+#include "btctrl.h"
 
 #include "circularBuffer.h"
 
@@ -337,10 +338,7 @@ void system_initialize() {
 	features.has_ens160 = ens160_status == 0 || ens160_status == 1 || ens160_status == 2;
 
 	// Init UART for ESP32 com
-	uart_init(UART_ESP32_UART_ID, 9600);
-	gpio_set_function(UART_ESP32_TX_PIN, GPIO_FUNC_UART);
-	gpio_set_function(UART_ESP32_RX_PIN, GPIO_FUNC_UART);
-	uart_puts(UART_ESP32_UART_ID, "END\n");
+	btctrl_init(UART_ESP32_UART_ID, UART_ESP32_TX_PIN, UART_ESP32_RX_PIN);
 
 	if (UART_BAUD_RATE == 9600) {
 		features.has_s88 = s88_get_co2() > 100;

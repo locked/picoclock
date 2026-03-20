@@ -53,6 +53,7 @@ set(OST_SRCS
     library/tiny-json.c
     library/json-maker.c
     library/senseair.c
+    library/btctrl.c
     library/ens160/ens160.c
     library/sensirion/sensirion.c
     library/mcp9808/mcp9808.c

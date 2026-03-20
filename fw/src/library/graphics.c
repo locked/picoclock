@@ -36,14 +36,9 @@ void display_screen_nav() {
 }
 
 
-void display_screen_main(time_struct dt, circularBuffer_t* ring_metrics) {
+void display_time(int* _y, time_struct dt) {
 	char temp_str[50];
-	char temp2_str[10];
-	int _y = SCREEN_Y;
 	PAINT_TIME sPaint_time;
-
-	display_icon(ICON_RIGHT_X, 10, ICON_LIGHT);
-	display_icon(ICON_RIGHT_X, 50, ICON_WIFI);
 
 	sPaint_time.Year = dt.year;
 	sPaint_time.Month = dt.month;
@@ -54,11 +49,26 @@ void display_screen_main(time_struct dt, circularBuffer_t* ring_metrics) {
 	char weekday_str[3] = "";
 	getWeekdayStr(dt.weekday, weekday_str);
 	sprintf(temp_str, "%02d/%02d (%s)", dt.day, dt.month, weekday_str);
-	Paint_DrawString_EN(SCREEN_X, _y, temp_str, &Font24, WHITE, BLACK);
+	Paint_DrawString_EN(SCREEN_X, *_y, temp_str, &Font24, WHITE, BLACK);
+	*_y += Font24.Height + 1;
 
-	_y += Font24.Height + 1;
 	//Paint_ClearWindows(SCREEN_X, _y, SCREEN_X + Font24.Width * 8, 40 + Font24.Height, WHITE);
-	Paint_DrawTime(SCREEN_X, _y, &sPaint_time, &Font24, WHITE, BLACK);
+	Paint_DrawTime(SCREEN_X, *_y, &sPaint_time, &Font24, WHITE, BLACK);
+	*_y += Font24.Height + 2;
+}
+
+
+void display_screen_main(time_struct dt, circularBuffer_t* ring_metrics) {
+	char temp_str[50];
+	char temp2_str[10];
+	int _y = SCREEN_Y;
+
+	Paint_DrawString_EN(ICON_LEFT_X, 50, "BT", &Font24, WHITE, BLACK);
+
+	display_icon(ICON_RIGHT_X, 10, ICON_LIGHT);
+	display_icon(ICON_RIGHT_X, 50, ICON_WIFI);
+
+	display_time(&_y, dt);
 
 	metrics_t *m = circularBuffer_current(ring_metrics);
 	int16_t co2 = 0;
@@ -80,7 +90,6 @@ void display_screen_main(time_struct dt, circularBuffer_t* ring_metrics) {
 		sprintf(co2_src, "none");
 	}
 	sprintf(temp_str, "CO2:%d (%s) %0.1fC", co2, co2_src, m->temp);
-	_y += Font24.Height + 2;
 	Paint_DrawString_EN(SCREEN_X, _y, temp_str, &Font12, WHITE, BLACK);
 
 	// Next alarm
@@ -219,10 +228,18 @@ void display_screen_metrics(circularBuffer_t* ring_metrics) {
 	}
 }
 
-void display_screen_music(bool is_bt) {
+void display_screen_music(time_struct dt, bool is_bt, char* bt_name) {
+	int _y = SCREEN_Y;
+
+	display_time(&_y, dt);
+
 	if (is_bt) {
-		Paint_DrawString_EN(50, 10, "BT", &Font12, WHITE, BLACK);
+		Paint_DrawString_EN(SCREEN_X, _y, "BT", &Font12, WHITE, BLACK);
+		_y += Font12.Height + 1;
+
+		Paint_DrawString_EN(SCREEN_X, _y, bt_name, &Font12, WHITE, BLACK);
+		_y += Font12.Height + 1;
 	}
-	Paint_DrawString_EN(200, 10, "+", &Font24, WHITE, BLACK);
-	Paint_DrawString_EN(200, 50, "-", &Font24, WHITE, BLACK);
+	Paint_DrawString_EN(ICON_RIGHT_X + 4, 10, "+", &Font24, WHITE, BLACK);
+	Paint_DrawString_EN(ICON_RIGHT_X + 4, 50, "-", &Font24, WHITE, BLACK);
 }

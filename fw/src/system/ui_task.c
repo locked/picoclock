@@ -31,6 +31,7 @@
 #include "pcf8563/pcf8563.h"
 #include "mcp46XX/mcp45XX.h"
 #include "circularBuffer.h"
+#include "btctrl.h"
 
 
 // Externs
@@ -54,6 +55,9 @@ bool need_screen_clear = true;
 int loop_count = 0;
 bool backlight_on = false;
 UBYTE *BlackImage;
+
+volatile char bt_name[50] = "";
+volatile bool update_bt_name = false;
 
 uint8_t current_rgb_color = 0;
 uint8_t rgb_intensity[3] = {0, 0, 0};
@@ -115,7 +119,11 @@ void ui_refresh_screen(bool message_clear, time_struct dt) {
 	} else if (current_screen == SCREEN_ALARM) {
 		display_screen_alarm();
 	} else if (current_screen == SCREEN_MUSIC || current_screen == SCREEN_MUSIC_BT) {
-		display_screen_music(current_screen == SCREEN_MUSIC_BT);
+		if (update_bt_name) {
+			btctrl_status(bt_name);
+		}
+		update_bt_name = true;
+		display_screen_music(dt, current_screen == SCREEN_MUSIC_BT, bt_name);
 	}
 	if (message_clear) {
 		if (strcmp(global_config.screen, "B") == 0) {
@@ -261,27 +269,19 @@ void ui_btn_click(int btn, time_struct dt) {
 		} else if (current_screen == SCREEN_MUSIC || current_screen == SCREEN_MUSIC_BT) {
 			current_screen = current_screen == SCREEN_MUSIC ? SCREEN_MUSIC_BT : SCREEN_MUSIC;
 			refresh_screen = true;
-			if (current_screen == SCREEN_MUSIC_BT) {
-				uart_puts(UART_ESP32_UART_ID, "STATUS\n");
-				char res[100] = "";
-				while (uart_is_readable(UART_ESP32_UART_ID) && strlen(res) < 100) {
-					sprintf(res, "%s%c", res, uart_getc(UART_ESP32_UART_ID));
-				}
-				printf("received:[%s]", res);
-			} else {
-				//uart_puts(UART_ESP32_UART_ID, "END\n");
+			if (current_screen == SCREEN_MUSIC) {
+				//btctrl_end();
 				gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
+			} else {
+				gpio_put(I2S_SELECT_PIN, 1);	// 0 select I2S from pico, 1 from ESP32
 			}
 		} else {
 			current_screen = SCREEN_MUSIC_BT;
 			refresh_screen = true;
 			gpio_put(I2S_SELECT_PIN, 1);	// 0 select I2S from pico, 1 from ESP32
 			gpio_put(AUDIO_MUTE_PIN, 1);	// Unmute
-			char board_id[20];
-			char cmd[30];
-			get_uniq_id(board_id);
-			sprintf(cmd, "START:PicoClk%.4s\n", board_id);
-			uart_puts(UART_ESP32_UART_ID, cmd);
+			btctrl_start();
+			update_bt_name = false;
 		}
 	} else if (btn == 5) {
 		// [*]     *
@@ -297,7 +297,7 @@ void ui_btn_click(int btn, time_struct dt) {
 		} else if (current_screen == SCREEN_MUSIC || current_screen == SCREEN_MUSIC_BT) {
 			main_audio_stop();
 			if (current_screen == SCREEN_MUSIC_BT) {
-				uart_puts(UART_ESP32_UART_ID, "END\n");
+				btctrl_end();
 			}
 			gpio_put(I2S_SELECT_PIN, 0);	// 0 select I2S from pico, 1 from ESP32
 			current_screen = SCREEN_MAIN;
