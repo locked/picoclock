@@ -46,4 +46,13 @@ void getWeekdaysStr(int weekdays, char *weekdays_str) {
             getWeekdayStr(chk_weekday, weekdays_str);
         }
     }
+	if (strcmp(weekdays_str, "MonTueWedThuFriSatSun") == 0) {
+		sprintf(weekdays_str, "Every day");
+	}
+	if (strcmp(weekdays_str, "MonTueWedThuFriSat") == 0) {
+		sprintf(weekdays_str, "Mon-Sat");
+	}
+	if (strcmp(weekdays_str, "MonTueWedThuFri") == 0) {
+		sprintf(weekdays_str, "Mon-Fri");
+	}
 }

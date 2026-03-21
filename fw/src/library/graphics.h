@@ -8,6 +8,12 @@
 #define ICON_RIGHTARROW 1
 #define ICON_LEFTARROW 2
 #define ICON_WIFI 3
+#define ICON_BLUETOOTH 4
+#define ICON_ESCAPE 5
+#define ICON_WEATHER 6
+#define ICON_ALARM 7
+#define ICON_DISABLED_ALARM 8
+#define ICON_MUSIC 9
 
 typedef struct {
   unsigned short y;
@@ -22,9 +28,14 @@ typedef struct {
 
 void display_icon(int x, int y, int icon_id);
 
-#define ICON_LEFT_X 0
-#define ICON_RIGHT_X 214
-#define SCREEN_X 32
+#define ICON_LEFT_X 2
+#define ICON_RIGHT_X 228
+
+#define ICON_TOP_Y 8
+#define ICON_MIDDLE_Y 52
+#define ICON_BOTTOM_Y 98
+
+#define SCREEN_X 28
 #define SCREEN_Y 8
 
 #define SCREEN_WIDTH 256
