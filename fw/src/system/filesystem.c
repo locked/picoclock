@@ -51,11 +51,11 @@ static FRESULT scan_files(
         while (((fr = f_readdir(&dirs, &Finfo)) == FR_OK) && Finfo.fname[0]) {
             if (Finfo.fattrib & AM_DIR) {
                 //				i = strlen(path);
-                printf("/%s\r\n", Finfo.fname);
+                printf("/%s [%d]\r\n", Finfo.fname, Finfo.fsize);
                 if (fr != FR_OK)
                     break;
             } else {
-                printf("%s\r\n", Finfo.fname);
+                printf("%s [%d]\r\n", Finfo.fname, Finfo.fsize);
             }
         }
     } else {
@@ -221,12 +221,10 @@ bool filesystem_read_config_file() {
 
 file_t current_file;
 bool filesystem_write_file(char *file_name) {
-	file_t new_file;
-	FRESULT fr = f_open(&new_file, file_name, FA_CREATE_ALWAYS);
+	FRESULT fr = f_open(&current_file, file_name, FA_CREATE_ALWAYS);
 	if (fr == FR_OK) {
 		printf("[filesystem] New file:[%s] created\r\n", file_name);
 	}
-	current_file = new_file;
 }
 
 void filesystem_write_bytes(char *buffer, uint16_t buffer_length) {

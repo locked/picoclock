@@ -161,7 +161,6 @@ err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err
 			state->buffer_len += pbuf_copy_partial(p, state->buffer + state->buffer_len,
 												   p->tot_len > buffer_left ? buffer_left : p->tot_len, 0);
 		} else {
-			DEBUG_printf("[wifi] execute callback\n");
 			wifi_tcp_recv_callback((char *)p->payload, p->tot_len);
 		}
 

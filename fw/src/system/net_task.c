@@ -354,9 +354,9 @@ int remote_sync() {
 		}
 
 		bool has_firmware_upgrade = false;
-		char firmware_upgrade_uri[100] = "/fw.uf2";
+		char firmware_upgrade_uri[100] = "/fw/picoclock.uf2";
 		if (has_firmware_upgrade) {
-			download_file(global_config.remote_host, 80, "test.uf2", firmware_upgrade_uri);
+			download_file(global_config.remote_host, 80, "picoclock.uf2", firmware_upgrade_uri);
 		}
 	}
 	watchdog_update();
