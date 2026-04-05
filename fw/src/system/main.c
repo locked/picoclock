@@ -391,6 +391,10 @@ uint8_t hal_sdcard_get_presence() {
 	return gpio_get(SD_CARD_PRESENCE) == 0;
 }
 
+uint32_t get_fattime (void) {
+	return 0;
+}
+
 
 void core1_entry() {
 	int last_min = 0;

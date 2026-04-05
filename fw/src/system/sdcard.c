@@ -595,7 +595,7 @@ SD_Error sdcard_sector_write(uint32_t writeAddr, const uint8_t *pBuffer)
 	SD_DataResponse res;
 	uint16_t BlockSize = SD_BLOCK_SIZE;
 
-	printf("--> writing sector %lu ...", writeAddr);
+	printf("--> writing sector %lu ...\n", writeAddr);
 
 	/* non High Capacity cards use byte-oriented addresses */
 	if (cardType != SD_Card_SDHC)

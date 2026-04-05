@@ -124,6 +124,8 @@ extern "C"
 
 #define TRIGGER_SYNC_EVERY_SEC 1800
 
+typedef void (*wifi_callback_t)(char *buffer, uint16_t buffer_length);
+
 typedef struct {
 	char code_desc[100];
 	char temperature_2m[20];
@@ -205,6 +207,8 @@ void hal_sdcard_spi_read(uint8_t *out, uint32_t size);
 
 // Return 1 if the SD card is physically inserted, otherwise 0
 uint8_t hal_sdcard_get_presence();
+
+uint32_t get_fattime (void);
 
 #ifdef __cplusplus
 }

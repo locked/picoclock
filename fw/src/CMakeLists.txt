@@ -86,8 +86,6 @@ include_directories(
 
 message("=============  TARGET: RASPBERRY PICO  =============")
 
-add_definitions(-DOST_USE_FF_LIBRARY)
-
 # initialize the SDK based on PICO_SDK_PATH
 # note: this must happen before project()
 include(${CMAKE_CURRENT_SOURCE_DIR}/core/pico_sdk_import.cmake)

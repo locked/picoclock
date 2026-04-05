@@ -140,6 +140,11 @@ int parse_json_response(char *response) {
 	dt.sec = json_getInteger(json_getProperty(date_elem, "second"));
 	pcf8563_setDateTime(dt.day, dt.weekday, dt.month, century, year, dt.hour, dt.min, dt.sec);
 
+	//char *fw_str = json_getValue(json_getProperty(alarm_child, "fw"));
+	//if (fw_str != NULL) {
+		// has firmware upgrade
+	//}
+
 	// Save alarms
 	json_t const* wakeup_alarms_elem = json_getProperty(root_elem, "wakeup_alarms");
     if (wakeup_alarms_elem != NULL) {
@@ -346,6 +351,12 @@ int remote_sync() {
 				parse_json_response(response.body);
 				metrics_mark_as_sent();
 			}
+		}
+
+		bool has_firmware_upgrade = false;
+		char firmware_upgrade_uri[100] = "/fw.uf2";
+		if (has_firmware_upgrade) {
+			download_file(global_config.remote_host, 80, "test.uf2", firmware_upgrade_uri);
 		}
 	}
 	watchdog_update();

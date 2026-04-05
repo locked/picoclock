@@ -11,17 +11,9 @@
 
 #include "ini.h"
 
-#ifdef OST_USE_FF_LIBRARY
 #include "ff.h"
 #include "diskio.h"
 typedef FIL file_t;
-#else
-
-// Use standard library
-typedef FILE *file_t;
-typedef int FRESULT;
-#define F_OK
-#endif
 
 extern config_struct global_config;
 
@@ -39,7 +31,6 @@ static SD_CardInfo cardinfo;
 
 file_t file_open(const char *filename)
 {
-#ifdef OST_USE_FF_LIBRARY
     file_t fil;
     FRESULT fr = f_open(&fil, filename, FA_READ);
     if (fr != FR_OK)
@@ -47,9 +38,6 @@ file_t file_open(const char *filename)
         printf("ERROR: f_open %d\n\r", (int)fr);
     }
     return fil;
-#else
-    return fopen(filename, "r");
-#endif
 }
 
 static FRESULT scan_files(
@@ -228,4 +216,25 @@ bool filesystem_read_config_file() {
 		printf("ERROR: config file not found\r\n");
     }
     return true;
+}
+
+
+file_t current_file;
+bool filesystem_write_file(char *file_name) {
+	file_t new_file;
+	FRESULT fr = f_open(&new_file, file_name, FA_CREATE_ALWAYS);
+	if (fr == FR_OK) {
+		printf("[filesystem] New file:[%s] created\r\n", file_name);
+	}
+	current_file = new_file;
+}
+
+void filesystem_write_bytes(char *buffer, uint16_t buffer_length) {
+	UINT bytes_written;
+	f_write(&current_file, buffer, buffer_length, &bytes_written);
+	printf("[filesystem] Bytes written:[%d]\r\n", bytes_written);
+}
+
+void filesystem_close() {
+	f_close(&current_file);
 }

@@ -6,6 +6,9 @@
 
 #include "wifi.h"
 
+#include "main.h"
+#include "filesystem.h"
+
 #include <string.h>
 #include <time.h>
 
@@ -47,6 +50,9 @@ static void dump_bytes(const uint8_t *bptr, uint32_t len) {
 #else
 #define DUMP_BYTES(A,B)
 #endif
+
+// Callback
+static wifi_callback_t wifi_tcp_recv_callback;
 
 typedef struct TCP_CLIENT_T_ {
     struct tcp_pcb *tcp_pcb;
@@ -142,15 +148,23 @@ err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err
     // cyw43_arch_lwip_begin IS needed
     cyw43_arch_lwip_check();
     if (p->tot_len > 0) {
+		watchdog_update();
         DEBUG_printf("[wifi] recv %d err %d\n", p->tot_len, err);
         //DEBUG_printf("[wifi] buffer %s\n", p->payload, err);
         for (struct pbuf *q = p; q != NULL; q = q->next) {
             DUMP_BYTES(q->payload, q->len);
         }
         // Receive the buffer
-        const uint16_t buffer_left = BUF_SIZE - state->buffer_len;
-        state->buffer_len += pbuf_copy_partial(p, state->buffer + state->buffer_len,
-                                               p->tot_len > buffer_left ? buffer_left : p->tot_len, 0);
+        if (wifi_tcp_recv_callback == NULL) {
+			DEBUG_printf("[wifi] write to buffer\n");
+			const uint16_t buffer_left = BUF_SIZE - state->buffer_len;
+			state->buffer_len += pbuf_copy_partial(p, state->buffer + state->buffer_len,
+												   p->tot_len > buffer_left ? buffer_left : p->tot_len, 0);
+		} else {
+			DEBUG_printf("[wifi] execute callback\n");
+			wifi_tcp_recv_callback((char *)p->payload, p->tot_len);
+		}
+
         tcp_recved(tpcb, p->tot_len);
     }
     pbuf_free(p);
@@ -204,6 +218,7 @@ int send_tcp(char* tcp_server_ip, int tcp_server_port, char* data, int data_len,
     if (!state) {
         return -1;
     }
+    wifi_tcp_recv_callback = NULL;
     if (!tcp_client_open(state, tcp_server_port)) {
         tcp_result(state, -1);
         return -1;
@@ -231,22 +246,57 @@ int send_tcp(char* tcp_server_ip, int tcp_server_port, char* data, int data_len,
 
 
 int wifi_connect(char* wifi_ssid, char* wifi_password) {
-    if (cyw43_arch_init()) {
-        printf("[wifi] failed to initialise\n");
-        return 1;
-    }
-    cyw43_arch_enable_sta_mode();
+	if (cyw43_arch_init()) {
+		printf("[wifi] failed to initialise\n");
+		return 1;
+	}
+	cyw43_arch_enable_sta_mode();
 
-    printf("[wifi] connecting to Wi-Fi...\n");
-    if (cyw43_arch_wifi_connect_timeout_ms(wifi_ssid, wifi_password, CYW43_AUTH_WPA2_AES_PSK, 6000)) {
-        printf("[wifi] failed to connect.\n");
-        return 1;
-    }
+	printf("[wifi] connecting to Wi-Fi...\n");
+	if (cyw43_arch_wifi_connect_timeout_ms(wifi_ssid, wifi_password, CYW43_AUTH_WPA2_AES_PSK, 6000)) {
+		printf("[wifi] failed to connect.\n");
+		return 1;
+	}
 
-    printf("[wifi] Connected.\n");
-    return 0;
+	printf("[wifi] Connected.\n");
+	return 0;
 }
 
 void wifi_disconnect(void) {
-    cyw43_arch_deinit();
+	cyw43_arch_deinit();
+}
+
+int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, char* file_uri) {
+	TCP_CLIENT_T *state = tcp_client_init(tcp_server_ip);
+	char query[300];
+
+	if (!state) {
+		return -1;
+	}
+	if (!tcp_client_open(state, tcp_server_port)) {
+		tcp_result(state, -1);
+		return -1;
+	}
+
+	sprintf(query, "GET %s HTTP/1.0\r\n\r\n", file_uri);
+
+	filesystem_write_file(file_name);
+	wifi_tcp_recv_callback = filesystem_write_bytes;
+
+	DEBUG_printf("[wifi] sending [%s] to server\n", query);
+	err_t err = tcp_write(state->tcp_pcb, query, strlen(query), TCP_WRITE_FLAG_COPY);
+	if (err != ERR_OK) {
+		DEBUG_printf("[wifi] failed to write data %d\n", err);
+		tcp_result(state, -1);
+		return -1;
+	}
+	while (!state->complete) {
+		cyw43_arch_poll();
+		cyw43_arch_wait_for_work_until(make_timeout_time_ms(1000));
+	}
+
+	filesystem_close();
+
+	free(state);
+	return 0;
 }
