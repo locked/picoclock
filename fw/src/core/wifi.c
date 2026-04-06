@@ -15,6 +15,7 @@
 #include "pico/stdlib.h"
 #include <pico/cyw43_arch.h>
 #include "hardware/watchdog.h"
+#include "tinyhttp/http.h"
 
 #include "lwip/pbuf.h"
 #include "lwip/tcp.h"
@@ -275,6 +276,37 @@ void wifi_disconnect(void) {
 	cyw43_arch_deinit();
 }
 
+
+// HTTP parsing for file download
+struct HttpResponse {
+    int code;
+};
+static void* dl_response_realloc(void* opaque, void* ptr, int size) {
+    return realloc(ptr, size);
+}
+static void dl_response_body(void* opaque, const char* data, int size) {
+	filesystem_write_bytes(data, size);
+}
+static void dl_response_header(void* opaque, const char* ckey, int nkey, const char* cvalue, int nvalue) {
+}
+static void dl_response_code(void* opaque, int code) {
+    struct HttpResponse* response = (struct HttpResponse*)opaque;
+    response->code = code;
+}
+static const struct http_funcs responseFuncs = {
+    dl_response_realloc,
+    dl_response_body,
+    dl_response_header,
+    dl_response_code,
+};
+struct HttpResponse dl_response;
+struct http_roundtripper dl_rt;
+
+void wifi_http_recv(char *buffer, uint16_t buffer_length) {
+    int read;
+    http_data(&dl_rt, buffer, buffer_length, &read);
+}
+
 int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, char* file_uri) {
 	TCP_CLIENT_T *state = tcp_client_init(tcp_server_ip);
 	char query[300];
@@ -289,9 +321,11 @@ int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, cha
 
 	sprintf(query, "GET %s HTTP/1.0\r\n\r\n", file_uri);
 
+	http_init(&dl_rt, responseFuncs, &dl_response);
+
 	filesystem_mount();
 	filesystem_write_file(file_name);
-	wifi_tcp_recv_callback = filesystem_write_bytes;
+	wifi_tcp_recv_callback = wifi_http_recv;
 
 	DEBUG_printf("[wifi] sending [%s] to server\n", query);
 	err_t err = tcp_write(state->tcp_pcb, query, strlen(query), TCP_WRITE_FLAG_COPY);
@@ -307,6 +341,12 @@ int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, cha
 
 	filesystem_close();
 	filesystem_unmount();
+
+	http_free(&dl_rt);
+	if (http_iserror(&dl_rt)) {
+		printf("Error parsing data\r\n");
+		return -1;
+	}
 
 	free(state);
 	return 0;

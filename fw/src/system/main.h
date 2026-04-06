@@ -9,7 +9,7 @@ extern "C"
 #include <stdint.h>
 #include "pcf8563/pcf8563.h"
 
-#define VERSION "0.3"
+#define VERSION "0.2"
 
 #define OST_ID_SPI_FOR_SDCARD 0
 
