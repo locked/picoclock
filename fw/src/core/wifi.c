@@ -161,7 +161,17 @@ err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err
 			state->buffer_len += pbuf_copy_partial(p, state->buffer + state->buffer_len,
 												   p->tot_len > buffer_left ? buffer_left : p->tot_len, 0);
 		} else {
-			wifi_tcp_recv_callback((char *)p->payload, p->tot_len);
+			char tmp_buffer[512];
+			uint16_t tmp_pos = 0;
+			uint16_t tmp_rem = p->tot_len;
+			while (tmp_pos < p->tot_len) {
+				//DEBUG_printf("[wifi] write to file offset:[%d] rem:[%d]\n", tmp_pos, tmp_rem);
+				pbuf_copy_partial(p, tmp_buffer, tmp_rem > 512 ? 512 : tmp_rem, tmp_pos);
+				wifi_tcp_recv_callback(tmp_buffer, tmp_rem > 512 ? 512 : tmp_rem);
+				tmp_pos += 512;
+				tmp_rem -= 512;
+			}
+			state->buffer_len += p->tot_len;
 		}
 
         tcp_recved(tpcb, p->tot_len);
@@ -279,6 +289,7 @@ int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, cha
 
 	sprintf(query, "GET %s HTTP/1.0\r\n\r\n", file_uri);
 
+	filesystem_mount();
 	filesystem_write_file(file_name);
 	wifi_tcp_recv_callback = filesystem_write_bytes;
 
@@ -295,6 +306,7 @@ int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, cha
 	}
 
 	filesystem_close();
+	filesystem_unmount();
 
 	free(state);
 	return 0;

@@ -17,6 +17,7 @@
 #include "alarms.h"
 #include "fs_task.h"
 #include "utils.h"
+#include "fw.h"
 
 // Raspberry Pico SDK
 #include "pico/stdlib.h"
@@ -260,7 +261,7 @@ void system_initialize() {
 	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
 	gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
 	uart_init(UART_ID, UART_BAUD_RATE);
-	printf("[picoclock] START PICO_RP2350A=%d\r\n", PICO_RP2350A);
+	printf("[picoclock] START PICO_RP2350A=%d VERSION=%s\r\n", PICO_RP2350A, VERSION);
 
 	// Init ring buffer for metrics
 	ring_metrics = circularBuffer_create(ring_metrics, 65, sizeof(metrics_t));
@@ -556,6 +557,12 @@ int main() {
 	filesystem_mount();
 	// List files on sdcard (test)
 	filesystem_read_config_file();
+
+	//uint8_t FwBuf[900000];
+	//filesystem_read_fw_file(FwBuf);
+	//fw_update(FwBuf);
+
+	filesystem_unmount();
 
 	watchdog_enable(8200, false);
 

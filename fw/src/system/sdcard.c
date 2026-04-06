@@ -655,13 +655,14 @@ SD_Error sdcard_sectors_write(uint32_t writeAddr, const uint8_t *pBuffer, uint32
 	SD_DataResponse res;
 	uint16_t BlockSize = SD_BLOCK_SIZE;
 
-	printf("--> writing %lu sectors at %lu ...", nbSectors, writeAddr);
+	printf("--> writing %lu sectors at %lu ...\n", nbSectors, writeAddr);
 
 	/* non High Capacity cards use byte-oriented addresses */
 	if (cardType != SD_Card_SDHC)
 		writeAddr <<= 9;
 
 	SD_Bus_Hold(); /* hold SPI bus... */
+	printf("[sdcard] SPI bus holded\n");
 
 	state = SD_WaitReady(); /* make sure card is ready before we go further... */
 
@@ -678,10 +679,12 @@ SD_Error sdcard_sectors_write(uint32_t writeAddr, const uint8_t *pBuffer, uint32
 	}
 
 	/* request writing data starting from the given address (send CMD25)... */
+	printf("[sdcard] Sending SD_CMD_WRITE_MULT_BLOCK cmd...\n");
 	state = SD_SendCmd(SD_CMD_WRITE_MULT_BLOCK, writeAddr, 0xFF);
 	if (state == SD_RESPONSE_NO_ERROR)
 	{
 		/* send some dummy bytes before transmission starts... */
+		printf("[sdcard] Wite dummy bytes...\n");
 		SD_SpiWriteByte(0xFF);
 		SD_SpiWriteByte(0xFF);
 		SD_SpiWriteByte(0xFF);
@@ -712,6 +715,7 @@ SD_Error sdcard_sectors_write(uint32_t writeAddr, const uint8_t *pBuffer, uint32
 		state = SD_WaitReady(); /* make sure card is ready before we go further... */
 	}
 
+	printf("[sdcard] Releasing SPI bus...\n");
 	SD_Bus_Release(); /* release SPI bus... */
 
 	if (state == SD_RESPONSE_NO_ERROR)

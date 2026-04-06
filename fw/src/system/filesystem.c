@@ -65,6 +65,10 @@ static FRESULT scan_files(
     return fr;
 }
 
+void filesystem_unmount() {
+	f_mount(NULL, "", 1);
+}
+
 void filesystem_mount() {
     uint32_t retries = 3;
     FRESULT fr;
@@ -171,6 +175,45 @@ static int config_handler(void* user, const char* section, const char* name,
 
 
 
+bool filesystem_read_fw_file(uint8_t *FwBuf) {
+	file_t FwFile;
+	const char *FwFileName = "fw/picoclock.uf2";
+
+    FILINFO fno;
+    FRESULT fr = f_stat(FwFileName, &fno);
+
+    if (fr == FR_OK) {
+		printf("SUCCESS: found fw file:[%s]\r\n", FwFileName);
+        UINT br;
+
+		FRESULT fr = f_open(&FwFile, FwFileName, FA_READ);
+		if (fr == FR_OK) {
+			int total_size = fno.fsize;
+			int copied_size = 0;
+
+			do {
+				int read_size = total_size > FS_MAX_SIZE_READ ? FS_MAX_SIZE_READ : total_size;
+
+				f_read(&FwFile, &FwBuf[copied_size], read_size, &br);
+
+				if (br == read_size) {
+					total_size -= read_size;
+					copied_size += read_size;
+				} else {
+					printf("Read file error\n");
+					total_size = 0; // force exit
+					return false;
+				}
+			} while (total_size > 0);
+
+			f_close(&FwFile);
+		}
+	} else {
+		printf("ERROR: fw file not found\r\n");
+    }
+    return true;
+}
+
 bool filesystem_read_config_file() {
     FILINFO fno;
     FRESULT fr = f_stat(ConfigFileName, &fno);
@@ -220,17 +263,19 @@ bool filesystem_read_config_file() {
 
 
 file_t current_file;
+
 bool filesystem_write_file(char *file_name) {
-	FRESULT fr = f_open(&current_file, file_name, FA_CREATE_ALWAYS);
+	FRESULT fr = f_open(&current_file, file_name, FA_CREATE_ALWAYS | FA_WRITE);
 	if (fr == FR_OK) {
 		printf("[filesystem] New file:[%s] created\r\n", file_name);
 	}
+	//f_lseek(&current_file, 0);
 }
 
 void filesystem_write_bytes(char *buffer, uint16_t buffer_length) {
 	UINT bytes_written;
 	f_write(&current_file, buffer, buffer_length, &bytes_written);
-	printf("[filesystem] Bytes written:[%d]\r\n", bytes_written);
+	//printf("[filesystem] Bytes length:[%d] written:[%d]\r\n", buffer_length, bytes_written);
 }
 
 void filesystem_close() {

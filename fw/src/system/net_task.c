@@ -32,6 +32,8 @@ extern config_struct global_config;
 extern circularBuffer_t* ring_metrics;
 
 
+static char *firmware_upgrade_uri = NULL;
+
 static size_t remLen;
 
 
@@ -140,10 +142,12 @@ int parse_json_response(char *response) {
 	dt.sec = json_getInteger(json_getProperty(date_elem, "second"));
 	pcf8563_setDateTime(dt.day, dt.weekday, dt.month, century, year, dt.hour, dt.min, dt.sec);
 
-	//char *fw_str = json_getValue(json_getProperty(alarm_child, "fw"));
-	//if (fw_str != NULL) {
-		// has firmware upgrade
-	//}
+	json_t const* fw_uri_elem = json_getProperty(root_elem, "fw_uri");
+	if (fw_uri_elem != NULL) {
+		firmware_upgrade_uri = json_getValue(fw_uri_elem);
+	} else {
+		firmware_upgrade_uri = NULL;
+	}
 
 	// Save alarms
 	json_t const* wakeup_alarms_elem = json_getProperty(root_elem, "wakeup_alarms");
@@ -353,9 +357,7 @@ int remote_sync() {
 			}
 		}
 
-		bool has_firmware_upgrade = false;
-		char firmware_upgrade_uri[100] = "/fw/picoclock.uf2";
-		if (has_firmware_upgrade) {
+		if (firmware_upgrade_uri != NULL) {
 			download_file(global_config.remote_host, 80, "picoclock.uf2", firmware_upgrade_uri);
 		}
 	}
