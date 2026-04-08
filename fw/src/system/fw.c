@@ -14,12 +14,13 @@
 #include "hardware/sync.h"
 #include "hardware/watchdog.h"
 
-#define BUF_SIZE 2048
 #define FLASH_SECTOR_ERASE_SIZE 4096u
 
-typedef int (*ota_segment_consumer_t)(OTA_UPDATE_STATE_T *state, uf2_block_t *block);
+//typedef int (*ota_segment_consumer_t)(OTA_UPDATE_STATE_T *state, uf2_block_t *block);
 
 typedef struct uf2_block uf2_block_t;
+
+OTA_UPDATE_STATE_T* state;
 
 
 static OTA_UPDATE_STATE_T* ota_update_init(void) {
@@ -34,8 +35,30 @@ static OTA_UPDATE_STATE_T* ota_update_init(void) {
 
 static __attribute__((aligned(4))) uint8_t workarea[4 * 1024];
 
-static int process_ota_segment(OTA_UPDATE_STATE_T *state, uf2_block_t *block) {
+uf2_block_t blocks[100];
+int curblk = 0;
+
+int process_ota_segment(char* buf) {
+	printf("[OTA] add block:[%d]\n", curblk);
+	if (curblk < 100) {
+		blocks[curblk++] = *(uf2_block_t*)buf;
+	}
+}
+
+static int _process_ota_segment(uf2_block_t* block) {
+	//printf("[OTA] block:[%x]\n", buf);
+	//uf2_block_t* block = (uf2_block_t*)buf;
 	watchdog_update();
+
+	if (block->magic_start0 != UF2_MAGIC_START0 || block->magic_start1 != UF2_MAGIC_START1) {
+		printf("[OTA] ERROR: Block doesn't have valid UF2 magic numbers\n");
+		return -1;
+	}
+	if (block->num_blocks > 0 && (block->block_no < 0 || block->block_no >= block->num_blocks)) {
+		printf("[ERROR] Invalid block number: %d. Total blocks: %d.\n", block->block_no, block->num_blocks);
+		return -1;
+	}
+
 	if (state->num_blocks == 0 || (block->num_blocks > state->num_blocks && state->blocks_done < 2)) {
 		state->num_blocks = block->num_blocks;
 		state->family_id = block->file_size;
@@ -54,15 +77,15 @@ static int process_ota_segment(OTA_UPDATE_STATE_T *state, uf2_block_t *block) {
 			if (current_boot_info.partition == 0) {
 				target_partition_offset = partition_b_start;
 				state->flash_update = XIP_BASE + partition_b_start;
-				printf("[OTA] Will flash to partition B, start:[%x]\n", target_partition_offset);
+				printf("[OTA] Will flash to partition 1, start:[%x]\n", target_partition_offset);
 			} else if (current_boot_info.partition == 1) {
 				target_partition_offset = partition_a_start;
 				state->flash_update = XIP_BASE + partition_a_start;
-				printf("[OTA] Will flash to partition A, start:[%x]\n", target_partition_offset);
+				printf("[OTA] Will flash to partition 0, start:[%x]\n", target_partition_offset);
 			} else {
 				target_partition_offset = partition_b_start;
 				state->flash_update = XIP_BASE + partition_b_start;
-				printf("[OTA] Will flash to DEFAULT partition B, start:[%x]\n", target_partition_offset);
+				printf("[OTA] Will flash to DEFAULT partition 1, start:[%x]\n", target_partition_offset);
 			}
 
 			state->write_offset = target_partition_offset;
@@ -90,6 +113,7 @@ static int process_ota_segment(OTA_UPDATE_STATE_T *state, uf2_block_t *block) {
 	}
 
 	if (flash_addr < XIP_BASE || flash_addr >= (XIP_BASE + 0x800000)) {
+		printf("[WARN] flash_addr:[%x] < XIP_BASE:[%x] || flash_addr >= (XIP_BASE + 0x800000)\n", flash_addr, XIP_BASE);
 		return 0;
 	}
 
@@ -105,7 +129,7 @@ static int process_ota_segment(OTA_UPDATE_STATE_T *state, uf2_block_t *block) {
 		state->highest_erased_sector = flash_sector;
 
 		if (ret != 0) {
-			printf("[ERROR] Flash erase failed with code: %d\n", ret);
+			printf("[ERROR] Flash erase failed with code: %d erase_addr: %x\n", ret, erase_addr);
 			return -1;
 		}
 	}
@@ -135,10 +159,12 @@ static int process_ota_segment(OTA_UPDATE_STATE_T *state, uf2_block_t *block) {
 	}
 	watchdog_update();
 
+	printf("[OTA] Segment written state->blocks_done:[%d]\n", state->blocks_done);
 	return 0;
 }
 
-int fw_update(const char* buffer) {
+
+int fw_update_init() {
 	boot_info_t boot_info = {};
 	watchdog_update();
 	int ret = rom_get_boot_info(&boot_info);
@@ -153,14 +179,20 @@ int fw_update(const char* buffer) {
 	}
 
 	watchdog_update();
-	OTA_UPDATE_STATE_T *state = ota_update_init();
+	state = ota_update_init();
 	if (!state) {
 		return -1;
 	}
 
 	watchdog_update();
 
-	//process_ota_segment(state, block);
+	return 0;
+}
+
+int fw_update_complete() {
+	for (int blk=0; blk < curblk; blk++) {
+		_process_ota_segment(&blocks[blk]);
+	}
 
 	while (!state->complete) {
 		sleep_ms(250);
@@ -170,12 +202,12 @@ int fw_update(const char* buffer) {
 	printf("[INFO] OTA update completed! Preparing to reboot...\n");
 
 	//watchdog_reboot(0, REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE, state->flash_update);
-	ret = rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE, 1000, state->flash_update, 0);
+	int ret = rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE, 1000, state->flash_update, 0);
 	printf("[INFO] OTA reboot requested:[%d]\n", ret);
 	free(state);
 	sleep_ms(3000);
 
 	printf("[INFO] OTA: hard reset\n");
 	sleep_ms(1000);
-	return 0;
+	return ret;
 }

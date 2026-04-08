@@ -34,6 +34,7 @@
 #include "pico/unique_id.h"
 #include "pico.h"
 #include "pico/multicore.h"
+#include "pico/bootrom.h"
 
 // Screen
 #include "DEV_Config.h"
@@ -262,6 +263,11 @@ void system_initialize() {
 	gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
 	uart_init(UART_ID, UART_BAUD_RATE);
 	printf("[picoclock] START PICO_RP2350A=%d VERSION=%s\r\n", PICO_RP2350A, VERSION);
+
+	// Display ROM boot info
+    boot_info_t boot_info = {};
+    int ret = rom_get_boot_info(&boot_info);
+    printf("Boot partition was %d\n", boot_info.partition);
 
 	// Init ring buffer for metrics
 	ring_metrics = circularBuffer_create(ring_metrics, 65, sizeof(metrics_t));
@@ -558,9 +564,9 @@ int main() {
 	// List files on sdcard (test)
 	filesystem_read_config_file();
 
-	//uint8_t FwBuf[900000];
-	//filesystem_read_fw_file(FwBuf);
-	//fw_update(FwBuf);
+	//fw_update_init();
+	//filesystem_read_fw_file(process_ota_segment);
+	//fw_update_complete();
 
 	filesystem_unmount();
 

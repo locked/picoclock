@@ -5,7 +5,7 @@
 #include "system.h"
 
 bool filesystem_read_config_file();
-bool filesystem_read_fw_file(uint8_t *FwBuf);
+bool filesystem_read_fw_file(ota_segment_consumer_t process_ota_segment);
 void filesystem_mount();
 uint32_t filesystem_get_capacity();
 

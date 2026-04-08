@@ -25,9 +25,12 @@ typedef struct OTA_UPDATE_STATE_T_ {
 
 typedef struct uf2_block uf2_block_t;
 
-typedef int (*ota_segment_consumer_t)(OTA_UPDATE_STATE_T *state, uf2_block_t *block);
+//typedef int (*ota_segment_consumer_t)(OTA_UPDATE_STATE_T *state, uf2_block_t *block);
 
-int fw_update(const char* buffer);
+int process_ota_segment(char* buf);
+
+int fw_update_init();
+int fw_update_complete();
 
 #ifdef __cplusplus
 }

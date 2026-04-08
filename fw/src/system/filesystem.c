@@ -8,6 +8,7 @@
 #include "mini_qoi.h"
 #include "serializers.h"
 #include "sdcard.h"
+#include "fw.h"
 
 #include "ini.h"
 
@@ -175,9 +176,9 @@ static int config_handler(void* user, const char* section, const char* name,
 
 
 
-bool filesystem_read_fw_file(uint8_t *FwBuf) {
+bool filesystem_read_fw_file(ota_segment_consumer_t process_buffer) {
 	file_t FwFile;
-	const char *FwFileName = "fw/picoclock.uf2";
+	const char *FwFileName = "picoclock.uf2";
 
     FILINFO fno;
     FRESULT fr = f_stat(FwFileName, &fno);
@@ -191,10 +192,15 @@ bool filesystem_read_fw_file(uint8_t *FwBuf) {
 			int total_size = fno.fsize;
 			int copied_size = 0;
 
-			do {
-				int read_size = total_size > FS_MAX_SIZE_READ ? FS_MAX_SIZE_READ : total_size;
+			int tmp_buf_size = 512;
+			char tmp_buf[512];
 
-				f_read(&FwFile, &FwBuf[copied_size], read_size, &br);
+			do {
+				int read_size = total_size > tmp_buf_size ? tmp_buf_size : total_size;
+
+				f_read(&FwFile, tmp_buf, read_size, &br);
+				//printf("requested read:[%d] really read:[%d]\r\n", read_size, br);
+				process_buffer(tmp_buf);
 
 				if (br == read_size) {
 					total_size -= read_size;

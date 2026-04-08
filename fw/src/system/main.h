@@ -128,6 +128,8 @@ extern "C"
 
 typedef void (*wifi_callback_t)(char *buffer, uint16_t buffer_length);
 
+typedef int (*ota_segment_consumer_t)(char* buf);
+
 typedef struct {
 	char code_desc[100];
 	char temperature_2m[20];
