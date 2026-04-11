@@ -11,7 +11,7 @@ void run_udp_beacon(char* udp_server_ip, int udp_server_port);
 
 int send_udp(char* udp_server_ip, int udp_server_port, char* data);
 
-int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, char* file_uri);
+int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, char* file_uri, int size);
 
 #endif // _WIFI_TCP_H
 

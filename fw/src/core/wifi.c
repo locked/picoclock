@@ -152,7 +152,7 @@ err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err
     if (p->tot_len > 0) {
 		watchdog_update();
 		if (state->recv_packet_count % 10 == 0) {
-			DEBUG_printf("[wifi] recv %d err %d\n", p->tot_len, err);
+			DEBUG_printf("[wifi] recv:[%d] err:[%d] buffer_len:[%d] count:[%d]\n", p->tot_len, err, state->buffer_len, state->recv_packet_count);
 		}
         //DEBUG_printf("[wifi] buffer %s\n", p->payload, err);
         //for (struct pbuf *q = p; q != NULL; q = q->next) {
@@ -312,7 +312,7 @@ void wifi_http_recv(char *buffer, uint16_t buffer_length) {
     http_data(&dl_rt, buffer, buffer_length, &read);
 }
 
-int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, char* file_uri) {
+int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, char* file_uri, int size) {
 	TCP_CLIENT_T *state = tcp_client_init(tcp_server_ip);
 	char query[300];
 
@@ -329,7 +329,7 @@ int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, cha
 	http_init(&dl_rt, responseFuncs, &dl_response);
 
 	filesystem_mount();
-	filesystem_write_file(file_name);
+	filesystem_write_file("picoclock.uf2");
 	wifi_tcp_recv_callback = wifi_http_recv;
 
 	printf("[wifi] sending [%s] to server\n", query);
@@ -345,6 +345,13 @@ int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, cha
 	}
 
 	filesystem_close();
+
+	printf("[wifi] state->buffer_len:[%d]\n", state->buffer_len);
+	if (state->buffer_len < size) {
+		printf("[wifi] Invalid file size:[%d] expected:[%d]\r\n", state->buffer_len, size);
+		return -1;
+	}
+
 	filesystem_unmount();
 
 	http_free(&dl_rt);

@@ -108,6 +108,9 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/e-Paper)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/Fonts)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/GUI)
 
+# Optimize for size
+add_compile_options(-Os)
+
 # ------ Executable
 add_executable(${PROJECT_NAME} ${OST_SRCS} ${MIDDLEWARE_SRCS})
 
@@ -115,10 +118,8 @@ add_executable(${PROJECT_NAME} ${OST_SRCS} ${MIDDLEWARE_SRCS})
 target_link_libraries(${PROJECT_NAME} PUBLIC "-Wl,--start-group"
 	gcc m c stdc++ pico_stdlib pico_util pico_aon_timer pico_multicore
 	hardware_spi hardware_dma hardware_pio hardware_i2c hardware_exception
-	cmsis_core
-	pico_sha256 boot_uf2_headers
+	boot_uf2_headers
 	pico_cyw43_arch_lwip_poll
-	#pico_cyw43_arch_lwip_threadsafe_background
 	ePaper GUI Fonts Config pico_audio_i2s "-Wl,--end-group")
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
 
@@ -130,7 +131,6 @@ pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/library/pico_
 pico_enable_stdio_usb(${PROJECT_NAME} 0)	# Needs to be set to 0 for fw update
 pico_enable_stdio_uart(${PROJECT_NAME} 1)
 
-
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     WIFI_SSID=\"${WIFI_SSID}\"
     WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
@@ -138,6 +138,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     SERVER_PORT=\"${SERVER_PORT}\"
     PICO_AUDIO_I2S_MONO_INPUT=1
     PICO_FLASH_ASSUME_CORE1_SAFE=1
+    PICO_NO_BINARY_INFO=1
 )
 
 # ==========================

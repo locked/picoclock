@@ -258,7 +258,7 @@ void i2c_bus_scan() {
 }
 
 
-void system_initialize_base() {
+void system_initialize() {
 	stdio_init_all();
 
 	set_sys_clock_khz(CPU_CLOCK_IDLE, true);
@@ -288,9 +288,7 @@ void system_initialize_base() {
 	gpio_set_function(SDCARD_MOSI, GPIO_FUNC_SPI);
 	gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
 	printf("[picoclock] Init SD card OK\r\n");
-}
 
-void system_initialize() {
 	// Init ring buffer for metrics
 	ring_metrics = circularBuffer_create(ring_metrics, 65, sizeof(metrics_t));
 
@@ -554,8 +552,6 @@ void core1_entry() {
 // MAIN ENTRY POINT
 // ===========================================================================================================
 int main() {
-	system_initialize_base();
-
 	system_initialize();
 
 	printf("[picoclock] main(0) features mcp9808:[%s] ens160:[%s] s88:[%s] stcc4:[%s] scd43:[%s]\r\n",
@@ -592,9 +588,6 @@ int main() {
 		if (ret) printf("[picoclock] Buy returned %d\n", ret);
 		ret = rom_get_boot_info(&boot_info);
 		if (boot_info.tbyb_and_update_info) printf("[picoclock] Update info now %x\n", boot_info.tbyb_and_update_info);
-		if (request_update) {
-			f_rename("picoclock.uf2", "picoclock-old.uf2");
-		}
 	}*/
 	filesystem_unmount();
 

@@ -9,7 +9,7 @@
 #include "boot/picobin.h"
 #include "boot/picoboot.h"
 #include "boot/uf2.h"
-#include "pico/sha256.h"
+//#include "pico/sha256.h"
 
 #include "hardware/sync.h"
 #include "hardware/watchdog.h"

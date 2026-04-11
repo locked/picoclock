@@ -34,6 +34,7 @@ extern bool request_update;
 
 
 static char *firmware_upgrade_uri = NULL;
+static int firmware_upgrade_size = 0;
 
 static size_t remLen;
 
@@ -143,11 +144,13 @@ int parse_json_response(char *response) {
 	dt.sec = json_getInteger(json_getProperty(date_elem, "second"));
 	pcf8563_setDateTime(dt.day, dt.weekday, dt.month, century, year, dt.hour, dt.min, dt.sec);
 
-	json_t const* fw_uri_elem = json_getProperty(root_elem, "fw_uri");
-	if (fw_uri_elem != NULL) {
-		firmware_upgrade_uri = json_getValue(fw_uri_elem);
+	json_t const* fw_elem = json_getProperty(root_elem, "fw");
+	if (fw_elem != NULL) {
+		firmware_upgrade_uri = json_getValue(json_getProperty(fw_elem, "uri"));
+		firmware_upgrade_size = json_getInteger(json_getProperty(fw_elem, "size"));
 	} else {
 		firmware_upgrade_uri = NULL;
+		firmware_upgrade_size = 0;
 	}
 
 	// Save alarms
@@ -360,7 +363,7 @@ int remote_sync() {
 		}
 
 		if (firmware_upgrade_uri != NULL) {
-			ret_fw_update = download_file(global_config.remote_host, 80, "picoclock.uf2", firmware_upgrade_uri);
+			ret_fw_update = download_file(global_config.remote_host, 80, "picoclock.uf2", firmware_upgrade_uri, firmware_upgrade_size);
 		}
 	}
 	watchdog_update();
