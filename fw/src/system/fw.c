@@ -145,12 +145,17 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 	state->blocks_done++;
 
 	if (state->blocks_done >= state->num_blocks) {
-		int ret = rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE, 1000, state->flash_update, 0);
+		stdio_flush();
+		save_and_disable_interrupts();
+		int ret = rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE | REBOOT2_FLAG_NO_RETURN_ON_SUCCESS, 100, state->flash_update, 0);
 		free(state);
-		sleep_ms(3000);
+		sleep_ms(1000);
+		while(1) {
+			watchdog_reboot(0, 0, 0);
+		}
 
-		printf("[fw] *** DOWNLOAD COMPLETE! ***\n");
-		state->complete = true;
+		//printf("[fw] *** DOWNLOAD COMPLETE! ***\n");
+		//state->complete = true;
 		return 0;
 	}
 

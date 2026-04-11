@@ -641,7 +641,8 @@ int main() {
 		if (request_update) {
 			printf("[picoclock] fw update requested, wait a bit then start\r\n");
 			sleep_ms(3000);
-			multicore_lockout_start_blocking();
+			//multicore_lockout_start_blocking();
+			multicore_reset_core1();
 			printf("[picoclock] shutdown screen\r\n");
 			screen_shutdown();
 			printf("[picoclock] mount fs\r\n");
