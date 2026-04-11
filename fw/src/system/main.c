@@ -94,7 +94,7 @@ volatile char request_audio_start_file[260] = "";
 bool datetime_update_requested = true;
 static struct repeating_timer timer_datetime;
 
-bool enable_update = true;
+volatile bool request_update = false;
 
 
 // PROTOTYPES
@@ -409,12 +409,7 @@ uint32_t get_fattime (void) {
 
 void core1_entry() {
 	flash_safe_execute_core_init();
-	if (enable_update) {
-		multicore_lockout_victim_init();
-		while (1) {
-			sleep_ms(200000);
-		}
-	}
+	//multicore_lockout_victim_init();
 
 	int last_min = 0;
 	int last_sync = -1;
@@ -510,6 +505,7 @@ void core1_entry() {
 				last_sync = ts;
 				printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
 				int ret = remote_sync();
+
 				if (ret == 1) {
 					// On error, retry earlier
 					last_sync = ts - TRIGGER_SYNC_EVERY_SEC + 5 * 60;
@@ -551,17 +547,6 @@ void core1_entry() {
 int main() {
 	system_initialize_base();
 
-	if (enable_update) {
-		multicore_launch_core1(core1_entry);
-		multicore_lockout_start_blocking();
-		watchdog_enable(8200, false);
-		filesystem_mount();
-		fw_update_init();
-		filesystem_read_fw_file(process_ota_segment);
-		filesystem_unmount();
-		multicore_lockout_end_blocking();
-	}
-
 	system_initialize();
 
 	printf("[picoclock] main(0) features mcp9808:[%s] ens160:[%s] s88:[%s] stcc4:[%s] scd43:[%s]\r\n",
@@ -589,7 +574,7 @@ int main() {
 	filesystem_read_config_file();
 	filesystem_unmount();
 
-	//watchdog_enable(8200, false);
+	watchdog_enable(8200, false);
 
 	// Init screen
 	//------------------- Init LCD
@@ -635,6 +620,19 @@ int main() {
 		if (request_audio_read > 0) {
 			fs_audio_next_samples();
 			request_audio_read = -1;
+		}
+		if (request_update) {
+			printf("[picoclock] fw update requested\r\n");
+			//multicore_lockout_start_blocking();
+			printf("[picoclock] mount fs\r\n");
+			filesystem_mount();
+			printf("[picoclock] fw_update_init\r\n");
+			fw_update_init();
+			printf("[picoclock] fw_update start\r\n");
+			filesystem_read_fw_file(process_ota_segment);
+			filesystem_unmount();
+			multicore_lockout_end_blocking();
+			request_update = false;
 		}
 	}
 

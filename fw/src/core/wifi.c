@@ -327,10 +327,10 @@ int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, cha
 	filesystem_write_file(file_name);
 	wifi_tcp_recv_callback = wifi_http_recv;
 
-	DEBUG_printf("[wifi] sending [%s] to server\n", query);
+	printf("[wifi] sending [%s] to server\n", query);
 	err_t err = tcp_write(state->tcp_pcb, query, strlen(query), TCP_WRITE_FLAG_COPY);
 	if (err != ERR_OK) {
-		DEBUG_printf("[wifi] failed to write data %d\n", err);
+		printf("[wifi] failed to write data %d\n", err);
 		tcp_result(state, -1);
 		return -1;
 	}
@@ -349,5 +349,7 @@ int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, cha
 	}
 
 	free(state);
+
+	printf("[wifi] file:[%s] download ok\r\n", file_name);
 	return 0;
 }

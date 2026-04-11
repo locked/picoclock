@@ -30,6 +30,7 @@ extern int wakeup_alarms_count;
 extern weather_struct weather;
 extern config_struct global_config;
 extern circularBuffer_t* ring_metrics;
+extern bool request_update;
 
 
 static char *firmware_upgrade_uri = NULL;
@@ -339,7 +340,7 @@ int remote_sync() {
 		build_json(json);
 
 		char query[8500];
-		sprintf(query, "POST /clock.php?id=%s HTTP/1.0\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s", board_id, strlen(json), json);
+		sprintf(query, "POST /clock.php?id=%s&fw=%s HTTP/1.0\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s", board_id, VERSION, strlen(json), json);
 		printf("[net] remote_sync() send_tcp [%s] [%d]...\r\n", global_config.remote_host, atoi(SERVER_PORT));
 
 		char http_buffer[4096] = "";
@@ -358,7 +359,11 @@ int remote_sync() {
 		}
 
 		if (firmware_upgrade_uri != NULL) {
-			download_file(global_config.remote_host, 80, "picoclock.uf2", firmware_upgrade_uri);
+			ret = download_file(global_config.remote_host, 80, "picoclock.uf2", firmware_upgrade_uri);
+			if (ret == 0) {
+				printf("[net] request fw update\r\n");
+				request_update = true;
+			}
 		}
 	}
 	watchdog_update();
