@@ -96,6 +96,8 @@ static struct repeating_timer timer_datetime;
 
 volatile bool request_update = false;
 
+//static __attribute__((aligned(4))) uint8_t workarea[4 * 1024];
+
 
 // PROTOTYPES
 extern void init_spi(void);
@@ -259,8 +261,8 @@ void i2c_bus_scan() {
 void system_initialize_base() {
 	stdio_init_all();
 
-	//set_sys_clock_khz(CPU_CLOCK_IDLE, true);
-	set_sys_clock_khz(CPU_CLOCK_MAX, true);
+	set_sys_clock_khz(CPU_CLOCK_IDLE, true);
+	//set_sys_clock_khz(CPU_CLOCK_MAX, true);
 
 	// Init UART
 	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
@@ -397,19 +399,19 @@ void __no_inline_not_in_flash_func(hal_sdcard_spi_write)(const uint8_t *buffer, 
 void __no_inline_not_in_flash_func(hal_sdcard_spi_read)(uint8_t *out, uint32_t size) {
 	spi_read_blocking(spi1, 0xFF, out, size);
 }
-uint8_t hal_sdcard_get_presence() {
+uint8_t __no_inline_not_in_flash_func(hal_sdcard_get_presence)() {
 	printf("[sdcard] gpio_get(SD_CARD_PRESENCE):[%d] (0==present)\r\n", gpio_get(SD_CARD_PRESENCE));
 	return gpio_get(SD_CARD_PRESENCE) == 0;
 }
 
-uint32_t get_fattime (void) {
+uint32_t __no_inline_not_in_flash_func(get_fattime) (void) {
 	return 0;
 }
 
 
 void core1_entry() {
 	flash_safe_execute_core_init();
-	//multicore_lockout_victim_init();
+	multicore_lockout_victim_init();
 
 	int last_min = 0;
 	int last_sync = -1;
@@ -505,6 +507,13 @@ void core1_entry() {
 				last_sync = ts;
 				printf("ts:[%d] last_sync:[%d] ts - last_sync:[%d] => Trigger server sync\r\n", ts, last_sync, ts - last_sync);
 				int ret = remote_sync();
+				if (request_update) {
+					cancel_repeating_timer(&timer);
+					cancel_repeating_timer(&timer_datetime);
+					while (1) {
+						sleep_ms(60000);
+					}
+				}
 
 				if (ret == 1) {
 					// On error, retry earlier
@@ -572,6 +581,21 @@ int main() {
 	filesystem_mount();
 	// List files on sdcard (test)
 	filesystem_read_config_file();
+	//request_update = filesystem_fw_file_exists();
+	/*boot_info_t boot_info = {};
+	int ret = rom_get_boot_info(&boot_info);
+	if (rom_get_last_boot_type() == BOOT_TYPE_FLASH_UPDATE) {
+		printf("[picoclock] Someone updated into me\n");
+		if (boot_info.reboot_params[0]) printf("Flash update base was %x\n", boot_info.reboot_params[0]);
+		if (boot_info.tbyb_and_update_info) printf("Update info %x\n", boot_info.tbyb_and_update_info);
+		ret = rom_explicit_buy(workarea, sizeof(workarea));
+		if (ret) printf("[picoclock] Buy returned %d\n", ret);
+		ret = rom_get_boot_info(&boot_info);
+		if (boot_info.tbyb_and_update_info) printf("[picoclock] Update info now %x\n", boot_info.tbyb_and_update_info);
+		if (request_update) {
+			f_rename("picoclock.uf2", "picoclock-old.uf2");
+		}
+	}*/
 	filesystem_unmount();
 
 	watchdog_enable(8200, false);
@@ -622,8 +646,11 @@ int main() {
 			request_audio_read = -1;
 		}
 		if (request_update) {
-			printf("[picoclock] fw update requested\r\n");
-			//multicore_lockout_start_blocking();
+			printf("[picoclock] fw update requested, wait a bit then start\r\n");
+			sleep_ms(3000);
+			multicore_lockout_start_blocking();
+			printf("[picoclock] shutdown screen\r\n");
+			screen_shutdown();
 			printf("[picoclock] mount fs\r\n");
 			filesystem_mount();
 			printf("[picoclock] fw_update_init\r\n");

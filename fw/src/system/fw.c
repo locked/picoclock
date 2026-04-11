@@ -115,7 +115,7 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 			(CFLASH_OP_VALUE_ERASE << CFLASH_OP_LSB) | 
 			(CFLASH_SECLEVEL_VALUE_SECURE << CFLASH_SECLEVEL_LSB) |
 			(CFLASH_ASPACE_VALUE_STORAGE << CFLASH_ASPACE_LSB);
-		printf("[fw] erase_addr:[%x]\n", erase_addr);
+		//printf("[fw] erase_addr:[%x]\n", erase_addr);
 		ret = rom_flash_op(flags, erase_addr, FLASH_SECTOR_ERASE_SIZE, NULL);
 
 		state->highest_erased_sector = flash_sector;
@@ -130,7 +130,7 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 		(CFLASH_OP_VALUE_PROGRAM << CFLASH_OP_LSB) | 
 		(CFLASH_SECLEVEL_VALUE_SECURE << CFLASH_SECLEVEL_LSB) |
 		(CFLASH_ASPACE_VALUE_STORAGE << CFLASH_ASPACE_LSB);
-	printf("[fw] flash_addr:[%x]\n", flash_addr);
+	//printf("[fw] flash_addr:[%x]\n", flash_addr);
 	ret = rom_flash_op(flags, flash_addr, 256, (void*)block->data);
 
 	if (ret != 0) {
@@ -154,13 +154,15 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 		return 0;
 	}
 
-	printf("[fw] Segment written state->blocks_done:[%d/%d]\r\n", state->blocks_done, state->num_blocks);
+	if (state->blocks_done % 10 == 0) {
+		printf("[fw] Segment written flash_addr:[%x] state->blocks_done:[%d/%d]\r\n", flash_addr, state->blocks_done, state->num_blocks);
+	}
 	return 0;
 }
 
 
 int fw_update_init() {
-	boot_info_t boot_info = {};
+	/*boot_info_t boot_info = {};
 	int ret = rom_get_boot_info(&boot_info);
 
 	if (rom_get_last_boot_type() == BOOT_TYPE_FLASH_UPDATE) {
@@ -170,7 +172,7 @@ int fw_update_init() {
 		if (ret);
 		ret = rom_get_boot_info(&boot_info);
 		if (boot_info.tbyb_and_update_info);
-	}
+	}*/
 
 	state = ota_update_init();
 	if (!state) {

@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 void init_ui();
+void screen_shutdown();
 void ui_refresh_screen(bool message_clear, time_struct dt);
 void ui_btn_click(int btn, time_struct dt);
 void screen_anim();

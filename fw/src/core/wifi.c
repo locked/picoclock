@@ -344,7 +344,7 @@ int download_file(char* tcp_server_ip, int tcp_server_port, char* file_name, cha
 
 	http_free(&dl_rt);
 	if (http_iserror(&dl_rt)) {
-		printf("Error parsing data\r\n");
+		printf("[wifi] Error parsing data\r\n");
 		return -1;
 	}
 

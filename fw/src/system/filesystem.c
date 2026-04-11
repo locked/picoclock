@@ -175,6 +175,13 @@ static int config_handler(void* user, const char* section, const char* name,
 }
 
 
+bool filesystem_fw_file_exists() {
+	const char *FwFileName = "picoclock.uf2";
+	FILINFO fno;
+	FRESULT fr = f_stat(FwFileName, &fno);
+
+	return fr == FR_OK;
+}
 
 bool __no_inline_not_in_flash_func(filesystem_read_fw_file)(ota_segment_consumer_t process_buffer) {
 	file_t FwFile;

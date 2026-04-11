@@ -325,6 +325,7 @@ void build_json(char* dest) {
 }
 
 int remote_sync() {
+	int ret_fw_update = 1;
 	printf("[net] remote_sync() Connecting to wifi [%s][%s]...\r\n", global_config.wifi_ssid, global_config.wifi_key);
 	watchdog_update();
 	int ret = wifi_connect(global_config.wifi_ssid, global_config.wifi_key);
@@ -359,16 +360,17 @@ int remote_sync() {
 		}
 
 		if (firmware_upgrade_uri != NULL) {
-			ret = download_file(global_config.remote_host, 80, "picoclock.uf2", firmware_upgrade_uri);
-			if (ret == 0) {
-				printf("[net] request fw update\r\n");
-				request_update = true;
-			}
+			ret_fw_update = download_file(global_config.remote_host, 80, "picoclock.uf2", firmware_upgrade_uri);
 		}
 	}
 	watchdog_update();
 	printf("[net] remote_sync() Disconnect...\r\n");
 	wifi_disconnect();
 	printf("[net] remote_sync() Disconnected from wifi, ret:[%d]\r\n", ret);
+
+	if (ret_fw_update == 0) {
+		printf("[net] request fw update\r\n");
+		request_update = true;
+	}
 	return ret;
 }

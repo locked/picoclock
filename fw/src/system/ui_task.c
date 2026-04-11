@@ -85,6 +85,17 @@ void init_ui() {
 }
 
 
+void screen_shutdown() {
+	if (strcmp(global_config.screen, "B") == 0) {
+		EPD_2IN13B_V4_Sleep();
+	} else {
+		EPD_2in13_V4_Sleep();
+	}
+	DEV_Delay_ms(2000);//important, at least 2s
+	DEV_Module_Exit();
+}
+
+
 void ui_refresh_screen(bool message_clear, time_struct dt) {
 	printf("/!\\ Refresh screen:[%d]\r\n", current_screen);
 	if (!module_initialized) {
@@ -145,13 +156,7 @@ void ui_refresh_screen(bool message_clear, time_struct dt) {
 	if (shutdown_screen) {
 		printf("Shutdown loop_count:[%d]\r\n", loop_count);
 		loop_count = 0;
-		if (strcmp(global_config.screen, "B") == 0) {
-			EPD_2IN13B_V4_Sleep();
-		} else {
-			EPD_2in13_V4_Sleep();
-		}
-		DEV_Delay_ms(2000);//important, at least 2s
-		DEV_Module_Exit();
+		screen_shutdown();
 		module_initialized = false;
 	} else {
 		module_initialized = true;

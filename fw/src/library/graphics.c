@@ -186,6 +186,9 @@ void display_screen_debug(char *last_sync_str, uint8_t current_rgb_color, uint8_
 	sprintf(temp_str, "ID: %s", board_id);
 	Paint_DrawString_EN(SCREEN_X, _y + Font12.Height * 0, temp_str, &Font12, WHITE, BLACK);
 
+	sprintf(temp_str, "Version:%s", VERSION);
+	Paint_DrawString_EN(SCREEN_X, _y + Font12.Height * 3, temp_str, &Font12, WHITE, BLACK);
+
 	sprintf(temp_str, "Last sync: %s", last_sync_str);
 	Paint_DrawString_EN(SCREEN_X, _y + Font12.Height * 1, temp_str, &Font12, WHITE, BLACK);
 
