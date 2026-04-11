@@ -64,6 +64,7 @@ typedef struct TCP_CLIENT_T_ {
     bool complete;
     int run_count;
     bool connected;
+    int recv_packet_count;
 } TCP_CLIENT_T;
 
 static err_t tcp_client_close(void *arg) {
@@ -150,11 +151,13 @@ err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err
     cyw43_arch_lwip_check();
     if (p->tot_len > 0) {
 		watchdog_update();
-        DEBUG_printf("[wifi] recv %d err %d\n", p->tot_len, err);
+		if (state->recv_packet_count % 10 == 0) {
+			DEBUG_printf("[wifi] recv %d err %d\n", p->tot_len, err);
+		}
         //DEBUG_printf("[wifi] buffer %s\n", p->payload, err);
-        for (struct pbuf *q = p; q != NULL; q = q->next) {
-            DUMP_BYTES(q->payload, q->len);
-        }
+        //for (struct pbuf *q = p; q != NULL; q = q->next) {
+        //    DUMP_BYTES(q->payload, q->len);
+        //}
         // Receive the buffer
         if (wifi_tcp_recv_callback == NULL) {
 			DEBUG_printf("[wifi] write to buffer\n");
@@ -174,6 +177,7 @@ err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err
 			}
 			state->buffer_len += p->tot_len;
 		}
+		state->recv_packet_count++;
 
         tcp_recved(tpcb, p->tot_len);
     }
@@ -233,6 +237,7 @@ int send_tcp(char* tcp_server_ip, int tcp_server_port, char* data, int data_len,
         tcp_result(state, -1);
         return -1;
     }
+    state->recv_packet_count = 0;
 
 	DEBUG_printf("[wifi] sending [%s] to server\n", data);
 	err_t err = tcp_write(state->tcp_pcb, data, data_len, TCP_WRITE_FLAG_COPY);
