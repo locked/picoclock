@@ -45,7 +45,7 @@ DSTATUS disk_initialize(
 /*-----------------------------------------------------------------------*/
 /* Return Drive Status                                                   */
 /*-----------------------------------------------------------------------*/
-DSTATUS disk_status(
+DSTATUS __no_inline_not_in_flash_func(disk_status) (
 	BYTE drv /* Physical drive number (0..) */
 )
 {
@@ -57,7 +57,7 @@ DSTATUS disk_status(
 /*-----------------------------------------------------------------------*/
 /* Read Sector(s)                                                        */
 /*-----------------------------------------------------------------------*/
-DRESULT disk_read(
+DRESULT __no_inline_not_in_flash_func(disk_read)(
 	BYTE pdrv,	  /* Physical drive nmuber to identify the drive */
 	BYTE *buff,	  /* Data buffer to store read data */
 	LBA_t sector, /* Start sector in LBA */

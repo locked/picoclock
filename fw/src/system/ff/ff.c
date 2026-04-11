@@ -18,11 +18,11 @@
 /
 /----------------------------------------------------------------------------*/
 
-
 #include <string.h>
 #include "ff.h"			/* Declarations of FatFs API */
 #include "diskio.h"		/* Declarations of device I/O functions */
 
+#include "pico.h"
 
 /*--------------------------------------------------------------------------
 
@@ -615,7 +615,7 @@ static const BYTE DbcTbl[] = MKCVTBL(TBL_DC, FF_CODE_PAGE);
 /* Load/Store multi-byte word in the FAT structure                       */
 /*-----------------------------------------------------------------------*/
 
-static WORD ld_word (const BYTE* ptr)	/*	 Load a 2-byte little-endian word */
+static WORD __no_inline_not_in_flash_func(ld_word) (const BYTE* ptr)	/*	 Load a 2-byte little-endian word */
 {
 	WORD rv;
 
@@ -917,7 +917,7 @@ static int lock_volume (	/* 1:Ok, 0:timeout */
 }
 
 
-static void unlock_volume (
+static void __no_inline_not_in_flash_func(unlock_volume) (
 	FATFS* fs,		/* Filesystem object */
 	FRESULT res		/* Result code to be returned */
 )
@@ -1009,7 +1009,7 @@ static UINT inc_share (	/* Increment object open counter and returns its index (
 }
 
 
-static FRESULT dec_share (	/* Decrement object open counter */
+static FRESULT __no_inline_not_in_flash_func(dec_share) (	/* Decrement object open counter */
 	UINT i			/* Semaphore index (1..) */
 )
 {
@@ -1052,7 +1052,7 @@ static void clear_share (	/* Clear all lock entries of the volume */
 /* Move/Flush disk access window in the filesystem object                */
 /*-----------------------------------------------------------------------*/
 #if !FF_FS_READONLY
-static FRESULT sync_window (	/* Returns FR_OK or FR_DISK_ERR */
+static FRESULT __no_inline_not_in_flash_func(sync_window) (	/* Returns FR_OK or FR_DISK_ERR */
 	FATFS* fs			/* Filesystem object */
 )
 {
@@ -1074,7 +1074,7 @@ static FRESULT sync_window (	/* Returns FR_OK or FR_DISK_ERR */
 #endif
 
 
-static FRESULT move_window (	/* Returns FR_OK or FR_DISK_ERR */
+static FRESULT __no_inline_not_in_flash_func(move_window) (	/* Returns FR_OK or FR_DISK_ERR */
 	FATFS* fs,		/* Filesystem object */
 	LBA_t sect		/* Sector LBA to make appearance in the fs->win[] */
 )
@@ -1141,7 +1141,7 @@ static FRESULT sync_fs (	/* Returns FR_OK or FR_DISK_ERR */
 /* Get physical sector number from cluster number                        */
 /*-----------------------------------------------------------------------*/
 
-static LBA_t clst2sect (	/* !=0:Sector number, 0:Failed (invalid cluster#) */
+static LBA_t __no_inline_not_in_flash_func(clst2sect) (	/* !=0:Sector number, 0:Failed (invalid cluster#) */
 	FATFS* fs,		/* Filesystem object */
 	DWORD clst		/* Cluster# to be converted */
 )
@@ -1158,7 +1158,7 @@ static LBA_t clst2sect (	/* !=0:Sector number, 0:Failed (invalid cluster#) */
 /* FAT access - Read value of an FAT entry                               */
 /*-----------------------------------------------------------------------*/
 
-static DWORD get_fat (		/* 0xFFFFFFFF:Disk error, 1:Internal error, 2..0x7FFFFFFF:Cluster status */
+static DWORD __no_inline_not_in_flash_func(get_fat) (		/* 0xFFFFFFFF:Disk error, 1:Internal error, 2..0x7FFFFFFF:Cluster status */
 	FFOBJID* obj,	/* Corresponding object */
 	DWORD clst		/* Cluster number to get the value */
 )
@@ -1166,7 +1166,6 @@ static DWORD get_fat (		/* 0xFFFFFFFF:Disk error, 1:Internal error, 2..0x7FFFFFF
 	UINT wc, bc;
 	DWORD val;
 	FATFS *fs = obj->fs;
-
 
 	if (clst < 2 || clst >= fs->n_fatent) {	/* Check if in valid range */
 		val = 1;	/* Internal error */
@@ -3610,7 +3609,7 @@ static FRESULT mount_volume (	/* FR_OK(0): successful, !=0: an error occurred */
 /* Check if the file/directory object is valid or not                    */
 /*-----------------------------------------------------------------------*/
 
-static FRESULT validate (	/* Returns FR_OK or FR_INVALID_OBJECT */
+static FRESULT __no_inline_not_in_flash_func(validate) (	/* Returns FR_OK or FR_INVALID_OBJECT */
 	FFOBJID* obj,			/* Pointer to the FFOBJID, the 1st member in the FIL/DIR structure, to check validity */
 	FATFS** rfs				/* Pointer to pointer to the owner filesystem object to return */
 )
@@ -3911,7 +3910,7 @@ FRESULT f_open (
 /* Read File                                                             */
 /*-----------------------------------------------------------------------*/
 
-FRESULT f_read (
+FRESULT __no_inline_not_in_flash_func(f_read) (
 	FIL* fp, 	/* Open file to be read */
 	void* buff,	/* Data buffer to store the read data */
 	UINT btr,	/* Number of bytes to read */
@@ -3937,6 +3936,7 @@ FRESULT f_read (
 	for ( ; btr > 0; btr -= rcnt, *br += rcnt, rbuff += rcnt, fp->fptr += rcnt) {	/* Repeat until btr bytes read */
 		if (fp->fptr % SS(fs) == 0) {			/* On the sector boundary? */
 			csect = (UINT)(fp->fptr / SS(fs) & (fs->csize - 1));	/* Sector offset in the cluster */
+			//csect = (UINT)(fp->fptr / (UINT)FF_MAX_SS & (fs->csize - 1));	/* Sector offset in the cluster */
 			if (csect == 0) {					/* On the cluster boundary? */
 				if (fp->fptr == 0) {			/* On the top of the file? */
 					clst = fp->obj.sclust;		/* Follow cluster chain from the origin */
@@ -4132,7 +4132,7 @@ FRESULT f_write (
 /* Synchronize the File                                                  */
 /*-----------------------------------------------------------------------*/
 
-FRESULT f_sync (
+FRESULT __no_inline_not_in_flash_func(f_sync) (
 	FIL* fp		/* Open file to be synced */
 )
 {
@@ -4213,7 +4213,7 @@ FRESULT f_sync (
 /* Close File                                                            */
 /*-----------------------------------------------------------------------*/
 
-FRESULT f_close (
+FRESULT __no_inline_not_in_flash_func(f_close) (
 	FIL* fp		/* Open file to be closed */
 )
 {
@@ -7081,4 +7081,3 @@ FRESULT f_setcp (
 	return FR_OK;
 }
 #endif	/* FF_CODE_PAGE == 0 */
-

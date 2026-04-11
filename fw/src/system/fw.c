@@ -13,6 +13,7 @@
 
 #include "hardware/sync.h"
 #include "hardware/watchdog.h"
+#include "hardware/flash.h"
 
 #define FLASH_SECTOR_ERASE_SIZE 4096u
 
@@ -20,7 +21,7 @@
 
 typedef struct uf2_block uf2_block_t;
 
-OTA_UPDATE_STATE_T* state;
+static OTA_UPDATE_STATE_T* state;
 
 
 static OTA_UPDATE_STATE_T* ota_update_init(void) {
@@ -35,19 +36,9 @@ static OTA_UPDATE_STATE_T* ota_update_init(void) {
 
 static __attribute__((aligned(4))) uint8_t workarea[4 * 1024];
 
-uf2_block_t blocks[100];
-int curblk = 0;
 
-int process_ota_segment(char* buf) {
-	printf("[OTA] add block:[%d]\n", curblk);
-	if (curblk < 100) {
-		blocks[curblk++] = *(uf2_block_t*)buf;
-	}
-}
-
-static int _process_ota_segment(uf2_block_t* block) {
-	//printf("[OTA] block:[%x]\n", buf);
-	//uf2_block_t* block = (uf2_block_t*)buf;
+int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
+	uf2_block_t* block = (uf2_block_t*)buf;
 	watchdog_update();
 
 	if (block->magic_start0 != UF2_MAGIC_START0 || block->magic_start1 != UF2_MAGIC_START1) {
@@ -63,7 +54,6 @@ static int _process_ota_segment(uf2_block_t* block) {
 		state->num_blocks = block->num_blocks;
 		state->family_id = block->file_size;
 
-		watchdog_update();
 		if (state->flash_update == 0) {
 			boot_info_t current_boot_info = {};
 			int boot_info_result = rom_get_boot_info(&current_boot_info);
@@ -100,13 +90,11 @@ static int _process_ota_segment(uf2_block_t* block) {
 		return -1;
 	}
 
-	struct cflash_flags flags;
 	int8_t ret;
 	(void)ret;
 
 	uint32_t flash_addr = block->target_addr;
 
-	watchdog_update();
 	if (flash_addr >= XIP_BASE && flash_addr < (XIP_BASE + 0x200000)) {
 		uint32_t offset_in_partition = flash_addr - XIP_BASE;
 		flash_addr = state->flash_update + offset_in_partition;
@@ -119,13 +107,17 @@ static int _process_ota_segment(uf2_block_t* block) {
 
 	uint32_t flash_sector = flash_addr / FLASH_SECTOR_ERASE_SIZE;
 
+	struct cflash_flags flags;
+
 	if (flash_sector > state->highest_erased_sector) {
 		uint32_t erase_addr = flash_addr & ~(FLASH_SECTOR_ERASE_SIZE-1);
 		flags.flags =
 			(CFLASH_OP_VALUE_ERASE << CFLASH_OP_LSB) | 
 			(CFLASH_SECLEVEL_VALUE_SECURE << CFLASH_SECLEVEL_LSB) |
 			(CFLASH_ASPACE_VALUE_STORAGE << CFLASH_ASPACE_LSB);
+		printf("[fw] erase_addr:[%x]\n", erase_addr);
 		ret = rom_flash_op(flags, erase_addr, FLASH_SECTOR_ERASE_SIZE, NULL);
+
 		state->highest_erased_sector = flash_sector;
 
 		if (ret != 0) {
@@ -133,12 +125,12 @@ static int _process_ota_segment(uf2_block_t* block) {
 			return -1;
 		}
 	}
-	watchdog_update();
 
 	flags.flags =
 		(CFLASH_OP_VALUE_PROGRAM << CFLASH_OP_LSB) | 
 		(CFLASH_SECLEVEL_VALUE_SECURE << CFLASH_SECLEVEL_LSB) |
 		(CFLASH_ASPACE_VALUE_STORAGE << CFLASH_ASPACE_LSB);
+	printf("[fw] flash_addr:[%x]\n", flash_addr);
 	ret = rom_flash_op(flags, flash_addr, 256, (void*)block->data);
 
 	if (ret != 0) {
@@ -153,20 +145,22 @@ static int _process_ota_segment(uf2_block_t* block) {
 	state->blocks_done++;
 
 	if (state->blocks_done >= state->num_blocks) {
-		printf("[OTA] *** DOWNLOAD COMPLETE! ***\n");
+		int ret = rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE, 1000, state->flash_update, 0);
+		free(state);
+		sleep_ms(3000);
+
+		printf("[fw] *** DOWNLOAD COMPLETE! ***\n");
 		state->complete = true;
 		return 0;
 	}
-	watchdog_update();
 
-	printf("[OTA] Segment written state->blocks_done:[%d]\n", state->blocks_done);
+	printf("[fw] Segment written state->blocks_done:[%d/%d]\r\n", state->blocks_done, state->num_blocks);
 	return 0;
 }
 
 
 int fw_update_init() {
 	boot_info_t boot_info = {};
-	watchdog_update();
 	int ret = rom_get_boot_info(&boot_info);
 
 	if (rom_get_last_boot_type() == BOOT_TYPE_FLASH_UPDATE) {
@@ -178,36 +172,10 @@ int fw_update_init() {
 		if (boot_info.tbyb_and_update_info);
 	}
 
-	watchdog_update();
 	state = ota_update_init();
 	if (!state) {
 		return -1;
 	}
 
-	watchdog_update();
-
 	return 0;
-}
-
-int fw_update_complete() {
-	for (int blk=0; blk < curblk; blk++) {
-		_process_ota_segment(&blocks[blk]);
-	}
-
-	while (!state->complete) {
-		sleep_ms(250);
-	}
-	watchdog_update();
-
-	printf("[INFO] OTA update completed! Preparing to reboot...\n");
-
-	//watchdog_reboot(0, REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE, state->flash_update);
-	int ret = rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE, 1000, state->flash_update, 0);
-	printf("[INFO] OTA reboot requested:[%d]\n", ret);
-	free(state);
-	sleep_ms(3000);
-
-	printf("[INFO] OTA: hard reset\n");
-	sleep_ms(1000);
-	return ret;
 }

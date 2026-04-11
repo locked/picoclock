@@ -176,7 +176,7 @@ static int config_handler(void* user, const char* section, const char* name,
 
 
 
-bool filesystem_read_fw_file(ota_segment_consumer_t process_buffer) {
+bool __no_inline_not_in_flash_func(filesystem_read_fw_file)(ota_segment_consumer_t process_buffer) {
 	file_t FwFile;
 	const char *FwFileName = "picoclock.uf2";
 
@@ -184,7 +184,7 @@ bool filesystem_read_fw_file(ota_segment_consumer_t process_buffer) {
     FRESULT fr = f_stat(FwFileName, &fno);
 
     if (fr == FR_OK) {
-		printf("SUCCESS: found fw file:[%s]\r\n", FwFileName);
+		printf("[fs] SUCCESS: found fw file:[%s]\r\n", FwFileName);
         UINT br;
 
 		FRESULT fr = f_open(&FwFile, FwFileName, FA_READ);
@@ -199,14 +199,17 @@ bool filesystem_read_fw_file(ota_segment_consumer_t process_buffer) {
 				int read_size = total_size > tmp_buf_size ? tmp_buf_size : total_size;
 
 				f_read(&FwFile, tmp_buf, read_size, &br);
-				//printf("requested read:[%d] really read:[%d]\r\n", read_size, br);
-				process_buffer(tmp_buf);
+				int rc = process_buffer(tmp_buf);
+				if (rc != 0) {
+					printf("[fs] Error processing buffer, rc:[%d]\r\n", rc);
+					return false;
+				}
 
 				if (br == read_size) {
 					total_size -= read_size;
 					copied_size += read_size;
 				} else {
-					printf("Read file error\n");
+					printf("[fs] Read file error\r\n");
 					total_size = 0; // force exit
 					return false;
 				}
@@ -215,7 +218,7 @@ bool filesystem_read_fw_file(ota_segment_consumer_t process_buffer) {
 			f_close(&FwFile);
 		}
 	} else {
-		printf("ERROR: fw file not found\r\n");
+		printf("[fs] ERROR: fw file:[%s] not found\r\n", FwFileName);
     }
     return true;
 }

@@ -32,7 +32,7 @@
         "bootloader": "rw"
       },
       "link": ["a", 0],
-      "start_address": "0x10020000"
+      "start_address": "0x10200000"
     }
   ]
 }

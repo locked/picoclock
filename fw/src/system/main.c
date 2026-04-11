@@ -94,6 +94,9 @@ volatile char request_audio_start_file[260] = "";
 bool datetime_update_requested = true;
 static struct repeating_timer timer_datetime;
 
+bool enable_update = true;
+
+
 // PROTOTYPES
 extern void init_spi(void);
 void dma_init();
@@ -253,10 +256,11 @@ void i2c_bus_scan() {
 }
 
 
-void system_initialize() {
+void system_initialize_base() {
 	stdio_init_all();
 
-	set_sys_clock_khz(CPU_CLOCK_IDLE, true);
+	//set_sys_clock_khz(CPU_CLOCK_IDLE, true);
+	set_sys_clock_khz(CPU_CLOCK_MAX, true);
 
 	// Init UART
 	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
@@ -267,8 +271,24 @@ void system_initialize() {
 	// Display ROM boot info
     boot_info_t boot_info = {};
     int ret = rom_get_boot_info(&boot_info);
-    printf("Boot partition was %d\n", boot_info.partition);
+    printf("Boot partition is %d\n", boot_info.partition);
 
+	// Init SDCARD
+	gpio_init(SD_CARD_CS);
+	gpio_put(SD_CARD_CS, 1);
+	gpio_set_dir(SD_CARD_CS, GPIO_OUT);
+	gpio_init(SD_CARD_PRESENCE);
+	gpio_set_dir(SD_CARD_PRESENCE, GPIO_IN);
+	// Init SPI
+	spi_init(spi1, 1000 * 1000); // slow clock
+	spi_set_format(spi1, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+	gpio_set_function(SDCARD_SCK, GPIO_FUNC_SPI);
+	gpio_set_function(SDCARD_MOSI, GPIO_FUNC_SPI);
+	gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
+	printf("[picoclock] Init SD card OK\r\n");
+}
+
+void system_initialize() {
 	// Init ring buffer for metrics
 	ring_metrics = circularBuffer_create(ring_metrics, 65, sizeof(metrics_t));
 
@@ -323,22 +343,6 @@ void system_initialize() {
 	audio_init(&audio_ctx);
 	printf("[picoclock] Init sound OK\r\n");
 
-	// Init SDCARD
-	gpio_init(SD_CARD_CS);
-	gpio_put(SD_CARD_CS, 1);
-	gpio_set_dir(SD_CARD_CS, GPIO_OUT);
-	gpio_init(SD_CARD_PRESENCE);
-	gpio_set_dir(SD_CARD_PRESENCE, GPIO_IN);
-
-	// Init SPI
-	spi_init(spi1, 1000 * 1000); // slow clock
-	spi_set_format(spi1, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
-
-	gpio_set_function(SDCARD_SCK, GPIO_FUNC_SPI);
-	gpio_set_function(SDCARD_MOSI, GPIO_FUNC_SPI);
-	gpio_set_function(SDCARD_MISO, GPIO_FUNC_SPI);
-	printf("[picoclock] Init SD card OK\r\n");
-
 	// Init gaz sensor
 	ens160_init(I2C_CHANNEL);
 	uint8_t ens160_status = ens160_getFlags();
@@ -378,19 +382,19 @@ void hal_sdcard_set_slow_clock() {
 void hal_sdcard_set_fast_clock() {
 	spi_set_baudrate(spi1, 40000000UL);
 }
-void hal_sdcard_cs_high() {
+void __no_inline_not_in_flash_func(hal_sdcard_cs_high)() {
 	gpio_put(SD_CARD_CS, 1);
 }
-void hal_sdcard_cs_low() {
+void __no_inline_not_in_flash_func(hal_sdcard_cs_low)() {
 	gpio_put(SD_CARD_CS, 0);
 }
-void hal_sdcard_spi_exchange(const uint8_t *buffer, uint8_t *out, uint32_t size) {
+void __no_inline_not_in_flash_func(hal_sdcard_spi_exchange)(const uint8_t *buffer, uint8_t *out, uint32_t size) {
 	spi_write_read_blocking(spi1, buffer, out, size);
 }
-void hal_sdcard_spi_write(const uint8_t *buffer, uint32_t size) {
+void __no_inline_not_in_flash_func(hal_sdcard_spi_write)(const uint8_t *buffer, uint32_t size) {
 	spi_write_blocking(spi1, buffer, size);
 }
-void hal_sdcard_spi_read(uint8_t *out, uint32_t size) {
+void __no_inline_not_in_flash_func(hal_sdcard_spi_read)(uint8_t *out, uint32_t size) {
 	spi_read_blocking(spi1, 0xFF, out, size);
 }
 uint8_t hal_sdcard_get_presence() {
@@ -404,6 +408,14 @@ uint32_t get_fattime (void) {
 
 
 void core1_entry() {
+	flash_safe_execute_core_init();
+	if (enable_update) {
+		multicore_lockout_victim_init();
+		while (1) {
+			sleep_ms(200000);
+		}
+	}
+
 	int last_min = 0;
 	int last_sync = -1;
 	time_struct dt;
@@ -537,7 +549,19 @@ void core1_entry() {
 // MAIN ENTRY POINT
 // ===========================================================================================================
 int main() {
-	// Call the platform initialization
+	system_initialize_base();
+
+	if (enable_update) {
+		multicore_launch_core1(core1_entry);
+		multicore_lockout_start_blocking();
+		watchdog_enable(8200, false);
+		filesystem_mount();
+		fw_update_init();
+		filesystem_read_fw_file(process_ota_segment);
+		filesystem_unmount();
+		multicore_lockout_end_blocking();
+	}
+
 	system_initialize();
 
 	printf("[picoclock] main(0) features mcp9808:[%s] ens160:[%s] s88:[%s] stcc4:[%s] scd43:[%s]\r\n",
@@ -563,14 +587,9 @@ int main() {
 	filesystem_mount();
 	// List files on sdcard (test)
 	filesystem_read_config_file();
-
-	//fw_update_init();
-	//filesystem_read_fw_file(process_ota_segment);
-	//fw_update_complete();
-
 	filesystem_unmount();
 
-	watchdog_enable(8200, false);
+	//watchdog_enable(8200, false);
 
 	// Init screen
 	//------------------- Init LCD

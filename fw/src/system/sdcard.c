@@ -120,12 +120,12 @@ uint8_t SD_Detect(void)
  * @param  None
  * @retval None
  */
-static void SD_Bus_Hold(void)
+static void __no_inline_not_in_flash_func(SD_Bus_Hold)(void)
 { /* Select SD Card: set SD chip select pin low */
 	hal_sdcard_cs_low();
 }
 
-static uint8_t SD_SpiWriteByte(uint8_t byte)
+static uint8_t __no_inline_not_in_flash_func(SD_SpiWriteByte)(uint8_t byte)
 {
 	hal_sdcard_spi_exchange(&byte, &byte, 1);
 	return byte;
@@ -136,7 +136,7 @@ static uint8_t SD_SpiWriteByte(uint8_t byte)
  * @param  None
  * @retval None
  */
-static void SD_Bus_Release(void)
+static void __no_inline_not_in_flash_func(SD_Bus_Release)(void)
 { /* Deselect SD Card: set SD chip select pin high */
 	hal_sdcard_cs_high();
 	SD_SpiWriteByte(0xFF); /* send dummy byte: 8 Clock pulses of delay */
@@ -149,7 +149,7 @@ static void SD_Bus_Release(void)
  * @param  Crc: CRC
  * @retval R1 response byte
  */
-static SD_Error SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc)
+static SD_Error __no_inline_not_in_flash_func(SD_SendCmd)(uint8_t cmd, uint32_t arg, uint8_t crc)
 {
 	uint8_t res;
 	uint16_t i = SD_NUM_TRIES;
@@ -178,7 +178,7 @@ static SD_Error SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc)
  *         so we have to wait until 0xFF recieved (MISO is set to HIGH)
  * @retval Nonzero if required state wasn't recieved
  */
-static SD_Error SD_WaitReady(void)
+static SD_Error __no_inline_not_in_flash_func(SD_WaitReady)(void)
 {
 	uint16_t i = SD_NUM_TRIES;
 	while (i-- > 0)
@@ -222,7 +222,7 @@ static SD_Error SD_FixSectorSize(uint16_t ssize)
  * @brief  Wait until data transmission token is received
  * @retval Data transmission token or 0xFF if timeout occured
  */
-static uint8_t SD_WaitBytesRead(void)
+static uint8_t __no_inline_not_in_flash_func(SD_WaitBytesRead)(void)
 {
 	uint16_t i = SD_NUM_TRIES_READ;
 	uint8_t b;
@@ -287,7 +287,7 @@ static SD_Error SD_WaitBytesErased(void)
  *         - SD_RESPONSE_FAILURE: Sequence failed
  *         - SD_RESPONSE_NO_ERROR: Sequence succeed
  */
-static SD_Error SD_ReceiveData(uint8_t *data, uint16_t len)
+static SD_Error __no_inline_not_in_flash_func(SD_ReceiveData)(uint8_t *data, uint16_t len)
 {
 	uint16_t i = 0;
 	uint8_t b;
@@ -502,7 +502,7 @@ SD_Error sdcard_init()
  *         - SD_RESPONSE_FAILURE: Sequence failed
  *         - SD_RESPONSE_NO_ERROR: Sequence succeed
  */
-SD_Error sdcard_sector_read(uint32_t readAddr, uint8_t *pBuffer)
+SD_Error __no_inline_not_in_flash_func(sdcard_sector_read)(uint32_t readAddr, uint8_t *pBuffer)
 {
 	SD_Error state;
 
@@ -519,8 +519,9 @@ SD_Error sdcard_sector_read(uint32_t readAddr, uint8_t *pBuffer)
 	/* send CMD17 (SD_CMD_READ_SINGLE_BLOCK) to read one block */
 	state = SD_SendCmd(SD_CMD_READ_SINGLE_BLOCK, readAddr, 0xFF);
 	/* receive data if command acknowledged... */
-	if (state == SD_RESPONSE_NO_ERROR)
+	if (state == SD_RESPONSE_NO_ERROR) {
 		state = SD_ReceiveData(pBuffer, SD_BLOCK_SIZE);
+	}
 
 	SD_Bus_Release(); /* release SPI bus... */
 
@@ -541,7 +542,7 @@ SD_Error sdcard_sector_read(uint32_t readAddr, uint8_t *pBuffer)
  *         - SD_RESPONSE_FAILURE: Sequence failed
  *         - SD_RESPONSE_NO_ERROR: Sequence succeed
  */
-SD_Error sdcard_sectors_read(uint32_t readAddr, uint8_t *pBuffer, uint32_t nbSectors)
+SD_Error __no_inline_not_in_flash_func(sdcard_sectors_read)(uint32_t readAddr, uint8_t *pBuffer, uint32_t nbSectors)
 {
 	SD_Error state;
 
