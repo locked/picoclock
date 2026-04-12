@@ -113,7 +113,7 @@ bool sensirion_stcc4_init() {
 	uint64_t serial_number = 0;
 	uint8_t packet[2];
 	int8_t result;
-	uint8_t rxdata[18];
+	uint8_t rxdata[27];		// 18 + crc
 
 	// stop continuous measurement
 	packet[0] = 0x3f;
@@ -126,7 +126,7 @@ bool sensirion_stcc4_init() {
 	packet[1] = 0x5b;
 	sensirion_i2c_hal_write(STCC4_ADDR, packet, sizeof(packet));
 	sleep_ms(1);
-	sensirion_i2c_read_data_inplace(STCC4_ADDR, rxdata, sizeof(rxdata));
+	sensirion_i2c_read_data_inplace(STCC4_ADDR, rxdata, 18);
 	product_id = sensirion_common_bytes_to_uint32_t(&rxdata[0]);
 	sensirion_common_to_integer(&rxdata[4], (uint8_t*)&serial_number, LONG_INTEGER, 8);
 	printf("[picoclock] STCC4 product_id:[%d] serial:[%" PRIx64 "]\r\n",
@@ -152,7 +152,7 @@ bool sensirion_stcc4_init() {
 int16_t sensirion_stcc4_read() {
 	uint8_t packet[2];
 	int8_t result;
-	uint8_t rxdata[12];
+	uint8_t rxdata[12];		// 8 + crc
 	uint16_t retries = 0;
 	uint16_t max_retries = 10;
 	int16_t co2;
@@ -181,7 +181,7 @@ bool sensirion_scd43_init() {
     uint64_t serial_number = 0;
 	uint8_t packet[2];
 	int8_t result;
-	uint8_t rxdata[12];
+	uint8_t rxdata[12];		// 6 + crc
 
 	// wake up
 	printf("[picoclock] SCD4X wake up...\r\n");
@@ -255,7 +255,7 @@ bool sensirion_scd43_init() {
 int16_t sensirion_scd43_read() {
 	uint8_t packet[2];
 	int8_t result;
-	uint8_t rxdata[12];
+	uint8_t rxdata[12];		// 6 + crc
 
 	// get data ready status
 	bool ready = false;
