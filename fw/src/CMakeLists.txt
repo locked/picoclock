@@ -144,11 +144,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 # ==========================
 # CUSTOM TARGETS
 # ==========================
-add_custom_target(RaspberryPico
-    COMMAND ${CMAKE_COMMAND}
-    -DOST_BUNDLE=RASPI_PICO
-    -DCMAKE_BUILD_TYPE=Debug
-    -B "${CMAKE_CURRENT_BINARY_DIR}/RaspberryPico"
-    -S "${CMAKE_SOURCE_DIR}"
-    COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}/RaspberryPico"
-)
+#add_custom_target(RaspberryPico
+#    COMMAND ${CMAKE_COMMAND}
+#    -DOST_BUNDLE=RASPI_PICO
+#    -DCMAKE_BUILD_TYPE=Debug
+#    -B "${CMAKE_CURRENT_BINARY_DIR}/RaspberryPico"
+#    -S "${CMAKE_SOURCE_DIR}"
+#    COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}/RaspberryPico"
+#)

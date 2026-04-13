@@ -189,8 +189,19 @@ void screen_anim() {
 }
 
 
+void ui_btn_long_click(int btn, time_struct dt) {
+	printf("[ui] LONG btn clicked: %d current_screen:[%d]\r\n", btn, current_screen);
+	if (btn == 0) {
+		//  *     [*]
+		//  *      *
+		//  *      *
+		printf("[ui] Disable next alarm\r\n");
+	}
+}
+
+
 void ui_btn_click(int btn, time_struct dt) {
-	printf("[picoclock] btn clicked: %d current_screen:[%d]\r\n", btn, current_screen);
+	printf("[ui] btn clicked: %d current_screen:[%d]\r\n", btn, current_screen);
 
 	// On any button click, stop alarm
 	if (current_screen == SCREEN_ALARM) {
@@ -206,12 +217,12 @@ void ui_btn_click(int btn, time_struct dt) {
 		//  *      *
 		if (current_screen < 3) {
 			if (backlight_on) {
-				printf("Backlight OFF\r\n");
+				printf("[ui] Backlight OFF\r\n");
 				gpio_put(FRONT_PANEL_LED_PIN, 0);
 				lp5817_turn_off();
 				backlight_on = false;
 			} else {
-				printf("Backlight ON\r\n");
+				printf("[ui] Backlight ON\r\n");
 				gpio_put(FRONT_PANEL_LED_PIN, 1);
 				lp5817_turn_on(0x20, 0xff, 0x30);
 				backlight_on = true;

@@ -65,6 +65,7 @@ void fs_task_sound_start(char *sound) {
 
 	debug_printf("--------------------------\r\nPlaying: %s\r\n", ScratchFile);
 
+	filesystem_mount();
 	main_audio_play(ScratchFile);
 	debug_printf("audio_play...OK\r\n");
 	PacketCounter = 0;

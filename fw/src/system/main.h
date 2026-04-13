@@ -9,11 +9,7 @@ extern "C"
 #include <stdint.h>
 #include "pcf8563/pcf8563.h"
 
-#define VERSION "0.55"
-
-#define OST_ID_SPI_FOR_SDCARD 0
-
-#define GPIO_PWM 16
+#define VERSION "0.57"
 
 #define CPU_CLOCK_IDLE 100000
 #define CPU_CLOCK_MAX 200000

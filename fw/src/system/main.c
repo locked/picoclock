@@ -85,8 +85,10 @@ circularBuffer_t* ring_metrics;
 // CONSTANTS / DEFINES
 const uint8_t BUTTONS[] = {BTN_1, BTN_2, BTN_3, BTN_4, BTN_5, BTN_6};
 volatile uint8_t last_btn_values[6] = {1, 1, 1, 1, 1, 1};
+volatile uint32_t last_btn_ts0[6] = {0, 0, 0, 0, 0, 0};
 static struct repeating_timer timer;
 volatile int request_btn_push = -1;
+volatile int request_btn_long_push = -1;
 volatile int request_audio_read = -1;
 volatile bool request_audio_start = false;
 volatile char request_audio_start_file[260] = "";
@@ -105,11 +107,25 @@ void dma_init();
 void __isr __time_critical_func(audio_i2s_dma_irq_handler)();
 
 
-void check_buttons() {
+void __not_in_flash_func(check_buttons)() {
 	for (uint8_t btn=0; btn<6; btn++) {
 		uint8_t btn_value = gpio_get(BUTTONS[btn]);
 		if (btn_value == 1 && btn_value != last_btn_values[btn]) {
-			request_btn_push = btn;
+			if (last_btn_ts0[btn] > 0) {	// If 0, it means long push was already triggered
+				request_btn_push = btn;
+			}
+		}
+		if (btn_value == 0 && btn_value != last_btn_values[btn]) {
+			last_btn_ts0[btn] = to_ms_since_boot(get_absolute_time());
+		}
+		if (btn_value == 0) {
+			if (last_btn_ts0[btn] > 0) {
+				uint32_t ts_diff = to_ms_since_boot(get_absolute_time()) - last_btn_ts0[btn];
+				if (ts_diff > 2000 && ts_diff < 30000) {
+					request_btn_long_push = btn;
+					last_btn_ts0[btn] = 0;
+				}
+			}
 		}
 		last_btn_values[btn] = btn_value;
 	}
@@ -166,6 +182,8 @@ void main_audio_stop() {
 	i2s_stop(&i2s);
 
 	set_sys_clock_khz(CPU_CLOCK_IDLE, true);
+
+	filesystem_unmount();
 }
 
 int main_audio_process() {
@@ -537,6 +555,10 @@ void core1_entry() {
 		if (request_btn_push >= 0) {
 			ui_btn_click(request_btn_push, dt);
 			request_btn_push = -1;
+		}
+		if (request_btn_long_push >= 0) {
+			ui_btn_long_click(request_btn_long_push, dt);
+			request_btn_long_push = -1;
 		}
 		if (refresh_screen) {
 			ui_refresh_screen(refresh_screen_clear, dt);
