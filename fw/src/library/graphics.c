@@ -19,6 +19,7 @@
 extern weather_struct weather;
 extern int wakeup_alarms_count;
 extern wakeup_alarm_struct wakeup_alarms[10];
+extern bool next_alarm_muted;
 
 
 void display_icon(int x, int y, int icon_id) {
@@ -58,10 +59,11 @@ void display_time(int* _y, time_struct dt, bool show_alarms) {
 	Paint_DrawString_EN(SCREEN_X, *_y, temp_str, &Font24, WHITE, BLACK);
 	*_y += Font24.Height + 1;
 
-	//Paint_ClearWindows(SCREEN_X, _y, SCREEN_X + Font24.Width * 8, 40 + Font24.Height, WHITE);
 	Paint_DrawTime(SCREEN_X, *_y, &sPaint_time, &Font24, WHITE, BLACK);
 
-	display_icon(160, *_y + 2, next_alarm->in_mins != 999999 ? ICON_ALARM : ICON_DISABLED_ALARM);
+	if (next_alarm->in_mins != 999999) {
+		display_icon(160, *_y + 2, next_alarm_muted ? ICON_DISABLED_ALARM : ICON_ALARM);
+	}
 	*_y += Font24.Height + 2;
 
 	if (show_alarms) {
@@ -69,7 +71,11 @@ void display_time(int* _y, time_struct dt, bool show_alarms) {
 			char weekdays_str[21] = "";
 			getWeekdaysStr(next_alarm->weekdays, weekdays_str);
 
-			sprintf(temp_str, "Alarm: %02d:%02d %s", next_alarm->hour, next_alarm->min, weekdays_str);
+			if (next_alarm_muted) {
+				sprintf(temp_str, "Alarm (muted): %02d:%02d %s", next_alarm->hour, next_alarm->min, weekdays_str);
+			} else {
+				sprintf(temp_str, "Alarm: %02d:%02d %s", next_alarm->hour, next_alarm->min, weekdays_str);
+			}
 			Paint_DrawString_EN(SCREEN_X, *_y, temp_str, &Font12, WHITE, BLACK);
 			*_y += Font12.Height + 1;
 		}

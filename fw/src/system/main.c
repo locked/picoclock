@@ -81,6 +81,7 @@ volatile bool refresh_screen_clear = false;
 volatile int ts_reset_alarm_screen = 0;
 volatile bool sync_requested = false;
 circularBuffer_t* ring_metrics;
+volatile bool next_alarm_muted = false;
 
 // CONSTANTS / DEFINES
 const uint8_t BUTTONS[] = {BTN_1, BTN_2, BTN_3, BTN_4, BTN_5, BTN_6};

@@ -8,6 +8,7 @@
 
 extern char request_audio_start_file[260];
 extern bool request_audio_start;
+extern bool next_alarm_muted;
 
 wakeup_alarm_struct wakeup_alarms[10];
 int wakeup_alarms_count = 10;
@@ -76,7 +77,12 @@ uint8_t check_alarm(time_struct dt) {
 			// Check weekday
 			if (alarm.weekdays & (1 << (7 - dt.weekday))) {
 				printf("Trigger alarm dt.weekday:[%d] alarm.weekdays:[%d]\r\n", dt.weekday, alarm.weekdays);
-				ring_alarm(&alarm);
+				if (next_alarm_muted) {
+					printf("Alarm muted\r\n");
+					next_alarm_muted = false;
+				} else {
+					ring_alarm(&alarm);
+				}
 				return 1;
 			} else {
 				printf("NO trigger alarm dt.weekday:[%d] alarm.weekdays:[%d]\r\n", dt.weekday, alarm.weekdays);

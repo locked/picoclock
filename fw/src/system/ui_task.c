@@ -47,6 +47,7 @@ extern bool sync_requested;
 extern circularBuffer_t* ring_metrics;
 extern char request_audio_start_file[260];
 extern bool request_audio_start;
+extern bool next_alarm_muted;
 
 extern audio_ctx_t audio_ctx;
 
@@ -195,7 +196,14 @@ void ui_btn_long_click(int btn, time_struct dt) {
 		//  *     [*]
 		//  *      *
 		//  *      *
-		printf("[ui] Disable next alarm\r\n");
+		if (next_alarm_muted) {
+			printf("[ui] Enable next alarm\r\n");
+			next_alarm_muted = false;
+		} else {
+			printf("[ui] Disable next alarm\r\n");
+			next_alarm_muted = true;
+		}
+		refresh_screen = true;
 	}
 }
 
