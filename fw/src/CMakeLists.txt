@@ -12,10 +12,6 @@ set(PICO_BOARD pico2_picoclock)
 # ==========================
 # DEFAULT VARIABLES OPTIONS
 # ==========================
-if(NOT OST_BUNDLE)
-    set(OST_BUNDLE "RASPI_PICO")
-endif()
-
 if(NOT PICO_SDK_PATH)
     set(PICO_SDK_PATH "../lib/pico-sdk")
 endif()
@@ -32,7 +28,7 @@ endif()
 # ==========================
 # COMMON FILES
 # ==========================
-set(OST_SRCS
+set(PICOCLOCK_SRCS
     system/main.c
     system/alarms.c
     system/utils.c
@@ -73,8 +69,6 @@ set(OST_SRCS
 )
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/hal
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/library
     ${CMAKE_CURRENT_SOURCE_DIR}/system/ff
     ${CMAKE_CURRENT_SOURCE_DIR}/system/
@@ -93,11 +87,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/core/pico_sdk_import.cmake)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/core/pico_extras_import.cmake)
 
-# add_library(BUNDLE_LIBRARIES INTERFACE)
-# target_link_libraries(BUNDLE_LIBRARIES INTERFACE )
 project(${PROJECT_NAME} LANGUAGES CXX C ASM)
 
-set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -112,7 +103,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/library/epaper/GUI)
 add_compile_options(-Os)
 
 # ------ Executable
-add_executable(${PROJECT_NAME} ${OST_SRCS} ${MIDDLEWARE_SRCS})
+add_executable(${PROJECT_NAME} ${PICOCLOCK_SRCS})
 
 # ------ Link
 target_link_libraries(${PROJECT_NAME} PUBLIC "-Wl,--start-group"
@@ -140,15 +131,3 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PICO_FLASH_ASSUME_CORE1_SAFE=1
     PICO_NO_BINARY_INFO=1
 )
-
-# ==========================
-# CUSTOM TARGETS
-# ==========================
-#add_custom_target(RaspberryPico
-#    COMMAND ${CMAKE_COMMAND}
-#    -DOST_BUNDLE=RASPI_PICO
-#    -DCMAKE_BUILD_TYPE=Debug
-#    -B "${CMAKE_CURRENT_BINARY_DIR}/RaspberryPico"
-#    -S "${CMAKE_SOURCE_DIR}"
-#    COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}/RaspberryPico"
-#)
