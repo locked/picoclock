@@ -110,6 +110,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC "-Wl,--start-group"
 	gcc m c stdc++ pico_stdlib pico_util pico_aon_timer pico_multicore
 	hardware_spi hardware_dma hardware_pio hardware_i2c hardware_exception
 	boot_uf2_headers
+	pico_stdio_uart
 	pico_cyw43_arch_lwip_poll
 	ePaper GUI Fonts Config pico_audio_i2s "-Wl,--end-group")
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}")
@@ -120,7 +121,7 @@ pico_add_extra_outputs(${PROJECT_NAME})
 pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/library/pico_i2s.pio)
 
 pico_enable_stdio_usb(${PROJECT_NAME} 0)	# Needs to be set to 0 for fw update
-pico_enable_stdio_uart(${PROJECT_NAME} 1)
+pico_enable_stdio_uart(${PROJECT_NAME} 0)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     WIFI_SSID=\"${WIFI_SSID}\"

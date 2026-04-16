@@ -9,7 +9,7 @@ extern "C"
 #include <stdint.h>
 #include "pcf8563/pcf8563.h"
 
-#define VERSION "0.59"
+#define VERSION "0.60"
 
 #define CPU_CLOCK_IDLE 100000
 #define CPU_CLOCK_MAX 200000
@@ -27,7 +27,7 @@ extern "C"
 #define MAX_SCREEN_ID 3
 
 #define UART_ID uart0
-#define UART_BAUD_RATE 115200
+//#define UART_BAUD_RATE 115200
 //#define UART_BAUD_RATE 9600
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1

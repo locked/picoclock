@@ -284,9 +284,22 @@ void system_initialize() {
 	//set_sys_clock_khz(CPU_CLOCK_MAX, true);
 
 	// Init UART
-	gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
-	gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
-	uart_init(UART_ID, UART_BAUD_RATE);
+	stdio_uart_init_full(UART_ID, 9600, UART_TX_PIN, UART_RX_PIN);
+	if (s88_get_co2() > 100) {
+		features.has_s88 = true;
+		// Disable stdio on UART since S88 is using it
+		stdio_set_driver_enabled(&stdio_uart, false);
+		//stdio_uart_deinit();
+	} else {
+		features.has_s88 = false;
+		// No S88 detected, switch to 115200
+		stdio_uart_deinit();
+		stdio_uart_init_full(UART_ID, 115200, UART_TX_PIN, UART_RX_PIN);
+		stdio_set_driver_enabled(&stdio_uart, true);
+	}
+	//gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+	//gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
+	//uart_init(UART_ID, UART_BAUD_RATE);
 	printf("[picoclock] START PICO_RP2350A=%d VERSION=%s\r\n", PICO_RP2350A, VERSION);
 
 	// Display ROM boot info
@@ -369,12 +382,6 @@ void system_initialize() {
 
 	// Init UART for ESP32 com
 	btctrl_init(UART_ESP32_UART_ID, UART_ESP32_TX_PIN, UART_ESP32_RX_PIN);
-
-	if (UART_BAUD_RATE == 9600) {
-		features.has_s88 = s88_get_co2() > 100;
-	} else {
-		features.has_s88 = false;
-	}
 
 	features.has_mcp9808 = mcp9808_detect() ? true : false;
 
