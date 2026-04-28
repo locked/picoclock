@@ -207,6 +207,24 @@ module screen_holder_pins() {
 
 
 
+module inserts_holes() {
+    // inserts
+    for (x = [0:1]) {
+        for (y = [0:1]) {
+            translate([
+                (x == 0 ? pcb[0] - pcb_screw_pos[0] : pcb_screw_pos[0]) + t,
+                (y == 0 ? pcb[1] - pcb_screw_pos[1] : pcb_screw_pos[1]) + t,
+                -30-5+0.8])
+            cylinder(h=30, r=pcb_screw_diam/2+0.1, $fn=15);
+
+            translate([
+                (x == 0 ? pcb[0] - pcb_screw_pos[0] : pcb_screw_pos[0]) + t,
+                (y == 0 ? pcb[1] - pcb_screw_pos[1] : pcb_screw_pos[1]) + t,
+                -5+0.8])
+            cylinder(h=5, r=2.9, $fn=15);
+        }
+    }
+}
 module back_screw() {
     // PCB support screw
     for (x = [0:1]) {
@@ -383,7 +401,8 @@ module back() {
         }
         translate([t, t, -back[2] + t]) cube(back_inner);
         io(true);
-        back_screw();
+        //back_screw();
+        inserts_holes();
         speaker_grid();
         if (support_large_speaker) {
             speaker_supports_holes();
@@ -409,7 +428,8 @@ module back() {
                 cube([pcb_support[0], pcb_support[1], back[2]+0.8]);
             }
         }
-        back_screw();
+        //back_screw();
+        inserts_holes();
         if (support_large_speaker) {
             speaker_supports_holes();
         }
