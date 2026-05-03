@@ -392,6 +392,60 @@ module speaker_supports() {
         speaker_supports_holes();
     }
 }
+
+// Back corners
+module corner(x, y) {
+    translate([-1*x*back[0]/2, 0])
+        rotate([
+            -90-45 - (y == 1 ? 270 : 0),
+            45 + (x == -1 ? 270 : 0),
+            0])
+            cube([10,3,10], center=true);
+}
+module corners() {
+    for (y = [-1,1]) {
+        translate([back[0]/2, y == -1 ? 0 : back[1], -back[2]])
+        for (x = [-1,1]) {
+            corner(x, y);
+        }
+    }
+}
+
+// Borders
+border_adjust = 0.7;
+module border(x, y) {
+    translate([-1*x*back[0]/2 - border_adjust*x, 0])
+        rotate([
+            0,
+            0,
+            45])
+            cube([3,3,back[2]+pcb[2]], center=true);
+}
+module borderback(x, y) {
+    rotate([
+        x == -1 ? 45 : 0,
+        x == 1 ? 45 : 0,
+        0])
+        cube([x == -1 ? back[0] : 3, x == 1 ? back[1] : 3,3], center=true);
+}
+module borders() {
+    for (y = [-1,1]) {
+        translate([back[0]/2, y == -1 ? -border_adjust : back[1] + border_adjust, -(back[2]-pcb[2])/2])
+        for (x = [-1,1]) {
+            border(x, y);
+        }
+    }
+
+    for (y = [0,1]) {
+        translate([back[0]/2, y * back[1] + (y == 0 ? -1 : 1) * border_adjust, -back[2]-border_adjust])
+        borderback(-1, y);
+    }
+    for (x = [0,1]) {
+        translate([x * (back[0]) + (x == 0 ? -1 : 1) * border_adjust, back[1]/2, -back[2]-border_adjust])
+        borderback(1, y);
+    }
+}
+
 module back() {
     back_inner = [pcb[0], pcb[1], back[2] - t];
     rotate([90]) difference() {
@@ -413,6 +467,8 @@ module back() {
             translate([back[0]/2, back[1]/2, -back[2] + t + speaker2_support[2]]) speaker2_holes();
         }
         airvents();
+        corners();
+        borders();
     }
 
     // add PCB support (cannot do it earlier
