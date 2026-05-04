@@ -107,6 +107,9 @@ module front() {
         screen();
         buttons();
         io();
+        borders();
+        cornersfront();
+        bordersfront();
     }
 
     // screen holder pins
@@ -410,16 +413,21 @@ module corners() {
         }
     }
 }
+module cornersfront() {
+    translate([0, back[1], -back[2] + front[2]])
+        rotate([180])
+            corners();
+}
 
 // Borders
 border_adjust = 0.7;
 module border(x, y) {
-    translate([-1*x*back[0]/2 - border_adjust*x, 0])
+    translate([-1*x*back[0]/2 - border_adjust*x, 0, front[2]/2])
         rotate([
             0,
             0,
             45])
-            cube([3,3,back[2]+pcb[2]], center=true);
+            cube([3,3,back[2] + pcb[2] + front[2]], center=true);
 }
 module borderback(x, y) {
     rotate([
@@ -442,10 +450,14 @@ module borders() {
     }
     for (x = [0,1]) {
         translate([x * (back[0]) + (x == 0 ? -1 : 1) * border_adjust, back[1]/2, -back[2]-border_adjust])
-        borderback(1, y);
+        borderback(1, 0);
     }
 }
-
+module bordersfront() {
+    translate([0, back[1], -back[2] + front[2]])
+        rotate([180])
+            borders();
+}
 module back() {
     back_inner = [pcb[0], pcb[1], back[2] - t];
     rotate([90]) difference() {
@@ -508,12 +520,12 @@ module back() {
 
 //pcb();
 
-//front();
+front();
 
 //rotate([90]) translate([front[0]/2, front[1]/2, 6]) screen_holder();
 
 speaker_at_bottom = true;
 
-back();
+//back();
 
 //rotate([90]) translate([t, t]) color("red") surface(file=pcb_image, convexity = 1);
