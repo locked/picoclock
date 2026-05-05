@@ -1,7 +1,7 @@
 include <common.scad>;
 include <screen_holder.scad>;
 
-support_large_speaker = false;
+support_large_speaker = true;
 
 module pcb() {
     rotate([90]) translate([t, t]) difference() {
@@ -224,7 +224,7 @@ module inserts_holes() {
                 (x == 0 ? pcb[0] - pcb_screw_pos[0] : pcb_screw_pos[0]) + t,
                 (y == 0 ? pcb[1] - pcb_screw_pos[1] : pcb_screw_pos[1]) + t,
                 -5+0.8])
-            cylinder(h=5, r=2.9, $fn=15);
+            cylinder(h=5, r=2.5, $fn=15);
         }
     }
 }
@@ -288,22 +288,25 @@ module speaker() {
 module speaker_grid() {
     startx = (back[0]-speaker2[0])/2 - t/2 + 4;
     endx = startx + speaker2[0] - 8;
-    starty = (back[1]-speaker2[0])/2 + speaker2[0] * 0.14 + 3;
+    starty = (back[1]-speaker2[0])/2 + speaker2[0] * 0.14 + 5;
     endy = starty + speaker2[0] * 0.7 - 6;
     step = 6;
     width = 2.8;
-    if (support_large_speaker) {
+    /*if (support_large_speaker) {
         startx = (back[0]-speaker[0])/2 - t/2;
         endx = startx + speaker[0];
         starty = (back[1]-speaker2[0])/2 + speaker2[0] * 0.14;
         endy = starty + speaker2[0] * 0.7;
         step = 5;
         width = 2;
-    }
+    }*/
     for (x = [startx:step:endx]) {
         for (y = [starty:step:endy]) {
             if (speaker_at_bottom) {
                 rotate([90]) translate([x, -y, -t]) cube([width,width,t]);
+                if (support_large_speaker) {
+                    translate([x, y, -back[2]]) cube([width,width,t]);
+                }
             } else {
                 translate([x, y, -back[2]]) cube([width,width,t]);
             }
@@ -319,14 +322,6 @@ module airvents() {
     endy = starty + airvents[1];
     step = 6;
     width = 2.8;
-    if (support_large_speaker) {
-        startx = (back[0]-airvents[0])/2 - t/2;
-        endx = startx + airvents[0];
-        starty = (back[1]-airvents[0])/2 + airvents[0] * 0.14;
-        endy = starty + airvents[0] * 0.7;
-        step = 5;
-        width = 2;
-    }
     for (x = [startx:step:endx]) {
         for (y = [starty:step:endy]) {
             rotate([0, 90]) translate([x, y, 0]) cube([width,width,t]);
@@ -520,12 +515,12 @@ module back() {
 
 //pcb();
 
-front();
+//front();
 
 //rotate([90]) translate([front[0]/2, front[1]/2, 6]) screen_holder();
 
 speaker_at_bottom = true;
 
-//back();
+back();
 
 //rotate([90]) translate([t, t]) color("red") surface(file=pcb_image, convexity = 1);
