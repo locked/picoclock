@@ -26,10 +26,10 @@ module support() {
         $posy = x < 2 ? -screen_holder_out[1]/2 + screen_holder_out[0]: screen_holder_out[1]/2;
         $mirrorz = x % 2 == 0 ? 1 : 0;
         mirror([$mirrorz,0,0])
-            translate([-screen_holder_in[0]/2+screen_holder_out[0], $posy, -1.5])
+            translate([-screen_holder_in[0]/2+screen_holder_out[0], $posy, 0 - screen_holder_out[2]/2])
                 rotate([90, 90])
                     linear_extrude(screen_holder_out[0])
-                        polygon(points=[[0,0], [screen_holder_out[0]/2, 0], [0, screen_holder_out[0]]], paths=[[0,1,2]]);
+                        polygon(points=[[0,0], [screen_holder_out[2], 0], [0, screen_holder_out[0]]], paths=[[0,1,2]]);
     }
 
     // Pins toward PCB
@@ -38,12 +38,13 @@ module support() {
             translate([
                 (x == 0 ? 1 : -1) * screen_holder_in[0]/2 + (x == 0 ? -1 : 1) * screen_holder_out[0]/2,
                 (y == 0 ? 1 : -1) * screen_holder_out[1]/2 + (y == 0 ? -1 : 1) * screen_holder_screw_rad + (y == 0 ? -1 : 1) * 1,
-                -5-1.5])
+                -screen_holder_out[2]-2-1.5])
             cylinder(h=2, d=1.9, $fn=20);
         }
     }
 
     // Blocks for case pins
+    case_pin_height = 3.5;
     difference() {
         union() {
             for (x = [0:1]) {
@@ -52,7 +53,7 @@ module support() {
                         (x == 0 ? 1 : -1) * screen_holder_in[0]/2 + (x == 0 ? -1 : 1) * screen_holder_out[0]/2,
                         (y == 0 ? 1 : -1) * screen_holder_out[1]/2 + (y == 0 ? -1 : 1) * screen_holder_screw_rad + (y == 0 ? -1 : 1) * 1,
                         0])
-                    cylinder(h=4, d=4, $fn=20);
+                    cylinder(h=case_pin_height, d=4, $fn=20);
                 }
             }
         }
@@ -62,10 +63,38 @@ module support() {
                     (x == 0 ? 1 : -1) * screen_holder_in[0]/2 + (x == 0 ? -1 : 1) * screen_holder_out[0]/2,
                     (y == 0 ? 1 : -1) * screen_holder_out[1]/2 + (y == 0 ? -1 : 1) * screen_holder_screw_rad + (y == 0 ? -1 : 1) * 1,
                     0])
-                cylinder(h=4, d=2.2, $fn=20);
+                cylinder(h=case_pin_height, d=2.2, $fn=20);
             }
         }
     }
+
+    // Borders
+    border_width = 3;
+    border_height = 1.5;
+    translate([
+        -screen_holder_in[0]/2,
+        -screen_visible_size[1]/2-border_width,
+        screen_holder_in[2]/2
+    ])
+        cube([screen_holder_in[0], border_width, border_height]);
+    translate([
+        -screen_holder_in[0]/2,
+        screen_visible_size[1]/2,
+        screen_holder_in[2]/2
+    ])
+        cube([screen_holder_in[0], border_width, border_height]);
+    translate([
+        screen_holder_in[0]/2-8.2,
+        -screen_visible_size[1]/2,
+        screen_holder_in[2]/2
+    ])
+        cube([border_width, screen_visible_size[1], border_height]);
+    translate([
+        -screen_holder_in[0]/2+border_width,
+        -screen_visible_size[1]/2,
+        screen_holder_in[2]/2
+    ])
+        cube([border_width, screen_visible_size[1], border_height]);
 }
 
 module screen_holder() {
@@ -92,12 +121,17 @@ module screen_holder() {
         translate([21.5, -11, 4])
                 rotate([180, 90])
                     linear_extrude(screen_holder_out[1]-10)
-                        polygon(points=[[1.6,0], [6, 6], [6, 15]], paths=[[0,1,2]]);
+                        polygon(points=[[-0.3,0], [6, 5], [6, 15]], paths=[[0,1,2]]);
         translate([25, -11, 4])
                 rotate([180, 90])
                     linear_extrude(screen_holder_out[1]-2)
-                        polygon(points=[[1.6,0], [6, 6], [6, 9.6]], paths=[[0,1,2]]);
+                        polygon(points=[[0,0], [6, 5], [6, 9.6]], paths=[[0,1,2]]);
     }
+
+    // Light shade
+    light_shade_width = 0.2;
+    translate([0, -screen_size[1]/2 - light_shade_width/2, 1])
+        cube([screen_holder_in[0], light_shade_width, 4], center=true);
 }
 
-//screen_holder();
+screen_holder();

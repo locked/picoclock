@@ -47,7 +47,7 @@ speaker2_screw_from_center = speaker2_screw_diam / 2 * sqrt(2) / 2;
 speaker2_support = [52, 52, 2];
 
 screen_holder_screw_rad = 2;
-screen_holder_out = [screen_holder_screw_rad*3, pcb[1] - 0.2, 3];
+screen_holder_out = [screen_holder_screw_rad*3, pcb[1] - 0.2, 3.5];
 //screen_holder_in = [70.4, 39.2, 4];
 screen_holder_in = [68.4, 39.2, 4];
 screen_size_toborder = 7.1;
