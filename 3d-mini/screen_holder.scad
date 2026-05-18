@@ -73,10 +73,10 @@ module support() {
     border_height = 1.5;
     translate([
         -screen_holder_in[0]/2,
-        -screen_visible_size[1]/2-border_width,
+        -screen_visible_size[1]/2-border_width*2,
         screen_holder_in[2]/2
     ])
-        cube([screen_holder_in[0], border_width, border_height]);
+        cube([screen_holder_in[0], border_width*2, border_height]);
     translate([
         -screen_holder_in[0]/2,
         screen_visible_size[1]/2,
