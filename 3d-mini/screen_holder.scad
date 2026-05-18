@@ -129,7 +129,7 @@ module screen_holder() {
     }
 
     // Light shade
-    light_shade_width = 0.2;
+    light_shade_width = 0.3;
     translate([0, -screen_size[1]/2 - light_shade_width/2, 1])
         cube([screen_holder_in[0], light_shade_width, 4], center=true);
 }
