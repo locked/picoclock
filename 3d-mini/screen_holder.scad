@@ -25,11 +25,14 @@ module support() {
     for (x = [0:3]) {
         $posy = x < 2 ? -screen_holder_out[1]/2 + screen_holder_out[0]: screen_holder_out[1]/2;
         $mirrorz = x % 2 == 0 ? 1 : 0;
-        mirror([$mirrorz,0,0])
-            translate([-screen_holder_in[0]/2+screen_holder_out[0], $posy, 0 - screen_holder_out[2]/2])
+        #mirror([$mirrorz,0,0])
+            translate([
+                -screen_holder_in[0]/2+screen_holder_out[0],
+                $posy,
+                -screen_holder_out[2]/2])
                 rotate([90, 90])
                     linear_extrude(screen_holder_out[0])
-                        polygon(points=[[0,0], [screen_holder_out[2], 0], [0, screen_holder_out[0]]], paths=[[0,1,2]]);
+                        polygon(points=[[0,0], [screen_holder_out[2], 0], [0, screen_holder_out[0]-1]], paths=[[0,1,2]]);
     }
 
     // Pins toward PCB
@@ -90,7 +93,7 @@ module support() {
     ])
         cube([border_width, screen_visible_size[1], border_height]);
     translate([
-        -screen_holder_in[0]/2+border_width,
+        -screen_visible_size[0]/2-border_width,
         -screen_visible_size[1]/2,
         screen_holder_in[2]/2
     ])
@@ -118,18 +121,18 @@ module screen_holder() {
         translate([-screen_holder_in[0]/2+5, 0, 1]) cube([10, screen_visible_size[1], screen_visible_size[2]], center=true);
 
         // Light guide
-        translate([21.5, -11, 4])
+        translate([23.5, -11, 4])
                 rotate([180, 90])
-                    linear_extrude(screen_holder_out[1]-10)
+                    linear_extrude(screen_holder_out[1]-7)
                         polygon(points=[[-0.3,0], [6, 5], [6, 15]], paths=[[0,1,2]]);
-        translate([25, -11, 4])
+        translate([26, -11, 4])
                 rotate([180, 90])
                     linear_extrude(screen_holder_out[1]-2)
                         polygon(points=[[0,0], [6, 5], [6, 9.6]], paths=[[0,1,2]]);
     }
 
     // Light shade
-    light_shade_width = 0.3;
+    light_shade_width = 0.4;
     translate([0, -screen_size[1]/2 - light_shade_width/2, 1])
         cube([screen_holder_in[0], light_shade_width, 4], center=true);
 }
