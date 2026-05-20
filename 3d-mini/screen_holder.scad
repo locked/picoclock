@@ -1,5 +1,8 @@
 include <common.scad>;
 
+border_width = 3;
+border_height = 1.5;
+
 
 module support() {
     cube(screen_holder_in, center=true);
@@ -25,7 +28,7 @@ module support() {
     for (x = [0:3]) {
         $posy = x < 2 ? -screen_holder_out[1]/2 + screen_holder_out[0]: screen_holder_out[1]/2;
         $mirrorz = x % 2 == 0 ? 1 : 0;
-        #mirror([$mirrorz,0,0])
+        mirror([$mirrorz,0,0])
             translate([
                 -screen_holder_in[0]/2+screen_holder_out[0],
                 $posy,
@@ -72,8 +75,6 @@ module support() {
     }
 
     // Borders
-    border_width = 3;
-    border_height = 1.5;
     translate([
         -screen_holder_in[0]/2,
         -screen_visible_size[1]/2-border_width*2,
@@ -92,12 +93,12 @@ module support() {
         screen_holder_in[2]/2
     ])
         cube([border_width, screen_visible_size[1], border_height]);
-    translate([
+    /*translate([
         -screen_visible_size[0]/2-border_width,
         -screen_visible_size[1]/2,
         screen_holder_in[2]/2
     ])
-        cube([border_width, screen_visible_size[1], border_height]);
+        cube([border_width, screen_visible_size[1], border_height]);*/
 }
 
 module screen_holder() {
@@ -128,13 +129,21 @@ module screen_holder() {
         translate([26, -11, 4])
                 rotate([180, 90])
                     linear_extrude(screen_holder_out[1]-2)
-                        polygon(points=[[0,0], [6, 5], [6, 9.6]], paths=[[0,1,2]]);
+                        polygon(points=[[-1.2,0], [0,0], [6, 5], [6, 9.6]], paths=[[0,1,2,3]]);
     }
 
     // Light shade
-    light_shade_width = 0.4;
+    light_shade_width = 0.5;
     translate([0, -screen_size[1]/2 - light_shade_width/2, 1])
         cube([screen_holder_in[0], light_shade_width, 4], center=true);
+
+    // border left
+    translate([
+        -screen_visible_size[0]/2-border_width,
+        -screen_visible_size[1]/2,
+        screen_holder_in[2]/2-1.25
+    ])
+        cube([border_width, screen_visible_size[1], border_height+1.25]);
 }
 
 screen_holder();
