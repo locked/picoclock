@@ -110,7 +110,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC "-Wl,--start-group"
 	gcc m c stdc++ pico_stdlib pico_util pico_aon_timer pico_multicore
 	hardware_spi hardware_dma hardware_pio hardware_i2c hardware_exception
 	boot_uf2_headers
-	hardware_xip_cache
 	pico_stdio_uart
 	pico_cyw43_arch_lwip_poll
 	ePaper GUI Fonts Config pico_audio_i2s "-Wl,--end-group")

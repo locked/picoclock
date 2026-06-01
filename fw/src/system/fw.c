@@ -14,7 +14,6 @@
 #include "hardware/sync.h"
 #include "hardware/watchdog.h"
 #include "hardware/flash.h"
-#include "hardware/xip_cache.h"
 
 #define FLASH_SECTOR_ERASE_SIZE 4096u
 
@@ -36,21 +35,6 @@ static OTA_UPDATE_STATE_T* ota_update_init(void) {
 
 
 static __attribute__((aligned(4))) uint8_t workarea[4 * 1024];
-
-
-static int __no_inline_not_in_flash_func(rom_flash_op_direct)(cflash_flags_t flags, uintptr_t addr, uint32_t size_bytes, uint8_t *buf) {
-	if (!bootrom_try_acquire_lock(BOOTROM_LOCK_FLASH_OP))
-		return BOOTROM_ERROR_LOCK_REQUIRED;
-
-	rom_flash_op_fn flash_op_func = (rom_flash_op_fn)rom_func_lookup_inline(ROM_FUNC_FLASH_OP);
-
-	uint32_t save = save_and_disable_interrupts();
-	int rc = flash_op_func(flags, addr, size_bytes, buf);
-	restore_interrupts(save);
-
-	bootrom_release_lock(BOOTROM_LOCK_FLASH_OP);
-	return rc;
-}
 
 
 int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
@@ -132,7 +116,7 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 			(CFLASH_SECLEVEL_VALUE_SECURE << CFLASH_SECLEVEL_LSB) |
 			(CFLASH_ASPACE_VALUE_STORAGE << CFLASH_ASPACE_LSB);
 		//printf("[fw] erase_addr:[%x]\n", erase_addr);
-		ret = rom_flash_op_direct(flags, erase_addr, FLASH_SECTOR_ERASE_SIZE, NULL);
+		ret = rom_flash_op(flags, erase_addr, FLASH_SECTOR_ERASE_SIZE, NULL);
 
 		state->highest_erased_sector = flash_sector;
 
@@ -147,7 +131,7 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 		(CFLASH_SECLEVEL_VALUE_SECURE << CFLASH_SECLEVEL_LSB) |
 		(CFLASH_ASPACE_VALUE_STORAGE << CFLASH_ASPACE_LSB);
 	//printf("[fw] flash_addr:[%x]\n", flash_addr);
-	ret = rom_flash_op_direct(flags, flash_addr, 256, (void*)block->data);
+	ret = rom_flash_op(flags, flash_addr, 256, (void*)block->data);
 
 	if (ret != 0) {
 		printf("[ERROR] Flash program failed with code: %d\n", ret);
@@ -161,17 +145,6 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 	state->blocks_done++;
 
 	if (state->blocks_done >= state->num_blocks) {
-		xip_cache_invalidate_all();
-#define TX(c) do { while (uart_get_hw(uart0)->fr & UART_UARTFR_TXFF_BITS); uart_get_hw(uart0)->dr = (c); } while(0)
-		TX('['); TX('O'); TX('T'); TX('A'); TX(']');
-		TX(' '); TX('U'); TX('p'); TX('d'); TX('a');
-		TX('t'); TX('e'); TX(' '); TX('c'); TX('o');
-		TX('m'); TX('p'); TX('l'); TX('e'); TX('t');
-		TX('e'); TX(','); TX(' '); TX('r'); TX('e');
-		TX('b'); TX('o'); TX('o'); TX('t'); TX('i');
-		TX('n'); TX('g'); TX('.'); TX('.'); TX('.');
-		TX('\n');
-#undef TX
 		stdio_flush();
 		save_and_disable_interrupts();
 		int ret = rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE | REBOOT2_FLAG_NO_RETURN_ON_SUCCESS, 100, state->flash_update, 0);
