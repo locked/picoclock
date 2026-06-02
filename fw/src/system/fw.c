@@ -86,6 +86,17 @@ static uint32_t diag_qmi_mismatches = 0;
 static uint32_t diag_canary_mismatches = 0;
 static uint32_t diag_last_mismatch_code = 0; /* upper 8 bits = which reg, low 24 = current m0_timing low bits */
 
+/* Snapshot of the FIRST and LAST 256-byte source block we successfully wrote
+ * to the target partition. At end-of-OTA we re-read those addresses via the
+ * uncached XIP aperture (XIP_NOCACHE_NOALLOC_BASE = 0x14000000) and compare,
+ * to confirm the bytes we asked the ROM to program actually landed at the
+ * physical addresses we intended. */
+static uint8_t  rb_first_src[256];
+static uint8_t  rb_last_src[256];
+static uint32_t rb_first_xip_addr = 0; /* XIP_BASE-mapped address */
+static uint32_t rb_last_xip_addr  = 0;
+static bool     rb_first_valid = false;
+
 /* Cached pointer to ROM flash_flush_cache, looked up once at init. */
 static rom_flash_flush_cache_fn flash_flush_func;
 
@@ -282,8 +293,16 @@ static char final_tag[]   = "\r\n[OTA-FINAL] ops=";
 static char final_qmi[]   = " qmi_mm=";
 static char final_cold[]  = " canary_mm=";
 static char final_last[]  = " last_code=";
-static char final_reboot[] = "\r\n[OTA] Update complete, rebooting...\r\n";
+static char final_reboot[] = "\r\n[OTA] Update complete, halting for diagnostic (power-cycle to test cold boot)...\r\n";
 static char final_eol[]   = "\r\n";
+static char final_rb_tag[]   = "\r\n[OTA-RB] first_addr=";
+static char final_rb_faddr[] = " first_mm=";
+static char final_rb_laddr[] = " last_addr=";
+static char final_rb_lmm[]   = " last_mm=";
+static char final_rb_fb[]    = " first_src0=";
+static char final_rb_ft[]    = " first_tgt0=";
+static char final_rb_lb[]    = " last_src0=";
+static char final_rb_lt[]    = " last_tgt0=";
 
 static void __no_inline_not_in_flash_func(ota_finalize)(void) {
 	/* Print existing counters via direct UART.  All strings are in .data,
@@ -297,22 +316,54 @@ static void __no_inline_not_in_flash_func(ota_finalize)(void) {
 	uart0_puts_raw(final_last);
 	uart0_put_hex32(diag_last_mismatch_code);
 	uart0_puts_raw(final_eol);
+
+	/* Read-back verify FIRST and LAST writes via the uncached XIP aperture.
+	 * XIP_NOCACHE_NOALLOC_BASE = 0x14000000, so an address of
+	 *   0x14000000 + (xip_addr - XIP_BASE)
+	 * reads physical flash through QMI but bypasses the cache, giving us
+	 * ground truth without needing flash_flush_cache. */
+	if (rb_first_valid) {
+		volatile uint8_t *nc_first = (volatile uint8_t *)
+			(0x14000000u + (rb_first_xip_addr - XIP_BASE));
+		volatile uint8_t *nc_last  = (volatile uint8_t *)
+			(0x14000000u + (rb_last_xip_addr  - XIP_BASE));
+		uint32_t first_mm = 0, last_mm = 0;
+		uint8_t  first_tgt0 = nc_first[0];
+		uint8_t  last_tgt0  = nc_last[0];
+		for (int i = 0; i < 256; i++) if (nc_first[i] != rb_first_src[i]) first_mm++;
+		for (int i = 0; i < 256; i++) if (nc_last[i]  != rb_last_src[i])  last_mm++;
+
+		uart0_puts_raw(final_rb_tag);
+		uart0_put_hex32(rb_first_xip_addr);
+		uart0_puts_raw(final_rb_faddr);
+		uart0_put_hex32(first_mm);
+		uart0_puts_raw(final_rb_fb);
+		uart0_put_hex8(rb_first_src[0]);
+		uart0_puts_raw(final_rb_ft);
+		uart0_put_hex8(first_tgt0);
+		uart0_puts_raw(final_eol);
+
+		uart0_puts_raw(final_rb_laddr);
+		uart0_put_hex32(rb_last_xip_addr);
+		uart0_puts_raw(final_rb_lmm);
+		uart0_put_hex32(last_mm);
+		uart0_puts_raw(final_rb_lb);
+		uart0_put_hex8(rb_last_src[0]);
+		uart0_puts_raw(final_rb_lt);
+		uart0_put_hex8(last_tgt0);
+		uart0_puts_raw(final_eol);
+	}
+
 	uart0_puts_raw(final_reboot);
 
-	/* Persist counters to watchdog scratch so the next boot can inspect them. */
-	scratch_write(4, diag_flash_ops);
-	scratch_write(5, diag_qmi_mismatches);
-	scratch_write(6, diag_last_mismatch_code);
-	scratch_write(7, diag_canary_mismatches);
-
-	/* Reboot via watchdog rather than rom_reboot(FLASH_UPDATE).
-	 * rom_reboot's FLASH_UPDATE path touches flash through the
-	 * (potentially still-broken) QMI/XIP path; a plain watchdog reset
-	 * forces a full cold boot where the boot ROM re-inits QMI from OTP,
-	 * re-runs boot2, and picks the partition from version metadata. */
+	/* DIAGNOSTIC RUN: do NOT reboot. Halt here so the operator can read
+	 * the [OTA-RB] readback line over serial and manually power-cycle
+	 * (or hold BOOTSEL) to test whether cold boot still fails. Disable
+	 * the watchdog so it does not bite us during the halt. */
+	hw_clear_bits(&watchdog_hw->ctrl, WATCHDOG_CTRL_ENABLE_BITS);
 
 	/* Drain UART0 TX FIFO so the diagnostic line actually reaches the
-	 * host before we reset. */
+	 * host before we halt. */
 	{
 		volatile uint32_t *fr = (volatile uint32_t *)UART0_FR_ADDR;
 		uint32_t spin = 0;
@@ -322,7 +373,6 @@ static void __no_inline_not_in_flash_func(ota_finalize)(void) {
 	}
 
 	save_and_disable_interrupts();
-	watchdog_reboot(0, 0, 0);
 	while (1) {
 		tight_loop_contents();
 	}
@@ -491,6 +541,17 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 		printf("[ERROR] Flash program failed with code: %d\n", ret);
 		return -1;
 	}
+
+	/* Record the FIRST and LAST blocks we successfully wrote (256 B + their
+	 * XIP-mapped target address) so ota_finalize() can read-back-verify via
+	 * the uncached XIP aperture. */
+	if (!rb_first_valid) {
+		for (int i = 0; i < 256; i++) rb_first_src[i] = block->data[i];
+		rb_first_xip_addr = flash_addr;
+		rb_first_valid = true;
+	}
+	for (int i = 0; i < 256; i++) rb_last_src[i] = block->data[i];
+	rb_last_xip_addr = flash_addr;
 
 	state->blocks_done++;
 
