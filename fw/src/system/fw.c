@@ -271,59 +271,37 @@ static void __no_inline_not_in_flash_func(fw_integrity_dump_uart)(void) {
 
 static OTA_UPDATE_STATE_T* state;
 
-/* End-of-OTA finalisation: flush cache with interrupts disabled, then do a
- * definitive cold canary read to check QMI health, then reboot via rom_reboot.
- * All output is via direct UART (RAM strings only — no flash reads). */
+/* End-of-OTA finalisation: output diagnostic counters via direct UART
+ * (RAM strings only — no flash reads at all), then rom_reboot.
+ * No cache flush or cold canary test here — those would read flash
+ * through a potentially broken QMI path, and rom_reboot is a full
+ * hardware reset that re-inits QMI from scratch. */
 static char final_tag[]   = "\r\n[OTA-FINAL] ops=";
 static char final_qmi[]   = " qmi_mm=";
-static char final_cold[]  = " cold_canary=";
-static char final_ok[]    = " OK";
-static char final_fail[]  = " FAIL";
+static char final_cold[]  = " canary_mm=";
+static char final_last[]  = " last_code=";
+static char final_reboot[] = "\r\n[OTA] Update complete, rebooting...\r\n";
 static char final_eol[]   = "\r\n";
-static char final_reboot[] = " rebooting...\r\n";
 
 static void __no_inline_not_in_flash_func(ota_finalize)(void) {
-	/* Capture one last QMI snapshot for diagnostics. */
-	qmi_snapshot_t cur;
-	qmi_capture(&cur);
-	int qmi_code = qmi_compare(&qmi_baseline, &cur);
-
-	/* Flush the entire XIP cache with interrupts disabled, so that no
-	 * concurrent IRQ or core1 traffic interferes with the maintenance
-	 * aperture operations. */
-	uint32_t saved = save_and_disable_interrupts();
-	xip_invalidate_all();
-
-	/* Cold-read the full canary — after the flush every byte is a
-	 * genuine cold miss that exercises the QMI read path. */
-	bool cold_ok = true;
-	int fail_byte = -1;
-	for (int i = 0; i < (int)sizeof(canary_ram_copy); i++) {
-		if ((uint8_t)fw_xip_canary[i] != canary_ram_copy[i]) {
-			cold_ok = false;
-			if (fail_byte < 0) fail_byte = i;
-		}
-	}
-
-	restore_interrupts(saved);
-
-	/* Update diagnostic counters and persist to scratch[7]. */
-	uint32_t cold_fails = cold_ok ? 0u : 1u;
-	diag_canary_mismatches = cold_fails;
-	scratch_write(7, (cold_fails << 16) | (uint32_t)(fail_byte >= 0 ? fail_byte : 0xFFFFu));
-
-	/* Output via direct UART. */
+	/* Print existing counters via direct UART.  All strings are in .data,
+	 * counters are in BSS — no flash reads. */
 	uart0_puts_raw(final_tag);
 	uart0_put_hex32(diag_flash_ops);
 	uart0_puts_raw(final_qmi);
-	uart0_put_hex32((uint32_t)qmi_code);
+	uart0_put_hex32(diag_qmi_mismatches);
 	uart0_puts_raw(final_cold);
-	uart0_puts_raw(cold_ok ? final_ok : final_fail);
-	if (!cold_ok) {
-		uart0_puts_raw(final_tag);
-		uart0_put_hex32((uint32_t)fail_byte);
-	}
+	uart0_put_hex32(diag_canary_mismatches);
+	uart0_puts_raw(final_last);
+	uart0_put_hex32(diag_last_mismatch_code);
+	uart0_puts_raw(final_eol);
 	uart0_puts_raw(final_reboot);
+
+	/* Persist counters to watchdog scratch so the next boot can inspect them. */
+	scratch_write(4, diag_flash_ops);
+	scratch_write(5, diag_qmi_mismatches);
+	scratch_write(6, diag_last_mismatch_code);
+	scratch_write(7, diag_canary_mismatches);
 
 	/* Reboot into the updated partition. */
 	save_and_disable_interrupts();
