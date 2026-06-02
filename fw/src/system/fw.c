@@ -226,7 +226,10 @@ static void __no_inline_not_in_flash_func(fw_integrity_init)(void) {
 	flash_flush_func = (rom_flash_flush_cache_fn)rom_func_lookup_inline(ROM_FUNC_FLASH_FLUSH_CACHE);
 }
 
-/* Run after EVERY rom_flash_op. Detects, repairs, and logs corruption. */
+/* Run after EVERY rom_flash_op. Detects and logs QMI register drift only.
+ * Cache invalidate and canary check are deferred to ota_finalize() at
+ * end-of-OTA, to avoid 1500+ cache flushes that interfere with concurrent
+ * XIP access from interrupts or core1. */
 static void __no_inline_not_in_flash_func(fw_integrity_check_repair)(void) {
 	diag_flash_ops++;
 	scratch_write(4, diag_flash_ops);
@@ -241,21 +244,7 @@ static void __no_inline_not_in_flash_func(fw_integrity_check_repair)(void) {
 		diag_last_mismatch_code = ((uint32_t)code << 24) | (cur.m0_timing & 0x00ffffffu);
 		scratch_write(5, diag_qmi_mismatches);
 		scratch_write(6, diag_last_mismatch_code);
-		/* H1 repair: forcibly restore the known-good QMI state and dump the
-		 * XIP cache so the next fetch re-reads from flash via correct timing. */
 		qmi_restore(&qmi_baseline);
-	}
-	/* Always invalidate the cache; cheap and removes any stale lines even when
-	 * QMI itself didn't drift. */
-	xip_invalidate_all();
-
-	/* Now read the canary back through XIP and compare. */
-	for (int i = 0; i < (int)sizeof(canary_ram_copy); i++) {
-		if ((uint8_t)fw_xip_canary[i] != canary_ram_copy[i]) {
-			diag_canary_mismatches++;
-			scratch_write(7, diag_canary_mismatches);
-			break;
-		}
 	}
 }
 
@@ -280,6 +269,71 @@ static void __no_inline_not_in_flash_func(fw_integrity_dump_uart)(void) {
 	uart0_puts_raw(diag_s_eol);
 }
 
+/* End-of-OTA finalisation: flush cache with interrupts disabled, then do a
+ * definitive cold canary read to check QMI health, then reboot via rom_reboot.
+ * All output is via direct UART (RAM strings only — no flash reads). */
+static char final_tag[]   = "\r\n[OTA-FINAL] ops=";
+static char final_qmi[]   = " qmi_mm=";
+static char final_cold[]  = " cold_canary=";
+static char final_ok[]    = " OK";
+static char final_fail[]  = " FAIL";
+static char final_eol[]   = "\r\n";
+static char final_reboot[] = " rebooting...\r\n";
+
+static void __no_inline_not_in_flash_func(ota_finalize)(void) {
+	/* Capture one last QMI snapshot for diagnostics. */
+	qmi_snapshot_t cur;
+	qmi_capture(&cur);
+	int qmi_code = qmi_compare(&qmi_baseline, &cur);
+
+	/* Flush the entire XIP cache with interrupts disabled, so that no
+	 * concurrent IRQ or core1 traffic interferes with the maintenance
+	 * aperture operations. */
+	uint32_t saved = save_and_disable_interrupts();
+	xip_invalidate_all();
+
+	/* Cold-read the full canary — after the flush every byte is a
+	 * genuine cold miss that exercises the QMI read path. */
+	bool cold_ok = true;
+	int fail_byte = -1;
+	for (int i = 0; i < (int)sizeof(canary_ram_copy); i++) {
+		if ((uint8_t)fw_xip_canary[i] != canary_ram_copy[i]) {
+			cold_ok = false;
+			if (fail_byte < 0) fail_byte = i;
+		}
+	}
+
+	restore_interrupts(saved);
+
+	/* Update diagnostic counters and persist to scratch[7]. */
+	uint32_t cold_fails = cold_ok ? 0u : 1u;
+	diag_canary_mismatches = cold_fails;
+	scratch_write(7, (cold_fails << 16) | (uint32_t)(fail_byte >= 0 ? fail_byte : 0xFFFFu));
+
+	/* Output via direct UART. */
+	uart0_puts_raw(final_tag);
+	uart0_put_hex32(diag_flash_ops);
+	uart0_puts_raw(final_qmi);
+	uart0_put_hex32((uint32_t)qmi_code);
+	uart0_puts_raw(final_cold);
+	uart0_puts_raw(cold_ok ? final_ok : final_fail);
+	if (!cold_ok) {
+		uart0_puts_raw(final_tag);
+		uart0_put_hex32((uint32_t)fail_byte);
+	}
+	uart0_puts_raw(final_reboot);
+
+	/* Reboot into the updated partition. */
+	save_and_disable_interrupts();
+	rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE | REBOOT2_FLAG_NO_RETURN_ON_SUCCESS,
+		100, state->flash_update, 0);
+	/* Not reached — but fallback to watchdog reset */
+	free(state);
+	sleep_ms(1000);
+	while (1) {
+		watchdog_reboot(0, 0, 0);
+	}
+}
 
 //typedef int (*ota_segment_consumer_t)(OTA_UPDATE_STATE_T *state, uf2_block_t *block);
 
@@ -450,48 +504,7 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 	state->blocks_done++;
 
 	if (state->blocks_seen >= state->num_blocks) {
-		/* Direct-UART diagnostic dump BEFORE we trust printf/stdio_flush.
-		 * If counters are nonzero we know XIP/cache was disturbed. */
-		fw_integrity_dump_uart();
-
-		/* Diagnostic: take the address of a known flash-resident format
-		 * string, dump it via direct UART (no printf, no libc, no flash
-		 * other than the bytes themselves). If we see clean ASCII here,
-		 * flash is intact at that address and printf itself is broken.
-		 * If we see garbage here, flash bytes at that address are
-		 * corrupted - i.e. we wrote over the running partition. */
-		static const char ota_complete_fmt[] =
-			"[OTA] Update complete (ops=%u qmi_mm=%u canary_mm=%u), rebooting...\r\n";
-		fw_dump_flash_region("fmt", (const uint8_t *)ota_complete_fmt, sizeof(ota_complete_fmt));
-
-		/* Also dump bytes around several spread-out addresses in the
-		 * running partition's expected flash window so we can see if
-		 * some regions are corrupted while others (like the canary)
-		 * are intact. */
-		fw_dump_flash_region("a000", (const uint8_t *)(XIP_BASE + 0x10000), 32);
-		fw_dump_flash_region("a040", (const uint8_t *)(XIP_BASE + 0x40000), 32);
-		fw_dump_flash_region("a080", (const uint8_t *)(XIP_BASE + 0x80000), 32);
-		fw_dump_flash_region("a100", (const uint8_t *)(XIP_BASE + 0x100000), 32);
-		fw_dump_flash_region("a180", (const uint8_t *)(XIP_BASE + 0x180000), 32);
-		fw_dump_flash_region("a1F0", (const uint8_t *)(XIP_BASE + 0x1F0000), 32);
-
-		/* Now try the regular printf path; if XIP is healthy this prints
-		 * cleanly, if not we'll see garbage (which itself is the signal). */
-		printf(ota_complete_fmt,
-			(unsigned)diag_flash_ops,
-			(unsigned)diag_qmi_mismatches,
-			(unsigned)diag_canary_mismatches);
-		stdio_flush();
-		save_and_disable_interrupts();
-		int ret = rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE | REBOOT2_FLAG_NO_RETURN_ON_SUCCESS, 100, state->flash_update, 0);
-		free(state);
-		sleep_ms(1000);
-		while(1) {
-			watchdog_reboot(0, 0, 0);
-		}
-
-		//printf("[fw] *** DOWNLOAD COMPLETE! ***\n");
-		//state->complete = true;
+		ota_finalize();
 		return 0;
 	}
 
