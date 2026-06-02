@@ -56,6 +56,8 @@
 #define UART0_DR_ADDR        0x40070000u
 #define UART0_FR_ADDR        0x40070018u
 #define UART_FR_TXFF         (1u << 5)
+#define UART_FR_BUSY         (1u << 3)
+#define UART_FR_TXFE         (1u << 7)
 
 typedef struct {
 	uint32_t m0_timing;
@@ -272,10 +274,10 @@ static void __no_inline_not_in_flash_func(fw_integrity_dump_uart)(void) {
 static OTA_UPDATE_STATE_T* state;
 
 /* End-of-OTA finalisation: output diagnostic counters via direct UART
- * (RAM strings only — no flash reads at all), then rom_reboot.
+ * (RAM strings only — no flash reads at all), then watchdog_reboot.
  * No cache flush or cold canary test here — those would read flash
- * through a potentially broken QMI path, and rom_reboot is a full
- * hardware reset that re-inits QMI from scratch. */
+ * through a potentially broken QMI path. Watchdog reset forces a full
+ * cold boot via the ROM, which re-inits QMI from OTP and re-runs boot2. */
 static char final_tag[]   = "\r\n[OTA-FINAL] ops=";
 static char final_qmi[]   = " qmi_mm=";
 static char final_cold[]  = " canary_mm=";
@@ -303,15 +305,26 @@ static void __no_inline_not_in_flash_func(ota_finalize)(void) {
 	scratch_write(6, diag_last_mismatch_code);
 	scratch_write(7, diag_canary_mismatches);
 
-	/* Reboot into the updated partition. */
+	/* Reboot via watchdog rather than rom_reboot(FLASH_UPDATE).
+	 * rom_reboot's FLASH_UPDATE path touches flash through the
+	 * (potentially still-broken) QMI/XIP path; a plain watchdog reset
+	 * forces a full cold boot where the boot ROM re-inits QMI from OTP,
+	 * re-runs boot2, and picks the partition from version metadata. */
+
+	/* Drain UART0 TX FIFO so the diagnostic line actually reaches the
+	 * host before we reset. */
+	{
+		volatile uint32_t *fr = (volatile uint32_t *)UART0_FR_ADDR;
+		uint32_t spin = 0;
+		while (((*fr) & (UART_FR_BUSY | UART_FR_TXFE)) != UART_FR_TXFE) {
+			if (++spin > 10000000u) break;
+		}
+	}
+
 	save_and_disable_interrupts();
-	rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE | REBOOT2_FLAG_NO_RETURN_ON_SUCCESS,
-		100, state->flash_update, 0);
-	/* Not reached — but fallback to watchdog reset */
-	free(state);
-	sleep_ms(1000);
+	watchdog_reboot(0, 0, 0);
 	while (1) {
-		watchdog_reboot(0, 0, 0);
+		tight_loop_contents();
 	}
 }
 
