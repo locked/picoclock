@@ -307,6 +307,15 @@ void system_initialize() {
     int ret = rom_get_boot_info(&boot_info);
     printf("Boot partition is %d\n", boot_info.partition);
 
+    /* OTA diagnostic counters from the previous boot's flash session, kept in
+     * watchdog scratch[4..7] by fw.c. Nonzero values indicate that QMI / XIP
+     * cache state drifted during the previous OTA. */
+    {
+        volatile uint32_t *scr = (volatile uint32_t *)0x400d802cu;
+        printf("[picoclock] PREV-OTA-DIAG ops=%u qmi_mm=%u last_code=%08x canary_mm=%u\r\n",
+            (unsigned)scr[4], (unsigned)scr[5], (unsigned)scr[6], (unsigned)scr[7]);
+    }
+
 	// Init SDCARD
 	gpio_init(SD_CARD_CS);
 	gpio_put(SD_CARD_CS, 1);

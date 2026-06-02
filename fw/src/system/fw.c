@@ -17,6 +17,231 @@
 
 #define FLASH_SECTOR_ERASE_SIZE 4096u
 
+/* ============================================================================
+ * H1 instrumentation + repair: QMI / XIP cache integrity around rom_flash_op
+ *
+ * Hypothesis: SDK's flash_safe_execute saves QMI state before the ROM flash
+ * op and restores it afterwards. Boot2 (which the ROM re-runs internally)
+ * may produce a slightly different auto-calibrated timing each run, so the
+ * "restore" puts back stale parameters and subsequent XIP reads return
+ * shuffled bytes -> printf garbage.
+ *
+ * Strategy:
+ *   1. Snapshot QMI M0 timing/format/cmd + ATRANS regs ONCE at OTA init,
+ *      when XIP is known good.
+ *   2. After every rom_flash_op: re-read QMI, count mismatches, force-restore
+ *      from the baseline, then flush the XIP cache.
+ *   3. Cross-check a flash-resident "canary" string by reading it through XIP
+ *      and comparing against a RAM copy taken at init.
+ *   4. Persist counters in watchdog scratch[4..7] so they survive the reboot
+ *      and can be inspected by the new firmware (or here on next OTA).
+ *
+ * All helpers are forced into RAM so they remain callable while XIP is in any
+ * questionable state.
+ * ==========================================================================*/
+
+/* RP2350 QMI register block (datasheet 12.14) */
+#define QMI_BASE_ADDR        0x400d0000u
+#define QMI_M0_TIMING_OFF    0x0cu
+#define QMI_M0_RFMT_OFF      0x10u
+#define QMI_M0_RCMD_OFF      0x14u
+#define QMI_M0_WFMT_OFF      0x18u
+#define QMI_M0_WCMD_OFF      0x1cu
+#define QMI_ATRANS_OFF       0x34u  /* ATRANS0..7 are at 0x34, 0x38 ... 0x50 */
+
+/* RP2350 XIP cache control */
+#define XIP_CTRL_BASE_ADDR   0x400c8000u
+#define XIP_CTRL_FLUSH_BITS  0x00000002u
+#define XIP_STAT_FLUSH_READY 0x00000002u
+
+/* RP2350 watchdog scratch registers (raw access; do not pull a new SDK include) */
+#define WATCHDOG_SCRATCH_BASE 0x400d802cu /* scratch[0] */
+
+/* UART0 raw register access for fallback direct prints (no flash needed) */
+#define UART0_DR_ADDR        0x40070000u
+#define UART0_FR_ADDR        0x40070018u
+#define UART_FR_TXFF         (1u << 5)
+
+typedef struct {
+	uint32_t m0_timing;
+	uint32_t m0_rfmt;
+	uint32_t m0_rcmd;
+	uint32_t m0_wfmt;
+	uint32_t m0_wcmd;
+	uint32_t atrans[8];
+} qmi_snapshot_t;
+
+static qmi_snapshot_t qmi_baseline;
+static bool qmi_baseline_valid = false;
+
+/* Flash-resident canary string. Lives in .rodata of the *running* partition,
+ * which the OTA never writes (writes always target the other partition). Any
+ * change observed when reading via XIP therefore indicates cache corruption,
+ * not flash corruption. */
+__attribute__((used, aligned(64)))
+static const char fw_xip_canary[64] =
+	"OTA_XIP_CANARY__DO_NOT_EDIT__abcdefghijklmnopqrstuvwxyz_0123456";
+static uint8_t canary_ram_copy[64];
+
+/* Diagnostic counters (also mirrored to watchdog scratch[4..7]) */
+static uint32_t diag_flash_ops = 0;
+static uint32_t diag_qmi_mismatches = 0;
+static uint32_t diag_canary_mismatches = 0;
+static uint32_t diag_last_mismatch_code = 0; /* upper 8 bits = which reg, low 24 = current m0_timing low bits */
+
+static inline volatile uint32_t *qmi_reg(uint32_t off) {
+	return (volatile uint32_t *)(QMI_BASE_ADDR + off);
+}
+
+static void __no_inline_not_in_flash_func(qmi_capture)(qmi_snapshot_t *s) {
+	s->m0_timing = *qmi_reg(QMI_M0_TIMING_OFF);
+	s->m0_rfmt   = *qmi_reg(QMI_M0_RFMT_OFF);
+	s->m0_rcmd   = *qmi_reg(QMI_M0_RCMD_OFF);
+	s->m0_wfmt   = *qmi_reg(QMI_M0_WFMT_OFF);
+	s->m0_wcmd   = *qmi_reg(QMI_M0_WCMD_OFF);
+	for (int i = 0; i < 8; i++) {
+		s->atrans[i] = *qmi_reg(QMI_ATRANS_OFF + (uint32_t)(i * 4));
+	}
+}
+
+/* Returns 0 if identical, otherwise an opaque non-zero code identifying which
+ * register first diverged (1..13). */
+static int __no_inline_not_in_flash_func(qmi_compare)(const qmi_snapshot_t *a, const qmi_snapshot_t *b) {
+	if (a->m0_timing != b->m0_timing) return 1;
+	if (a->m0_rfmt   != b->m0_rfmt  ) return 2;
+	if (a->m0_rcmd   != b->m0_rcmd  ) return 3;
+	if (a->m0_wfmt   != b->m0_wfmt  ) return 4;
+	if (a->m0_wcmd   != b->m0_wcmd  ) return 5;
+	for (int i = 0; i < 8; i++) {
+		if (a->atrans[i] != b->atrans[i]) return 6 + i;
+	}
+	return 0;
+}
+
+static void __no_inline_not_in_flash_func(qmi_restore)(const qmi_snapshot_t *s) {
+	*qmi_reg(QMI_M0_TIMING_OFF) = s->m0_timing;
+	*qmi_reg(QMI_M0_RFMT_OFF)   = s->m0_rfmt;
+	*qmi_reg(QMI_M0_RCMD_OFF)   = s->m0_rcmd;
+	*qmi_reg(QMI_M0_WFMT_OFF)   = s->m0_wfmt;
+	*qmi_reg(QMI_M0_WCMD_OFF)   = s->m0_wcmd;
+	for (int i = 0; i < 8; i++) {
+		*qmi_reg(QMI_ATRANS_OFF + (uint32_t)(i * 4)) = s->atrans[i];
+	}
+	__dsb();
+	__isb();
+}
+
+static void __no_inline_not_in_flash_func(xip_flush_cache_full)(void) {
+	volatile uint32_t *ctrl = (volatile uint32_t *)XIP_CTRL_BASE_ADDR;
+	volatile uint32_t *stat = (volatile uint32_t *)(XIP_CTRL_BASE_ADDR + 0x4u);
+	*ctrl |= XIP_CTRL_FLUSH_BITS;
+	__dsb();
+	/* Wait for flush-done; FLUSH bit auto-clears OR FLUSH_READY status is set. */
+	for (volatile int spin = 0; spin < 10000; spin++) {
+		if (((*ctrl) & XIP_CTRL_FLUSH_BITS) == 0) break;
+		if (((*stat) & XIP_STAT_FLUSH_READY)) break;
+	}
+	__isb();
+}
+
+/* Direct-UART hex dump for diagnostics that MUST not rely on flash-resident
+ * printf format strings or libc state. */
+static void __no_inline_not_in_flash_func(uart0_putc_raw)(char c) {
+	volatile uint32_t *fr = (volatile uint32_t *)UART0_FR_ADDR;
+	volatile uint32_t *dr = (volatile uint32_t *)UART0_DR_ADDR;
+	while ((*fr) & UART_FR_TXFF) {}
+	*dr = (uint32_t)(uint8_t)c;
+}
+
+static void __no_inline_not_in_flash_func(uart0_puts_raw)(const char *s) {
+	/* Caller passes either a stack/RAM string or a flash one; if flash, it
+	 * may be unreadable. We accept that risk and prefer RAM strings here. */
+	while (*s) uart0_putc_raw(*s++);
+}
+
+static void __no_inline_not_in_flash_func(uart0_put_hex32)(uint32_t v) {
+	for (int i = 7; i >= 0; i--) {
+		uint32_t n = (v >> (i * 4)) & 0xfu;
+		uart0_putc_raw((char)(n < 10 ? ('0' + n) : ('a' + n - 10)));
+	}
+}
+
+static void __no_inline_not_in_flash_func(scratch_write)(unsigned idx, uint32_t v) {
+	volatile uint32_t *p = (volatile uint32_t *)(WATCHDOG_SCRATCH_BASE + idx * 4u);
+	*p = v;
+}
+
+/* Initialize the baseline. Must be called when XIP is known good and BEFORE
+ * any rom_flash_op. */
+static void __no_inline_not_in_flash_func(fw_integrity_init)(void) {
+	qmi_capture(&qmi_baseline);
+	qmi_baseline_valid = true;
+	for (int i = 0; i < (int)sizeof(canary_ram_copy); i++) {
+		canary_ram_copy[i] = (uint8_t)fw_xip_canary[i];
+	}
+	diag_flash_ops = 0;
+	diag_qmi_mismatches = 0;
+	diag_canary_mismatches = 0;
+	diag_last_mismatch_code = 0;
+	scratch_write(4, 0);
+	scratch_write(5, 0);
+	scratch_write(6, 0);
+	scratch_write(7, 0);
+}
+
+/* Run after EVERY rom_flash_op. Detects, repairs, and logs corruption. */
+static void __no_inline_not_in_flash_func(fw_integrity_check_repair)(void) {
+	diag_flash_ops++;
+	scratch_write(4, diag_flash_ops);
+
+	if (!qmi_baseline_valid) return;
+
+	qmi_snapshot_t cur;
+	qmi_capture(&cur);
+	int code = qmi_compare(&qmi_baseline, &cur);
+	if (code != 0) {
+		diag_qmi_mismatches++;
+		diag_last_mismatch_code = ((uint32_t)code << 24) | (cur.m0_timing & 0x00ffffffu);
+		scratch_write(5, diag_qmi_mismatches);
+		scratch_write(6, diag_last_mismatch_code);
+		/* H1 repair: forcibly restore the known-good QMI state and dump the
+		 * XIP cache so the next fetch re-reads from flash via correct timing. */
+		qmi_restore(&qmi_baseline);
+	}
+	/* Always flush the cache; cheap and removes any stale lines even when
+	 * QMI itself didn't drift. */
+	xip_flush_cache_full();
+
+	/* Now read the canary back through XIP and compare. */
+	for (int i = 0; i < (int)sizeof(canary_ram_copy); i++) {
+		if ((uint8_t)fw_xip_canary[i] != canary_ram_copy[i]) {
+			diag_canary_mismatches++;
+			scratch_write(7, diag_canary_mismatches);
+			break;
+		}
+	}
+}
+
+/* Print one diagnostic summary line via direct UART (no flash). Safe to call
+ * even when printf is unreliable. */
+static void __no_inline_not_in_flash_func(fw_integrity_dump_uart)(void) {
+	char tag[] = "\r\n[OTA-DIAG] ops=";
+	uart0_puts_raw(tag);
+	uart0_put_hex32(diag_flash_ops);
+	char a[] = " qmi_mm=";
+	uart0_puts_raw(a);
+	uart0_put_hex32(diag_qmi_mismatches);
+	char b[] = " canary_mm=";
+	uart0_puts_raw(b);
+	uart0_put_hex32(diag_canary_mismatches);
+	char c[] = " last_code=";
+	uart0_puts_raw(c);
+	uart0_put_hex32(diag_last_mismatch_code);
+	char d[] = "\r\n";
+	uart0_puts_raw(d);
+}
+
+
 //typedef int (*ota_segment_consumer_t)(OTA_UPDATE_STATE_T *state, uf2_block_t *block);
 
 typedef struct uf2_block uf2_block_t;
@@ -117,6 +342,7 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 			(CFLASH_ASPACE_VALUE_STORAGE << CFLASH_ASPACE_LSB);
 		//printf("[fw] erase_addr:[%x]\n", erase_addr);
 		ret = rom_flash_op(flags, erase_addr, FLASH_SECTOR_ERASE_SIZE, NULL);
+		fw_integrity_check_repair();
 
 		state->highest_erased_sector = flash_sector;
 
@@ -132,6 +358,7 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 		(CFLASH_ASPACE_VALUE_STORAGE << CFLASH_ASPACE_LSB);
 	//printf("[fw] flash_addr:[%x]\n", flash_addr);
 	ret = rom_flash_op(flags, flash_addr, 256, (void*)block->data);
+	fw_integrity_check_repair();
 
 	if (ret != 0) {
 		printf("[ERROR] Flash program failed with code: %d\n", ret);
@@ -145,6 +372,15 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 	state->blocks_done++;
 
 	if (state->blocks_done >= state->num_blocks) {
+		/* Direct-UART diagnostic dump BEFORE we trust printf/stdio_flush.
+		 * If counters are nonzero we know XIP/cache was disturbed. */
+		fw_integrity_dump_uart();
+		/* Now try the regular printf path; if XIP is healthy this prints
+		 * cleanly, if not we'll see garbage (which itself is the signal). */
+		printf("[OTA] Update complete (ops=%u qmi_mm=%u canary_mm=%u), rebooting...\r\n",
+			(unsigned)diag_flash_ops,
+			(unsigned)diag_qmi_mismatches,
+			(unsigned)diag_canary_mismatches);
 		stdio_flush();
 		save_and_disable_interrupts();
 		int ret = rom_reboot(REBOOT2_FLAG_REBOOT_TYPE_FLASH_UPDATE | REBOOT2_FLAG_NO_RETURN_ON_SUCCESS, 100, state->flash_update, 0);
@@ -160,7 +396,9 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 	}
 
 	if (state->blocks_done % 10 == 0) {
-		printf("[fw] Segment written flash_addr:[%x] state->blocks_done:[%d/%d]\r\n", flash_addr, state->blocks_done, state->num_blocks);
+		printf("[fw] Segment written flash_addr:[%x] state->blocks_done:[%d/%d] qmi_mm:[%u] canary_mm:[%u]\r\n",
+			flash_addr, state->blocks_done, state->num_blocks,
+			(unsigned)diag_qmi_mismatches, (unsigned)diag_canary_mismatches);
 	}
 	return 0;
 }
@@ -183,6 +421,10 @@ int fw_update_init() {
 	if (!state) {
 		return -1;
 	}
+
+	/* Snapshot the known-good QMI/XIP state and the canary BEFORE any flash
+	 * operation. Everything that follows is compared/repaired against this. */
+	fw_integrity_init();
 
 	return 0;
 }
