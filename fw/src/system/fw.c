@@ -84,6 +84,9 @@ static uint32_t diag_qmi_mismatches = 0;
 static uint32_t diag_canary_mismatches = 0;
 static uint32_t diag_last_mismatch_code = 0; /* upper 8 bits = which reg, low 24 = current m0_timing low bits */
 
+/* Cached pointer to ROM flash_flush_cache, looked up once at init. */
+static rom_flash_flush_cache_fn flash_flush_func;
+
 static inline volatile uint32_t *qmi_reg(uint32_t off) {
 	return (volatile uint32_t *)(QMI_BASE_ADDR + off);
 }
@@ -127,16 +130,16 @@ static void __no_inline_not_in_flash_func(qmi_restore)(const qmi_snapshot_t *s) 
 }
 
 static void __no_inline_not_in_flash_func(xip_invalidate_all)(void) {
-	/* RP2350 XIP cache invalidate via maintenance aperture.
-	 * The 16 KiB / 8 B/line = 2048 set/way walks use 8-bit writes
-	 * at addresses outside the downstream QMI flash range, followed
-	 * by a full memory barrier.  From pico-sdk xip_cache.c:xip_cache_invalidate_all. */
-	volatile uint8_t *base = (volatile uint8_t *)0x1BFFC000u;
-	for (uint32_t off = 0x0u; off < 0x4000u; off += 0x8u) {
-		base[off] = 0;   /* XIP_CACHE_INVALIDATE_BY_SET_WAY = 0 */
+	/* Delegate to the ROM's own cache flush. This is the same function
+	 * the SDK calls inside flash_range_program / flash_range_erase, and
+	 * it is safe to call with interrupts enabled because it only issues
+	 * set/way maintenance operations (no flash access).
+	 *
+	 * We cache the lookup at init so this call stays fast and
+	 * RAM-only. */
+	if (flash_flush_func) {
+		flash_flush_func();
 	}
-	__dsb();
-	__isb();
 }
 
 /* Direct-UART hex dump for diagnostics that MUST not rely on flash-resident
@@ -218,6 +221,9 @@ static void __no_inline_not_in_flash_func(fw_integrity_init)(void) {
 	scratch_write(5, 0);
 	scratch_write(6, 0);
 	scratch_write(7, 0);
+	/* Cache the ROM cache-flush function pointer so that xip_invalidate_all
+	 * can call it rapidly from RAM without re-doing the table lookup. */
+	flash_flush_func = (rom_flash_flush_cache_fn)rom_func_lookup_inline(ROM_FUNC_FLASH_FLUSH_CACHE);
 }
 
 /* Run after EVERY rom_flash_op. Detects, repairs, and logs corruption. */
