@@ -223,22 +223,24 @@ static void __no_inline_not_in_flash_func(fw_integrity_check_repair)(void) {
 }
 
 /* Print one diagnostic summary line via direct UART (no flash). Safe to call
- * even when printf is unreliable. */
+ * even when printf is unreliable. Strings live in .data (RAM) so they are not
+ * re-read from flash on every call. */
+static char diag_s_tag[]    = "\r\n[OTA-DIAG] ops=";
+static char diag_s_qmi[]    = " qmi_mm=";
+static char diag_s_canary[] = " canary_mm=";
+static char diag_s_last[]   = " last_code=";
+static char diag_s_eol[]    = "\r\n";
+
 static void __no_inline_not_in_flash_func(fw_integrity_dump_uart)(void) {
-	char tag[] = "\r\n[OTA-DIAG] ops=";
-	uart0_puts_raw(tag);
+	uart0_puts_raw(diag_s_tag);
 	uart0_put_hex32(diag_flash_ops);
-	char a[] = " qmi_mm=";
-	uart0_puts_raw(a);
+	uart0_puts_raw(diag_s_qmi);
 	uart0_put_hex32(diag_qmi_mismatches);
-	char b[] = " canary_mm=";
-	uart0_puts_raw(b);
+	uart0_puts_raw(diag_s_canary);
 	uart0_put_hex32(diag_canary_mismatches);
-	char c[] = " last_code=";
-	uart0_puts_raw(c);
+	uart0_puts_raw(diag_s_last);
 	uart0_put_hex32(diag_last_mismatch_code);
-	char d[] = "\r\n";
-	uart0_puts_raw(d);
+	uart0_puts_raw(diag_s_eol);
 }
 
 
@@ -320,9 +322,35 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 
 	uint32_t flash_addr = block->target_addr;
 
-	if (flash_addr >= XIP_BASE && flash_addr < (XIP_BASE + 0x200000)) {
-		uint32_t offset_in_partition = flash_addr - XIP_BASE;
-		flash_addr = state->flash_update + offset_in_partition;
+	/* Lock in the source base address from the FIRST block we see. The UF2
+	 * may have been authored against XIP_BASE (0x10000000), or against the
+	 * actual partition-A address (0x10002000), or partition-B (0x10202000).
+	 * Whatever it is, everything from here on is interpreted as
+	 *   offset_in_image = block->target_addr - src_base
+	 * and re-based to state->flash_update. This guarantees we only ever
+	 * touch the inactive partition. */
+	if (!state->src_base_valid) {
+		state->src_base = block->target_addr;
+		state->src_base_valid = true;
+		printf("[OTA] src_base locked to:[%x] -> flash_update:[%x]\n",
+			state->src_base, state->flash_update);
+	}
+
+	if (block->target_addr < state->src_base) {
+		printf("[ERROR] block target_addr:[%x] below src_base:[%x]\n",
+			block->target_addr, state->src_base);
+		return -1;
+	}
+	uint32_t offset_in_image = block->target_addr - state->src_base;
+	flash_addr = state->flash_update + offset_in_image;
+
+	/* Hard bound: stay inside the target partition (state->write_size bytes
+	 * starting at state->flash_update). Writing outside means we'd be
+	 * overwriting the running partition - that's the bug we're fixing. */
+	if (offset_in_image + 256 > state->write_size) {
+		printf("[ERROR] write outside target partition: offset:[%x] size:[%x]\n",
+			offset_in_image, state->write_size);
+		return -1;
 	}
 
 	if (flash_addr < XIP_BASE || flash_addr >= (XIP_BASE + 0x800000)) {
