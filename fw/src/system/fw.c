@@ -277,19 +277,6 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 		return -1;
 	}
 
-	state->blocks_seen++;
-
-	/* Skip non-flash blocks (UF2 spec FLAG_NOT_MAIN_FLASH = 0x1) and blocks
-	 * whose target_addr is outside the 8 MB XIP window. These are metadata /
-	 * family-id / padding blocks that some toolchains emit with synthetic
-	 * addresses like 0x10FFFF00. They must not influence src_base or be
-	 * written to flash. */
-	if ((block->flags & 0x1u) ||
-	    block->target_addr < XIP_BASE ||
-	    block->target_addr >= (XIP_BASE + 0x800000)) {
-		return 0;
-	}
-
 	if (state->num_blocks == 0 || (block->num_blocks > state->num_blocks && state->blocks_done < 2)) {
 		state->num_blocks = block->num_blocks;
 		state->family_id = block->file_size;
@@ -412,7 +399,7 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 
 	state->blocks_done++;
 
-	if (state->blocks_seen >= state->num_blocks) {
+	if (state->blocks_done >= state->num_blocks) {
 		/* Direct-UART diagnostic dump BEFORE we trust printf/stdio_flush.
 		 * If counters are nonzero we know XIP/cache was disturbed. */
 		fw_integrity_dump_uart();

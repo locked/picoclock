@@ -21,9 +21,8 @@ typedef struct OTA_UPDATE_STATE_T_ {
 	int32_t write_offset;
 	uint32_t write_size;
 	uint32_t highest_erased_sector;
-	uint32_t src_base;       /* XIP base the UF2 was authored against (locked on first real block) */
+	uint32_t src_base;       /* XIP base the UF2 was authored against (locked on first block) */
 	bool     src_base_valid;
-	int      blocks_seen;    /* counts every UF2 block we receive, including skipped/metadata */
 } OTA_UPDATE_STATE_T;
 
 typedef struct uf2_block uf2_block_t;
