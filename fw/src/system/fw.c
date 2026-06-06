@@ -269,8 +269,6 @@ static void __no_inline_not_in_flash_func(fw_integrity_dump_uart)(void) {
 	uart0_puts_raw(diag_s_eol);
 }
 
-static OTA_UPDATE_STATE_T* state;
-
 /* End-of-OTA finalisation: flush cache with interrupts disabled, then do a
  * definitive cold canary read to check QMI health, then reboot via rom_reboot.
  * All output is via direct UART (RAM strings only — no flash reads). */
@@ -340,6 +338,8 @@ static void __no_inline_not_in_flash_func(ota_finalize)(void) {
 //typedef int (*ota_segment_consumer_t)(OTA_UPDATE_STATE_T *state, uf2_block_t *block);
 
 typedef struct uf2_block uf2_block_t;
+
+static OTA_UPDATE_STATE_T* state;
 
 
 static OTA_UPDATE_STATE_T* ota_update_init(void) {
