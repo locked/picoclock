@@ -49,6 +49,11 @@
 #define QMI_M0_WCMD_OFF      0x1cu
 #define QMI_ATRANS_OFF       0x34u  /* ATRANS0..7 are at 0x34, 0x38 ... 0x50 */
 
+/* RP2350 XIP cache control */
+#define XIP_CTRL_BASE_ADDR   0x400c8000u
+#define XIP_CTRL_FLUSH_BITS  0x00000002u
+#define XIP_STAT_FLUSH_READY 0x00000002u
+
 /* RP2350 watchdog scratch registers (raw access; do not pull a new SDK include) */
 #define WATCHDOG_SCRATCH_BASE 0x400d802cu /* scratch[0] */
 
@@ -126,16 +131,16 @@ static void __no_inline_not_in_flash_func(qmi_restore)(const qmi_snapshot_t *s) 
 	__isb();
 }
 
-static void __no_inline_not_in_flash_func(xip_invalidate_all)(void) {
-	/* RP2350 XIP cache invalidate via maintenance aperture.
-	 * The 16 KiB / 8 B/line = 2048 set/way walks use 8-bit writes
-	 * at addresses outside the downstream QMI flash range, followed
-	 * by a full memory barrier.  From pico-sdk xip_cache.c:xip_cache_invalidate_all. */
-	volatile uint8_t *base = (volatile uint8_t *)0x1BFFC000u;
-	for (uint32_t off = 0x0u; off < 0x4000u; off += 0x8u) {
-		base[off] = 0;   /* XIP_CACHE_INVALIDATE_BY_SET_WAY = 0 */
-	}
+static void __no_inline_not_in_flash_func(xip_flush_cache_full)(void) {
+	volatile uint32_t *ctrl = (volatile uint32_t *)XIP_CTRL_BASE_ADDR;
+	volatile uint32_t *stat = (volatile uint32_t *)(XIP_CTRL_BASE_ADDR + 0x4u);
+	*ctrl |= XIP_CTRL_FLUSH_BITS;
 	__dsb();
+	/* Wait for flush-done; FLUSH bit auto-clears OR FLUSH_READY status is set. */
+	for (volatile int spin = 0; spin < 10000; spin++) {
+		if (((*ctrl) & XIP_CTRL_FLUSH_BITS) == 0) break;
+		if (((*stat) & XIP_STAT_FLUSH_READY)) break;
+	}
 	__isb();
 }
 
@@ -239,9 +244,9 @@ static void __no_inline_not_in_flash_func(fw_integrity_check_repair)(void) {
 		 * XIP cache so the next fetch re-reads from flash via correct timing. */
 		qmi_restore(&qmi_baseline);
 	}
-	/* Always invalidate the cache; cheap and removes any stale lines even when
+	/* Always flush the cache; cheap and removes any stale lines even when
 	 * QMI itself didn't drift. */
-	xip_invalidate_all();
+	xip_flush_cache_full();
 
 	/* Now read the canary back through XIP and compare. */
 	for (int i = 0; i < (int)sizeof(canary_ram_copy); i++) {
