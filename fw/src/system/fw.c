@@ -166,42 +166,6 @@ static void __no_inline_not_in_flash_func(uart0_put_hex32)(uint32_t v) {
 	}
 }
 
-static void __no_inline_not_in_flash_func(uart0_put_hex8)(uint8_t v) {
-	uint32_t hi = (v >> 4) & 0xfu;
-	uint32_t lo = v & 0xfu;
-	uart0_putc_raw((char)(hi < 10 ? ('0' + hi) : ('a' + hi - 10)));
-	uart0_putc_raw((char)(lo < 10 ? ('0' + lo) : ('a' + lo - 10)));
-}
-
-/* Dump a region of flash both as ASCII (printable chars) and as hex via
- * direct UART. This bypasses printf entirely. The bytes are read through XIP
- * but the printing path uses only RAM + UART regs. If the ASCII / hex shows
- * garbage, the flash at that address really is returning corrupted bytes. */
-static char dump_s_addr[] = "[FDUMP ";
-static char dump_s_sep[]  = " @";
-static char dump_s_mid[]  = " bytes=";
-static char dump_s_pipe[] = " |";
-static char dump_s_eol[]  = "|\r\n";
-
-static void __no_inline_not_in_flash_func(fw_dump_flash_region)(const char *tag, const uint8_t *addr, unsigned n) {
-	uart0_puts_raw(dump_s_addr);
-	/* tag string itself lives in flash at the caller's site; print at most
-	 * 8 chars best-effort. If it garbles that's also a data point. */
-	for (int i = 0; i < 8 && tag[i]; i++) uart0_putc_raw(tag[i]);
-	uart0_puts_raw(dump_s_sep);
-	uart0_put_hex32((uint32_t)addr);
-	uart0_puts_raw(dump_s_mid);
-	for (unsigned i = 0; i < n; i++) {
-		uart0_put_hex8(addr[i]);
-	}
-	uart0_puts_raw(dump_s_pipe);
-	for (unsigned i = 0; i < n; i++) {
-		uint8_t c = addr[i];
-		uart0_putc_raw((char)((c >= ' ' && c < 127) ? c : '.'));
-	}
-	uart0_puts_raw(dump_s_eol);
-}
-
 static void __no_inline_not_in_flash_func(scratch_write)(unsigned idx, uint32_t v) {
 	volatile uint32_t *p = (volatile uint32_t *)(WATCHDOG_SCRATCH_BASE + idx * 4u);
 	*p = v;
@@ -452,31 +416,9 @@ int __no_inline_not_in_flash_func(process_ota_segment)(char* buf) {
 		/* Direct-UART diagnostic dump BEFORE we trust printf/stdio_flush.
 		 * If counters are nonzero we know XIP/cache was disturbed. */
 		fw_integrity_dump_uart();
-
-		/* Diagnostic: take the address of a known flash-resident format
-		 * string, dump it via direct UART (no printf, no libc, no flash
-		 * other than the bytes themselves). If we see clean ASCII here,
-		 * flash is intact at that address and printf itself is broken.
-		 * If we see garbage here, flash bytes at that address are
-		 * corrupted - i.e. we wrote over the running partition. */
-		static const char ota_complete_fmt[] =
-			"[OTA] Update complete (ops=%u qmi_mm=%u canary_mm=%u), rebooting...\r\n";
-		fw_dump_flash_region("fmt", (const uint8_t *)ota_complete_fmt, sizeof(ota_complete_fmt));
-
-		/* Also dump bytes around several spread-out addresses in the
-		 * running partition's expected flash window so we can see if
-		 * some regions are corrupted while others (like the canary)
-		 * are intact. */
-		fw_dump_flash_region("a000", (const uint8_t *)(XIP_BASE + 0x10000), 32);
-		fw_dump_flash_region("a040", (const uint8_t *)(XIP_BASE + 0x40000), 32);
-		fw_dump_flash_region("a080", (const uint8_t *)(XIP_BASE + 0x80000), 32);
-		fw_dump_flash_region("a100", (const uint8_t *)(XIP_BASE + 0x100000), 32);
-		fw_dump_flash_region("a180", (const uint8_t *)(XIP_BASE + 0x180000), 32);
-		fw_dump_flash_region("a1F0", (const uint8_t *)(XIP_BASE + 0x1F0000), 32);
-
 		/* Now try the regular printf path; if XIP is healthy this prints
 		 * cleanly, if not we'll see garbage (which itself is the signal). */
-		printf(ota_complete_fmt,
+		printf("[OTA] Update complete (ops=%u qmi_mm=%u canary_mm=%u), rebooting...\r\n",
 			(unsigned)diag_flash_ops,
 			(unsigned)diag_qmi_mismatches,
 			(unsigned)diag_canary_mismatches);
